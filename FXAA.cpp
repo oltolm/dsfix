@@ -11,11 +11,11 @@ using namespace std;
 FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality) 
 	: Effect(device), width(width), height(height) {
 	
-	// Setup the defines for compiling the effect
+	//Setup the defines for compiling the effect
     vector<D3DXMACRO> defines;
     stringstream s;
 
-    // Setup pixel size macro
+    //Setup pixel size macro
     s << "float2(1.0 / " << width << ", 1.0 / " << height << ")";
     string pixelSizeText = s.str();
     D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
@@ -34,17 +34,17 @@ FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality)
 
 	DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
 
-	// Load effect from file
+	//Load effect from file
 	SDLOG(0, "FXAA load\n");	
 	ID3DXBuffer* errors;
 	HRESULT hr = D3DXCreateEffectFromFile(device, GetDirectoryFile("dsfix\\FXAA.fx"), &defines.front(), NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
 	
-	// Create buffer
+	//Create buffer
 	device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &buffer1Tex, NULL);
     buffer1Tex->GetSurfaceLevel(0, &buffer1Surf);
 
-	// get handles
+	//get handles
 	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
 }
 
@@ -64,10 +64,10 @@ void FXAA::go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {
 void FXAA::lumaPass(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {
 	device->SetRenderTarget(0, dst);
 
-    // Setup variables
+    //Setup variables
     effect->SetTexture(frameTexHandle, frame);
 
-    // Do it!
+    //Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
@@ -79,10 +79,10 @@ void FXAA::lumaPass(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {
 void FXAA::fxaaPass(IDirect3DTexture9 *src, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
 
-    // Setup variables
+    //Setup variables
     effect->SetTexture(frameTexHandle, src);
 	
-    // Do it!
+    //Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(1);

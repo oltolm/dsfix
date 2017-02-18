@@ -12,13 +12,13 @@ HUD::HUD(IDirect3DDevice9 *device, int width, int height)
 
 	DWORD flags = D3DXFX_NOT_CLONEABLE;
 
-	// Load effect from file
+	//Load effect from file
 	SDLOG(0, "Hud Effect load\n");
 	ID3DXBuffer* errors;
 	HRESULT hr = D3DXCreateEffectFromFile(device, GetDirectoryFile("dsfix\\HUD.fx"), NULL, NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
 		
-	// get handles
+	//get handles
 	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
 	opacityHandle = effect->GetParameterByName(NULL, "opacity");
 }
@@ -37,7 +37,7 @@ void HUD::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
 	
     UINT passes;
 
-	// upper left
+	//upper left
 	effect->SetFloat(opacityHandle, Settings::get().getHudTopLeftOpacity());
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
@@ -46,7 +46,7 @@ void HUD::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
 	effect->EndPass();
 	effect->End();
 
-	// lower left
+	//lower left
 	effect->SetFloat(opacityHandle, Settings::get().getHudBottomLeftOpacity());
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
@@ -62,7 +62,7 @@ void HUD::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
 	effect->EndPass();
 	effect->End();
 
-	// lower right
+	//lower right
 	effect->SetFloat(opacityHandle, Settings::get().getHudBottomRightOpacity());
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
@@ -71,7 +71,7 @@ void HUD::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
 	effect->EndPass();
 	effect->End();
 
-	// center
+	//center
 	effect->SetFloat(opacityHandle, 1.0f);
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
