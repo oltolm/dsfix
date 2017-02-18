@@ -28,9 +28,9 @@ void WindowManager::toggleBorderlessFullscreen() {
 	borderlessFullscreen = !borderlessFullscreen;
 	HWND hwnd = ::GetActiveWindow();
 	if(borderlessFullscreen) {
-		// store previous rect
+		//store previous rect
 		::GetClientRect(hwnd, &prevWindowRect);
-		// set styles
+		//set styles
 		LONG lStyle = ::GetWindowLong(hwnd, GWL_STYLE);
 		prevStyle = lStyle;
 		lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
@@ -39,7 +39,7 @@ void WindowManager::toggleBorderlessFullscreen() {
 		prevExStyle = lExStyle;
 		lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
 		::SetWindowLong(hwnd, GWL_EXSTYLE, lExStyle);
-		// adjust size & position
+		//adjust size & position
 		HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 		MONITORINFO info;
 		info.cbSize = sizeof(MONITORINFO);
@@ -48,7 +48,7 @@ void WindowManager::toggleBorderlessFullscreen() {
 		int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
 		::SetWindowPos(hwnd, NULL, info.rcMonitor.left, info.rcMonitor.top, monitorWidth, monitorHeight, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
 	} else {
-		// restore previous window
+		//restore previous window
 		::SetWindowLong(hwnd, GWL_STYLE, prevStyle);
 		::SetWindowLong(hwnd, GWL_EXSTYLE, prevExStyle);
 		RECT desiredRect = prevWindowRect;
@@ -60,9 +60,9 @@ void WindowManager::toggleBorderlessFullscreen() {
 
 void WindowManager::resize(unsigned clientW, unsigned clientH) {
 	HWND hwnd = ::GetActiveWindow();
-	// Store current window rect
+	//Store current window rect
 	::GetClientRect(hwnd, &prevWindowRect);
-	// Get monitor size
+	//Get monitor size
 	HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 	MONITORINFO info;
 	info.cbSize = sizeof(MONITORINFO);
@@ -70,7 +70,7 @@ void WindowManager::resize(unsigned clientW, unsigned clientH) {
 	int monitorWidth = info.rcMonitor.right - info.rcMonitor.left;
 	int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
 
-	// How much do we overlap or are smaller than the actual screen size
+	//How much do we overlap or are smaller than the actual screen size
 	int widthDiff = monitorWidth - (clientW ? clientW : prevWindowRect.right);
 	int heightDiff = monitorHeight - (clientH ? clientH : prevWindowRect.bottom);
 

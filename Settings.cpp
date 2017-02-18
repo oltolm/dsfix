@@ -80,7 +80,7 @@ void Settings::toggle30FPSLimit() {
 }
 
 
-// reading --------------------------------------------------------------------
+//reading
 
 void Settings::read(char* source, bool& value) {
 	std::string ss(source);
@@ -105,7 +105,7 @@ void Settings::read(char* source, std::string& value) {
 }
 
 
-// logging --------------------------------------------------------------------
+//logging
 
 void Settings::log(const char* name, bool value) {
 	SDLOG(0, " - %s : %s\n", name, value ? "true" : "false");
@@ -127,29 +127,29 @@ void Settings::log(const char* name, const std::string& value) {
 	SDLOG(0, " - %s : %s\n", name, value.c_str());
 }
 
-// language override --------------------------------------------------------------------
+//language override
 
 void Settings::performLanguageOverride() {
 	HKEY key;
-	// Reading operations
+	//Reading operations
 	if(RegOpenKeyEx(HKEY_CURRENT_USER, "Control Panel\\International", 0, KEY_READ, &key) != ERROR_SUCCESS) {
 		SDLOG(0, "ERROR opening language registry key for reading\n");
 		return;
 	}
-	BYTE prevLang[16]; // previous locale registry key
+	BYTE prevLang[16]; //previous locale registry key
 	DWORD prevLangSize;
-	// check if prev key already set -- if so, assume correct override and return
+	//check if prev key already set -- if so, assume correct override and return
 	if(RegQueryValueEx(key, "PrevLocaleName", 0, 0, prevLang, &prevLangSize) == ERROR_SUCCESS) {
 		RegCloseKey(key);
 		return;
 	}
-	// read current locale
+	//read current locale
 	if(RegQueryValueEx(key, "LocaleName", 0, 0, prevLang, &prevLangSize) != ERROR_SUCCESS) {
 		RegCloseKey(key);
 		SDLOG(0, "ERROR reading from language registry key\n");
 		return;
 	}
-	// if locale already set: no override necessary
+	//if locale already set: no override necessary
 	if(getOverrideLanguage().find((char*)prevLang) == 0) {
 		RegCloseKey(key);
 		SDLOG(0, "Language set to %s\n", prevLang);
@@ -158,18 +158,18 @@ void Settings::performLanguageOverride() {
 	RegFlushKey(key);
 	RegCloseKey(key);
 	
-	// Writing operations
+	//Writing operations
 	if(RegOpenKeyEx(HKEY_CURRENT_USER, "Control Panel\\International", 0, KEY_WRITE, &key) != ERROR_SUCCESS) {
 		SDLOG(0, "ERROR opening language registry key for writing\n");
 		return;
 	}
-	// store previous locale
+	//store previous locale
 	if(RegSetValueEx(key, "PrevLocaleName", 0, REG_SZ, prevLang, prevLangSize) != ERROR_SUCCESS) {
 		RegCloseKey(key);
 		SDLOG(0, "ERROR setting previous language registry key\n");
 		return;
 	}
-	// override existing locale
+	//override existing locale
 	if(RegSetValueEx(key, "LocaleName", 0, REG_SZ, (BYTE*)getOverrideLanguage().c_str(), getOverrideLanguage().length()+1) != ERROR_SUCCESS) {
 		RegCloseKey(key);
 		SDLOG(0, "ERROR setting language registry key\n");
@@ -182,14 +182,14 @@ void Settings::performLanguageOverride() {
 
 void Settings::undoLanguageOverride() {
 	HKEY key;
-	// reading operations
+	//reading operations
 	if(RegOpenKeyEx(HKEY_CURRENT_USER, "Control Panel\\International", 0, KEY_READ, &key) != ERROR_SUCCESS) {
 		SDLOG(0, "ERROR opening language registry key for reading (restore)\n");
 		return;
 	}
-	BYTE prevLang[16]; // previous locale registry key
+	BYTE prevLang[16]; //previous locale registry key
 	DWORD prevLangSize;
-	// load previous locale
+	//load previous locale
 	if(RegQueryValueEx(key, "PrevLocaleName", 0, 0, prevLang, &prevLangSize) != ERROR_SUCCESS) {
 		RegCloseKey(key);
 		SDLOG(0, "ERROR reading previous locale from language registry key (restore)\n");
@@ -198,18 +198,18 @@ void Settings::undoLanguageOverride() {
 	RegFlushKey(key);
 	RegCloseKey(key);
 
-	// Writing operations
+	//Writing operations
 	if(RegOpenKeyEx(HKEY_CURRENT_USER, "Control Panel\\International", 0, KEY_WRITE, &key) != ERROR_SUCCESS) {
 		SDLOG(0, "ERROR opening language registry key for restoring\n");
 		return;
 	}
-	// restore previous locale
+	//restore previous locale
 	if(RegSetValueEx(key, "LocaleName", 0, REG_SZ, prevLang, prevLangSize) != ERROR_SUCCESS) {
 		RegCloseKey(key);
 		SDLOG(0, "ERROR restoring language registry key\n");
 		return;
 	}
-	// remove PrevLocaleName value
+	//remove PrevLocaleName value
 	if(RegDeleteValue(key, "PrevLocaleName") != ERROR_SUCCESS) {
 		SDLOG(0, "ERROR deleting PrevLocaleName registry key\n");
 	}

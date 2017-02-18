@@ -11,17 +11,17 @@ using namespace std;
 SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type) 
 	: Effect(device), width(width), height(height) {
 	
-	// Setup the defines for compiling the effect
+	//Setup the defines for compiling the effect
     vector<D3DXMACRO> defines;
 
-    // Setup pixel size macro
+    //Setup pixel size macro
 	stringstream sp;
 	sp << "float2(1.0 / " << width << ", 1.0 / " << height << ")";
 	string pixelSizeText = sp.str();
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
 	
-    // Setup scale macro
+    //Setup scale macro
 	stringstream ss;
 	ss << Settings::get().getSsaoScale() << ".0";
 	string scaleText = ss.str();
@@ -40,7 +40,7 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 
 	DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
 
-	// Load effect from file
+	//Load effect from file
 	const char* shader;
 	switch(type) {
 		case VSSAO: shader = "dsfix\\VSSAO.fx"; break;
@@ -53,13 +53,13 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	HRESULT hr = D3DXCreateEffectFromFile(device, shader, &defines.front(), NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
 	
-	// Create buffers
+	//Create buffers
 	device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &buffer1Tex, NULL);
     buffer1Tex->GetSurfaceLevel(0, &buffer1Surf);
 	device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &buffer2Tex, NULL);
     buffer2Tex->GetSurfaceLevel(0, &buffer2Surf);
 
-	// get handles
+	//get handles
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
 	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
     prevPassTexHandle = effect->GetParameterByName(NULL, "prevPassTex2D");
@@ -90,10 +90,10 @@ void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
     device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 0, 0, 0), 1.0f, 0);
 
-    // Setup variables.
+    //Setup variables.
     effect->SetTexture(depthTexHandle, depth);
 
-    // Do it!
+    //Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
@@ -105,11 +105,11 @@ void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
 void SSAO::hBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
 
-    // Setup variables.
+    //Setup variables.
     effect->SetTexture(prevPassTexHandle, src);
     effect->SetTexture(depthTexHandle, depth);
 	
-    // Do it!
+    //Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(1);
@@ -121,11 +121,11 @@ void SSAO::hBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3D
 void SSAO::vBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
 
-    // Setup variables.
+    //Setup variables.
     effect->SetTexture(prevPassTexHandle, src);
     effect->SetTexture(depthTexHandle, depth);
 	
-    // Do it!
+    //Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(2);
@@ -138,11 +138,11 @@ void SSAO::combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3
 	device->SetRenderTarget(0, dst);
     //device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 0, 255), 1.0f, 0);
 
-    // Setup variables.
+    //Setup variables.
     effect->SetTexture(prevPassTexHandle, ao);
     effect->SetTexture(frameTexHandle, frame);
 	
-    // Do it!
+    //Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(3);

@@ -19,7 +19,7 @@ void SaveManager::init() {
 		char buffer[MAX_PATH];
 		sprintf_s(buffer, "%s%s", documents, "\\NBGI\\DarkSouls\\*");
 
-		// find user save folder
+		//find user save folder
 		WIN32_FIND_DATA userSaveFolderData;
 		HANDLE searchHandle = FindFirstFile(buffer, &userSaveFolderData);
 		bool found = false;
@@ -28,7 +28,7 @@ void SaveManager::init() {
                 std::string fn = userSaveFolderData.cFileName;
                 bool dir = userSaveFolderData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
                 bool saveFile = fn.substr(fn.find_last_of(".") + 1) == "sl2";
-                // newer versions don't contain an additional folder under NBGI\\DarkSouls
+                //newer versions don't contain an additional folder under NBGI\\DarkSouls
                 if (fn.size() > 2 && (dir || saveFile)) {
                     if (dir)
 					    sprintf_s(buffer, "%s%s%s", documents, "\\NBGI\\DarkSouls\\", userSaveFolderData.cFileName);
@@ -75,7 +75,7 @@ time_t SaveManager::getLastBackupTime() {
 vector<string> SaveManager::getSaveFiles(const char* ending /*= ".sl2"*/) {
 	SDLOG(2, "SaveManager: searching for files ending on %s\n", ending);
 	vector<string> ret;
-	// find saved files
+	//find saved files
 	if(userSaveFolder.length() > 0) {
 		char buffer[MAX_PATH];
 		sprintf_s(buffer, "%s\\*%s", userSaveFolder.c_str(), ending);

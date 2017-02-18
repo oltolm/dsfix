@@ -1,40 +1,32 @@
-/**
- * Copyright (C) 2011 Jorge Jimenez (jorge@iryoku.com)
- * Copyright (C) 2011 Belen Masia (bmasia@unizar.es) 
- * Copyright (C) 2011 Jose I. Echevarria (joseignacioechevarria@gmail.com) 
- * Copyright (C) 2011 Fernando Navarro (fernandn@microsoft.com) 
- * Copyright (C) 2011 Diego Gutierrez (diegog@unizar.es)
- * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- *    1. Redistributions of source code must retain the above copyright notice,
- *       this list of conditions and the following disclaimer.
- * 
- *    2. Redistributions in binary form must reproduce the following disclaimer
- *       in the documentation and/or other materials provided with the 
- *       distribution:
- * 
- *      "Uses SMAA. Copyright (C) 2011 by Jorge Jimenez, Jose I. Echevarria,
- *       Belen Masia, Fernando Navarro and Diego Gutierrez."
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS 
- * IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
- * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS OR CONTRIBUTORS 
- * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
- * POSSIBILITY OF SUCH DAMAGE.
- * 
- * The views and conclusions contained in the software and documentation are 
- * those of the authors and should not be interpreted as representing official
- * policies, either expressed or implied, of the copyright holders.
- */
+/*Copyright (C) 2011 Jorge Jimenez (jorge@iryoku.com)
+Copyright (C) 2011 Belen Masia (bmasia@unizar.es) 
+Copyright (C) 2011 Jose I. Echevarria (joseignacioechevarria@gmail.com) 
+Copyright (C) 2011 Fernando Navarro (fernandn@microsoft.com) 
+Copyright (C) 2011 Diego Gutierrez (diegog@unizar.es)
+All rights reserved.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+1. Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the following disclaimer
+in the documentation and/or other materials provided with the 
+distribution:
+"Uses SMAA. Copyright (C) 2011 by Jorge Jimenez, Jose I. Echevarria,
+Belen Masia, Fernando Navarro and Diego Gutierrez."
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ``AS 
+IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
+PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDERS OR CONTRIBUTORS 
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+POSSIBILITY OF SUCH DAMAGE.
+The views and conclusions contained in the software and documentation are 
+those of the authors and should not be interpreted as representing official
+policies, either expressed or implied, of the copyright holders.*/
 
 
 #include <vector>
@@ -72,17 +64,17 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
           width(width), height(height) {
     HRESULT hr;
 
-    // Setup the defines for compiling the effect.
+    //Setup the defines for compiling the effect.
     vector<D3DXMACRO> defines;
     stringstream s;
 
-    // Setup pixel size macro
+    //Setup pixel size macro
     s << "float2(1.0 / " << width << ", 1.0 / " << height << ")";
     string pixelSizeText = s.str();
     D3DXMACRO pixelSizeMacro = { "SMAA_PIXEL_SIZE", pixelSizeText.c_str() };
     defines.push_back(pixelSizeMacro);
 
-    // Setup preset macro
+    //Setup preset macro
     D3DXMACRO presetMacros[] = {
         { "SMAA_PRESET_LOW", "1" },
         { "SMAA_PRESET_MEDIUM", "1" },
@@ -95,19 +87,19 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
     D3DXMACRO null = { NULL, NULL };
     defines.push_back(null);
 
-    // Setup the flags for the effect.
+    //Setup the flags for the effect.
     DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
     #ifdef D3DXFX_LARGEADDRESS_HANDLE
     flags |= D3DXFX_LARGEADDRESSAWARE;
     #endif
 
-	// Load effect from file
+	//Load effect from file
 	SDLOG(0, "SMAA load\n");	
 	ID3DXBuffer* errors;
 	hr = D3DXCreateEffectFromFile(device, GetDirectoryFile("dsfix\\SMAA.fx"), &defines.front(), NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
 
-    // If storage for the edges is not specified we will create it.
+    //If storage for the edges is not specified we will create it.
     if (storage.edgeTex != NULL && storage.edgeSurface != NULL) {
         edgeTex = storage.edgeTex;
         edgeSurface = storage.edgeSurface;
@@ -118,7 +110,7 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
         releaseEdgeResources = true;
     }
 
-    // Same for blending weights.
+    //Same for blending weights.
     if (storage.blendTex != NULL && storage.blendSurface != NULL) {
         blendTex = storage.blendTex;
         blendSurface = storage.blendSurface;
@@ -129,11 +121,11 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
         releaseBlendResources = true;
     }
 
-    // Load the precomputed textures.
+    //Load the precomputed textures.
     loadAreaTex();
     loadSearchTex();
 
-    // Create some handles for techniques and variables.
+    //Create some handles for techniques and variables.
     thresholdHandle = effect->GetParameterByName(NULL, "threshold");
     maxSearchStepsHandle = effect->GetParameterByName(NULL, "maxSearchSteps");
     areaTexHandle = effect->GetParameterByName(NULL, "areaTex2D");
@@ -153,12 +145,12 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
 SMAA::~SMAA() {
     SAFERELEASE(effect);
 
-    if(releaseEdgeResources) { // We will be releasing these things *only* if we created them.
+    if(releaseEdgeResources) {//We will be releasing these things *only* if we created them.
         SAFERELEASE(edgeTex);
         SAFERELEASE(edgeSurface);
     }
 
-    if(releaseBlendResources) { // Same applies over here.
+    if(releaseBlendResources) {//Same applies over here.
         SAFERELEASE(blendTex);
         SAFERELEASE(blendSurface);
     }
@@ -174,10 +166,10 @@ void SMAA::go(IDirect3DTexture9 *edges,
               Input input) {
     HRESULT hr;
 
-    // Setup the layout for our fullscreen quad.
+    //Setup the layout for our fullscreen quad.
     V(device->SetVertexDeclaration(vertexDeclaration));
 
-    // And here we go!
+    //And here we go!
     edgesDetectionPass(edges, input); 
     blendingWeightsCalculationPass();
     neighborhoodBlendingPass(src, dst);
@@ -210,15 +202,15 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 1st pass");
     HRESULT hr;
 
-    // Set the render target and clear both the color and the stencil buffers.
+    //Set the render target and clear both the color and the stencil buffers.
     V(device->SetRenderTarget(0, edgeSurface));
     V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
 
-    // Setup variables.
+    //Setup variables.
     V(effect->SetFloat(thresholdHandle, threshold));
     V(effect->SetFloat(maxSearchStepsHandle, float(maxSearchSteps)));
 
-    // Select the technique accordingly.
+    //Select the technique accordingly.
     switch (input) {
         case INPUT_LUMA:
             V(effect->SetTexture(colorTexHandle, edges));
@@ -236,7 +228,7 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
             throw logic_error("unexpected error");
     }
 
-    // Do it!
+    //Do it!
     UINT passes;
     V(effect->Begin(&passes, 0));
     V(effect->BeginPass(0));
@@ -252,17 +244,17 @@ void SMAA::blendingWeightsCalculationPass() {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 2nd pass");
     HRESULT hr;
 
-    // Set the render target and clear it.
+    //Set the render target and clear it.
     V(device->SetRenderTarget(0, blendSurface));
     V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
 
-    // Setup the variables and the technique (yet again).
+    //Setup the variables and the technique (yet again).
     V(effect->SetTexture(edgesTexHandle, edgeTex));
     V(effect->SetTexture(areaTexHandle, areaTex));
     V(effect->SetTexture(searchTexHandle, searchTex));
     V(effect->SetTechnique(blendWeightCalculationHandle));
 
-    // And here we go!
+    //And here we go!
     UINT passes;
     V(effect->Begin(&passes, 0));
     V(effect->BeginPass(0));
@@ -278,13 +270,13 @@ void SMAA::neighborhoodBlendingPass(IDirect3DTexture9 *src, IDirect3DSurface9 *d
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 3rd pass");
     HRESULT hr;
 
-    // Blah blah blah
+    //Blah blah blah
     V(device->SetRenderTarget(0, dst));
     V(effect->SetTexture(colorTexHandle, src));
     V(effect->SetTexture(blendTexHandle, blendTex));
     V(effect->SetTechnique(neighborhoodBlendingHandle));
 
-    // Yeah! We will finally have the antialiased image :D
+    //Yeah! We will finally have the antialiased image :D
     UINT passes;
     V(effect->Begin(&passes, 0));
     V(effect->BeginPass(0));
