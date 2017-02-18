@@ -5,7 +5,7 @@
 
 #include "main.h"
 
-// Base class for effects
+//Base class for effects
 class Effect {
 protected:
 	IDirect3DDevice9* device;
@@ -23,7 +23,7 @@ public:
 	}
 
 	void quad(int width, int height) {
-		// Draw aligned fullscreen quad
+		//Draw aligned fullscreen quad
 		D3DXVECTOR2 pixelSize = D3DXVECTOR2(1.0f / float(width), 1.0f / float(height));
 		float quad[4][5] = {
 			{ -1.0f - pixelSize.x,  1.0f + pixelSize.y, 0.5f, 0.0f, 0.0f },

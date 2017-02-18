@@ -1,5 +1,4 @@
-// Dark Souls FPS fix by Clement Barnier (Nwks)
-///////////////////////////////////////////////
+//Dark Souls FPS fix by Clement Barnier (Nwks)
 
 #include "FPS.h"
 
@@ -15,41 +14,38 @@
 void enableGFWLCompatibility(void);
 #endif
 
-// Globals
+//Globals
 static DWORD OriginalBase = 0x0400000;
 static DWORD ImageBase = NULL;
 
-// Hook Globals
+//Hook Globals
 double lastRenderTime;
 static LARGE_INTEGER timerFreq;
 static LARGE_INTEGER counterAtStart;
 
-// Hook Parameters
-//-----------------------------------
-// Dark Souls executable timestamp
-DWORD EXE_TIMESTAMP = 0x546FA3C5; // Steam Beta build 2.0
+/*Hook Parameters
+_________________
+Dark Souls executable timestamp*/
+DWORD EXE_TIMESTAMP = 0x546FA3C5;//Steam Beta build 2.0
 
-// Time-step value address
-DWORD ADDR_TS = 0x011E4D70;  // 1.0.0 was 0x012497F0, 1.0.1 was 0x012498E0
+//Time-step value address
+DWORD ADDR_TS = 0x011E4D70;//1.0.0 was 0x012497F0, 1.0.1 was 0x012498E0
 LPCSTR TS_PATTERN = "0080264400009444000058420000C0428988083D0000A044";
 DWORD TS_OFFSET = 0x00000010;
 
-// Presentation interval address
+//Presentation interval address
 DWORD ADDR_PRESINT = 0x00FFA15E; // 1.0.0 was 0x010275AE, 1.0.1 was 0x0102788E
 LPCSTR PRESINT_PATTERN = "FF15xxxxxxxx83C408C78648020000020000005EC20800";
 DWORD PRESINT_OFFSET = 0x0000000F;
 
-// getDrawThreadMsgCommand address in HGCommandDispatcher loop
-DWORD ADDR_GETCMD =	0x00BAC3DD; // 1.0.0 was 0x00BD601D, 1.0.1 was 0x00BD60ED
+//getDrawThreadMsgCommand address in HGCommandDispatcher loop
+DWORD ADDR_GETCMD =	0x00BAC3DD;//1.0.0 was 0x00BD601D, 1.0.1 was 0x00BD60ED
 LPCSTR GETCMD_PATTERN = "6A018BCDE8xxxxxxxx8BF08BCEE8xxxxxxxx83F805";
 DWORD GETCMD_OFFSET = 0x0000000D;
 
-//----------------------------------------------------------------------------------------
-// Support Functions
-//----------------------------------------------------------------------------------------
-
-// Misc
-//------------------------------------
+/*Support Functions
+___________________
+Misc*/
 DWORD getAbsoluteAddress(DWORD offset) {
 	if (ImageBase)
 		return ImageBase + offset;
@@ -62,7 +58,6 @@ DWORD convertAddress(DWORD Address) {
 }
 
 // Memory
-//------------------------------------
 void updateAnimationStepTime(float stepTime, float minFPS, float maxFPS) {
 	float FPS = 1.0f/(stepTime/1000);
 
@@ -78,47 +73,43 @@ void updateAnimationStepTime(float stepTime, float minFPS, float maxFPS) {
 	writeToAddress(&data, convertAddress(ADDR_TS), sizeof(data));
 }
 
-// Timer
+//Timer
 double getElapsedTime(void) {
 	LARGE_INTEGER c;
 	QueryPerformanceCounter(&c);
 	return (double)( (c.QuadPart - counterAtStart.QuadPart) * 1000.0 / (double)timerFreq.QuadPart );
 }
 
-//----------------------------------------------------------------------------------------
-// Hook functions
-//----------------------------------------------------------------------------------------
+//Hook functions
 
 void _stdcall updateFramerate(unsigned int cmd) {	
-	// If rendering was performed, update animation step-time
+	//If rendering was performed, update animation step-time
 	if((cmd == 2) || (cmd == 5)) {
-		// FPS regulation based on previous render
+		//FPS regulation based on previous render
 		double maxFPS = (double)Settings::get().getCurrentFPSLimit();
 		double minFPS = 10.0f;
 		double currentTime = getElapsedTime();
 		double deltaTime = currentTime - lastRenderTime;
 		lastRenderTime = currentTime;
 
-		// Update step-time
+		//Update step-time
 		updateAnimationStepTime((float)deltaTime, (float)minFPS, (float)maxFPS);
 	}
 }
 
-// Hook
+//Hook
 __declspec(naked) void getDrawThreadMsgCommand(void) {
 	__asm {
-		MOV EAX, [ECX+0Ch] // Put msgCmd in EAX (Return value)
+		MOV EAX, [ECX+0Ch] //Put msgCmd in EAX (Return value)
 		PUSHAD
 		PUSH EAX
-		CALL updateFramerate // Call updateFramerate(msgCmd)
+		CALL updateFramerate //Call updateFramerate(msgCmd)
 		POPAD
 		RETN
 	}
 }
 
-//----------------------------------------------------------------------------------------
-// Game Patches
-//----------------------------------------------------------------------------------------
+//Game Patches
 void applyFPSPatch() {
 
 	SDLOG(0, "Starting FPS unlock...\n");
@@ -127,7 +118,7 @@ void applyFPSPatch() {
 	enableGFWLCompatibility();
 #endif
 
-	// Get image info
+	//Get image info
 	MODULEINFO moduleInfo;
 	PIMAGE_DOS_HEADER dosHeader;
 	PIMAGE_NT_HEADERS ntHeader;
@@ -144,7 +135,7 @@ void applyFPSPatch() {
 		DWORD TimeStamp = header.TimeDateStamp;
 				SDLOG(0, "Executable timestamp: 0x%08X, config: 0x%08X\n", TimeStamp, EXE_TIMESTAMP);
 
-		// Perform pattern matching if timestamp differs
+		//Perform pattern matching if timestamp differs
 		if (TimeStamp != EXE_TIMESTAMP) {
 			SDLOG(0, "Trying pattern matching...\n");
 
@@ -187,17 +178,16 @@ void applyFPSPatch() {
 		return;
 	}
 
-	// Binary patches
-	//--------------------------------------------------------------
+	//Binary patches
 	DWORD address;
 	DWORD data;
 
-	// Override D3D Presentation Interval
+	//Override D3D Presentation Interval
 	address = convertAddress(ADDR_PRESINT);
-	data = 5; //Set to immediate
+	data = 5;//Set to immediate
 	writeToAddress(&data, address, sizeof(data));
 
-	// Detour call to getDrawThreadMsgCommand
+	//Detour call to getDrawThreadMsgCommand
 	address = convertAddress(ADDR_GETCMD);
 	DetourApply((BYTE*)address, (BYTE*)getDrawThreadMsgCommand, 5, CALLOP);
 		
@@ -205,7 +195,7 @@ void applyFPSPatch() {
 }
 
 void initFPSTimer() {
-	// Init counter for frame-rate calculations
+	//Init counter for frame-rate calculations
 	lastRenderTime = 0.0f;
 	QueryPerformanceFrequency(&timerFreq);
 	QueryPerformanceCounter(&counterAtStart);
