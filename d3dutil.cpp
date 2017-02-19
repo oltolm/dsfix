@@ -1,7 +1,5 @@
 #include "d3dutil.h"
-
 #include <cstdio>
-
 TCHAR* RectToString(const RECT* rect) {
 	const int BUFFERS = 64;
 	static int cBuffer = 0;
@@ -13,7 +11,6 @@ TCHAR* RectToString(const RECT* rect) {
 	cBuffer %= BUFFERS;
 	return ret;
 }
-
 TCHAR* D3DMatrixToString(const D3DMATRIX* pMatrix) {
 	const int BUFFERS = 64;
 	static int cBuffer = 0;
@@ -32,8 +29,6 @@ TCHAR* D3DMatrixToString(const D3DMATRIX* pMatrix) {
 	cBuffer %= BUFFERS;
 	return buffers[cBuffer];
 }
-
-
 TCHAR* D3DFormatToString(D3DFORMAT format, bool bWithPrefix) {
     TCHAR* pstr = NULL;
     switch(format) {
@@ -109,7 +104,6 @@ TCHAR* D3DFormatToString(D3DFORMAT format, bool bWithPrefix) {
     else
         return pstr + lstrlen( TEXT("D3DFMT_") );
 }
-
 TCHAR* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state) {
     switch(state) {
 		case D3DSAMP_ADDRESSU: return "D3DSAMP_ADDRESSU";
@@ -129,7 +123,6 @@ TCHAR* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state) {
 	}
 	return "Unknown Sampler State Type";
 }
-
 TCHAR* D3DDeclTypeToString(D3DDECLTYPE type) {
 	switch(type) {
 		case D3DDECLTYPE_FLOAT1: return "D3DDECLTYPE_FLOAT1";
@@ -153,7 +146,6 @@ TCHAR* D3DDeclTypeToString(D3DDECLTYPE type) {
 	}
 	return "Unknown D3D decl type";
 }
-
 TCHAR* D3DDeclUsageToString(D3DDECLUSAGE type) {
 	switch(type) {
 		case D3DDECLUSAGE_POSITION: return "D3DDECLUSAGE_POSITION";
