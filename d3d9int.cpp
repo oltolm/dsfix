@@ -1,4 +1,4 @@
-/*	Direct3D9 Interface */
+//Direct3D9 Interface
 
 #include <windows.h>
 #include "main.h"
@@ -51,20 +51,20 @@ HRESULT APIENTRY hkIDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 		SDLOG(0, " - Adapter override to %d\n", Settings::get().getD3DAdapterOverride());
 		Adapter = Settings::get().getD3DAdapterOverride();
 	}
-	//if(Settings::get().getEnableTripleBuffering()) {
-	//	D3DDISPLAYMODEEX modeEx;
-	//	D3DDISPLAYMODEEX *pModeEx = NULL;
-	//	if(!adjusted.Windowed) {
-	//		pModeEx = &modeEx;
-	//		modeEx.Size = sizeof(D3DDISPLAYMODEEX);
-	//		modeEx.Format = adjusted.BackBufferFormat;
-	//		modeEx.Height = adjusted.BackBufferHeight;
-	//		modeEx.Width = adjusted.BackBufferWidth;
-	//		modeEx.RefreshRate = adjusted.FullScreen_RefreshRateInHz;
-	//		modeEx.ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
-	//	}
-	//	hRet = ((IDirect3D9Ex*)m_pD3Dint)->CreateDeviceEx(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &adjusted, pModeEx, (IDirect3DDevice9Ex**)ppReturnedDeviceInterface);
-	//} else {
+	/*if(Settings::get().getEnableTripleBuffering()) {
+	D3DDISPLAYMODEEX modeEx;
+	D3DDISPLAYMODEEX *pModeEx = NULL;
+	if(!adjusted.Windowed) {
+	pModeEx = &modeEx;
+	modeEx.Size = sizeof(D3DDISPLAYMODEEX);
+	modeEx.Format = adjusted.BackBufferFormat;
+	modeEx.Height = adjusted.BackBufferHeight;
+	modeEx.Width = adjusted.BackBufferWidth;
+	modeEx.RefreshRate = adjusted.FullScreen_RefreshRateInHz;
+	modeEx.ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
+	}
+	hRet = ((IDirect3D9Ex*)m_pD3Dint)->CreateDeviceEx(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &adjusted, pModeEx, (IDirect3DDevice9Ex**)ppReturnedDeviceInterface);
+	} else {*/
 		hRet = m_pD3Dint->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &adjusted, ppReturnedDeviceInterface);
 	//}
 	if(SUCCEEDED(hRet)) {

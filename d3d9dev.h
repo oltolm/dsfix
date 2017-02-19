@@ -8,17 +8,17 @@ interface hkIDirect3DDevice9 : public IDirect3DDevice9
 public:
 	hkIDirect3DDevice9(IDirect3DDevice9 **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9 *pIDirect3D9);
 
-	// callback interface
+	//callback interface
 	IDirect3DDevice9 *m_pD3Ddev;
 	IDirect3D9 *m_pD3Dint;
 
-	// need to fake this
+	//need to fake this
 	D3DDISPLAYMODE displayMode;
 	
-	// PresentationParameters
+	//PresentationParameters
 	D3DPRESENT_PARAMETERS m_PresentParam;
 	
-	// original interface
+	//original interface
     STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
     STDMETHOD_(ULONG,AddRef)();
     STDMETHOD_(ULONG,Release)();

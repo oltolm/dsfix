@@ -85,8 +85,8 @@ void earlyDetour() {
 void startDetour() {		
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
-	//DetourAttach(&(PVOID&)TrueSleepEx, DetouredSleepEx);
-	//DetourAttach(&(PVOID&)TrueTimeGetTime, DetouredTimeGetTime);
+	/*DetourAttach(&(PVOID&)TrueSleepEx, DetouredSleepEx);
+	DetourAttach(&(PVOID&)TrueTimeGetTime, DetouredTimeGetTime);*/
 	if(Settings::get().getSkipIntro()) DetourAttach(&(PVOID&)TrueQueryPerformanceCounter, DetouredQueryPerformanceCounter);
 	//TrueD3DXCreateTexture = (D3DXCreateTexture_FNType)DetourFindFunction("d3dx9_43.dll", "D3DXCreateTexture");
 	TrueD3DXCreateTextureFromFileInMemory = (D3DXCreateTextureFromFileInMemory_FNType)DetourFindFunction("d3dx9_43.dll", "D3DXCreateTextureFromFileInMemory");
@@ -94,9 +94,9 @@ void startDetour() {
 	//DetourAttach(&(PVOID&)TrueD3DXCreateTexture, DetouredD3DXCreateTexture);
 	DetourAttach(&(PVOID&)TrueD3DXCreateTextureFromFileInMemory, DetouredD3DXCreateTextureFromFileInMemory);
 	DetourAttach(&(PVOID&)TrueD3DXCreateTextureFromFileInMemoryEx, DetouredD3DXCreateTextureFromFileInMemoryEx);
-	//TrueD3DXCompileShader = (D3DXCompileShader_FNType)DetourFindFunction("d3dx9_43.dll", "D3DXCompileShader");
-	//SDLOG(0, "Detouring: compile shader: %p\n", TrueD3DXCompileShader);
-	//DetourAttach(&(PVOID&)TrueD3DXCompileShader, DetouredD3DXCompileShader);
+	/*TrueD3DXCompileShader = (D3DXCompileShader_FNType)DetourFindFunction("d3dx9_43.dll", "D3DXCompileShader");
+	SDLOG(0, "Detouring: compile shader: %p\n", TrueD3DXCompileShader);
+	DetourAttach(&(PVOID&)TrueD3DXCompileShader, DetouredD3DXCompileShader);*/
 
 	if(DetourTransactionCommit() == NO_ERROR) {
 		SDLOG(0, "Detouring: Detoured successfully\n");
@@ -109,8 +109,8 @@ void endDetour() {
 	//if(Settings::get().getSkipIntro()) {
 		DetourTransactionBegin();
 		DetourUpdateThread(GetCurrentThread());
-		//DetourDetach(&(PVOID&)TrueSleepEx, DetouredSleepEx);
-		//DetourDetach(&(PVOID&)TrueTimeGetTime, DetouredTimeGetTime);
+		/*DetourDetach(&(PVOID&)TrueSleepEx, DetouredSleepEx);
+		DetourDetach(&(PVOID&)TrueTimeGetTime, DetouredTimeGetTime);*/
 		if(Settings::get().getSkipIntro()) DetourDetach(&(PVOID&)TrueQueryPerformanceCounter, DetouredQueryPerformanceCounter);
 		//DetourDetach(&(PVOID&)TrueD3DXCreateTexture, DetouredD3DXCreateTexture);
 		DetourDetach(&(PVOID&)TrueD3DXCreateTextureFromFileInMemory, DetouredD3DXCreateTextureFromFileInMemory);

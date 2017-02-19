@@ -9,10 +9,10 @@ public:
 		*ppIDirect3D9 = this;
 	}
 	
-	// callback interface
+	//callback interface
 	IDirect3D9 *m_pD3Dint;
 
-	// original interface
+	//original interface
     STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);
     STDMETHOD_(ULONG,AddRef)();
     STDMETHOD_(ULONG,Release)();
