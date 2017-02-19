@@ -27,26 +27,19 @@ POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are 
 those of the authors and should not be interpreted as representing official
 policies, either expressed or implied, of the copyright holders.*/
-
-
 #ifndef SMAA_H
 #define SMAA_H
-
 #include <dxgi.h>
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <dxerr.h>
-
 #include "Effect.h"
 #include "main.h"
-
 class SMAA : public Effect {
     public:
         class ExternalStorage;
-
         enum Preset { PRESET_LOW, PRESET_MEDIUM, PRESET_HIGH, PRESET_ULTRA, PRESET_CUSTOM };
         enum Input { INPUT_LUMA, INPUT_COLOR, INPUT_DEPTH };
-
         /*If you have one or two spare render targets of the same size as the
          *backbuffer, you may want to pass them in the 'storage' parameter.
          *You may pass one or the two, depending on what you have available.
@@ -57,7 +50,6 @@ class SMAA : public Effect {
         SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset,
              const ExternalStorage &storage=ExternalStorage());
         virtual ~SMAA();
-
         /*Processes input texture 'src', storing the antialiased image into
          *'dst'. Note that 'src' and 'dst' should be associated to different
          *buffers.
@@ -75,15 +67,12 @@ class SMAA : public Effect {
                 IDirect3DTexture9 *src, 
                 IDirect3DSurface9 *dst,
                 Input input);
-
         //Maximum length to search for patterns. Each step is two pixels wide.
         int getMaxSearchSteps() const { return maxSearchSteps; }
         void setMaxSearchSteps(int maxSearchSteps) { this->maxSearchSteps = maxSearchSteps; }
-
         //Threshold for the edge detection.
         float getThreshold() const { return threshold; }
         void setThreshold(float threshold) { this->threshold = threshold; }
-
         //This class allows to pass spare storage buffers to the SMAA class.
         class ExternalStorage {
             public:
@@ -95,41 +84,32 @@ class SMAA : public Effect {
                       edgeSurface(edgeSurface), 
                       blendTex(blendTex),
                       blendSurface(blendSurface) {}
-
             IDirect3DTexture9 *edgeTex, *blendTex;
             IDirect3DSurface9 *edgeSurface, *blendSurface;
         };
-
     private:
         void loadAreaTex();
         void loadSearchTex();
         void edgesDetectionPass(IDirect3DTexture9 *edges, Input input);
         void blendingWeightsCalculationPass();
         void neighborhoodBlendingPass(IDirect3DTexture9 *src, IDirect3DSurface9 *dst);
-
         ID3DXEffect *effect;
-
         IDirect3DTexture9 *edgeTex;
         IDirect3DSurface9 *edgeSurface;
         bool releaseEdgeResources;
-
         IDirect3DTexture9 *blendTex;
         IDirect3DSurface9 *blendSurface;
         bool releaseBlendResources;
-
         IDirect3DTexture9 *areaTex;
         IDirect3DTexture9 *searchTex;
-
         D3DXHANDLE thresholdHandle, maxSearchStepsHandle;
         D3DXHANDLE areaTexHandle, searchTexHandle;
         D3DXHANDLE colorTexHandle, depthTexHandle;
         D3DXHANDLE edgesTexHandle, blendTexHandle;
         D3DXHANDLE lumaEdgeDetectionHandle, colorEdgeDetectionHandle, depthEdgeDetectionHandle,
                    blendWeightCalculationHandle, neighborhoodBlendingHandle;
-        
         int maxSearchSteps;
         float threshold;
         int width, height;
 };
-
 #endif

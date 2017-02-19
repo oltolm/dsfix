@@ -1,7 +1,5 @@
 #include "WindowManager.h"
-
 WindowManager WindowManager::instance;
-
 void WindowManager::applyCursorCapture() {
 	if(captureCursor) {
 		RECT clientrect;
@@ -14,16 +12,13 @@ void WindowManager::applyCursorCapture() {
 		::ClipCursor(NULL);
 	}
 }
-
 void WindowManager::toggleCursorCapture() {
 	captureCursor = !captureCursor;
 }
-
 void WindowManager::toggleCursorVisibility() {	
 	cursorVisible = !cursorVisible;
 	::ShowCursor(cursorVisible);
 }
-
 void WindowManager::toggleBorderlessFullscreen() {
 	borderlessFullscreen = !borderlessFullscreen;
 	HWND hwnd = ::GetActiveWindow();
@@ -57,7 +52,6 @@ void WindowManager::toggleBorderlessFullscreen() {
 		::SetWindowPos(hwnd, NULL, prevWindowRect.left, prevWindowRect.top, wWidth, wHeight, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
 	}
 }
-
 void WindowManager::resize(unsigned clientW, unsigned clientH) {
 	HWND hwnd = ::GetActiveWindow();
 	//Store current window rect
@@ -69,11 +63,9 @@ void WindowManager::resize(unsigned clientW, unsigned clientH) {
 	GetMonitorInfo(monitor, &info);
 	int monitorWidth = info.rcMonitor.right - info.rcMonitor.left;
 	int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
-
 	//How much do we overlap or are smaller than the actual screen size
 	int widthDiff = monitorWidth - (clientW ? clientW : prevWindowRect.right);
 	int heightDiff = monitorHeight - (clientH ? clientH : prevWindowRect.bottom);
-
  	RECT desiredRect;
 	desiredRect.left = widthDiff / 2;
 	desiredRect.top = heightDiff / 2;

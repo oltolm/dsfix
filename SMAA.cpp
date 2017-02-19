@@ -27,18 +27,13 @@ POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are 
 those of the authors and should not be interpreted as representing official
 policies, either expressed or implied, of the copyright holders.*/
-
-
 #include <vector>
 #include <sstream>
 #include "SMAA.h"
 #include "SearchTex.h"
 #include "AreaTex.h"
 using namespace std;
-
 #include "Settings.h"
-
-
 #pragma region Useful Macros from DXUT (copy-pasted here as we prefer this to be as self-contained as possible)
 #if defined(DEBUG) || defined(_DEBUG)
 #ifndef V
@@ -56,24 +51,20 @@ using namespace std;
 #endif
 #endif
 #pragma endregion
-
 SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const ExternalStorage &storage)
         : Effect(device),
           threshold(0.1f),
           maxSearchSteps(8),
           width(width), height(height) {
     HRESULT hr;
-
     //Setup the defines for compiling the effect.
     vector<D3DXMACRO> defines;
     stringstream s;
-
     //Setup pixel size macro
     s << "float2(1.0 / " << width << ", 1.0 / " << height << ")";
     string pixelSizeText = s.str();
     D3DXMACRO pixelSizeMacro = { "SMAA_PIXEL_SIZE", pixelSizeText.c_str() };
     defines.push_back(pixelSizeMacro);
-
     //Setup preset macro
     D3DXMACRO presetMacros[] = {
         { "SMAA_PRESET_LOW", "1" },
@@ -83,22 +74,18 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
         { "SMAA_PRESET_CUSTOM", "1" }
     };
     defines.push_back(presetMacros[int(preset)]);
-
     D3DXMACRO null = { NULL, NULL };
     defines.push_back(null);
-
     //Setup the flags for the effect.
     DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
     #ifdef D3DXFX_LARGEADDRESS_HANDLE
     flags |= D3DXFX_LARGEADDRESSAWARE;
     #endif
-
 	//Load effect from file
 	SDLOG(0, "SMAA load\n");	
 	ID3DXBuffer* errors;
 	hr = D3DXCreateEffectFromFile(device, GetDirectoryFile("dsfix\\SMAA.fx"), &defines.front(), NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
-
     //If storage for the edges is not specified we will create it.
     if (storage.edgeTex != NULL && storage.edgeSurface != NULL) {
         edgeTex = storage.edgeTex;
@@ -109,7 +96,6 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
         V(edgeTex->GetSurfaceLevel(0, &edgeSurface));
         releaseEdgeResources = true;
     }
-
     //Same for blending weights.
     if (storage.blendTex != NULL && storage.blendSurface != NULL) {
         blendTex = storage.blendTex;
@@ -120,11 +106,9 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
         V(blendTex->GetSurfaceLevel(0, &blendSurface));
         releaseBlendResources = true;
     }
-
     //Load the precomputed textures.
     loadAreaTex();
     loadSearchTex();
-
     //Create some handles for techniques and variables.
     thresholdHandle = effect->GetParameterByName(NULL, "threshold");
     maxSearchStepsHandle = effect->GetParameterByName(NULL, "maxSearchSteps");
@@ -140,42 +124,31 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
     blendWeightCalculationHandle = effect->GetTechniqueByName("BlendWeightCalculation");
     neighborhoodBlendingHandle = effect->GetTechniqueByName("NeighborhoodBlending");
 }
-
-
 SMAA::~SMAA() {
     SAFERELEASE(effect);
-
     if(releaseEdgeResources) {//We will be releasing these things *only* if we created them.
         SAFERELEASE(edgeTex);
         SAFERELEASE(edgeSurface);
     }
-
     if(releaseBlendResources) {//Same applies over here.
         SAFERELEASE(blendTex);
         SAFERELEASE(blendSurface);
     }
-
     SAFERELEASE(areaTex);
     SAFERELEASE(searchTex);
 }
-
-
 void SMAA::go(IDirect3DTexture9 *edges,
               IDirect3DTexture9 *src, 
               IDirect3DSurface9 *dst,
               Input input) {
     HRESULT hr;
-
     //Setup the layout for our fullscreen quad.
     V(device->SetVertexDeclaration(vertexDeclaration));
-
     //And here we go!
     edgesDetectionPass(edges, input); 
     blendingWeightsCalculationPass();
     neighborhoodBlendingPass(src, dst);
 }
-
-
 void SMAA::loadAreaTex() {
     HRESULT hr;
     V(device->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8L8, D3DPOOL_DEFAULT, &areaTex, NULL));
@@ -185,8 +158,6 @@ void SMAA::loadAreaTex() {
         CopyMemory(((char *) rect.pBits) + i * rect.Pitch, areaTexBytes + i * AREATEX_PITCH, AREATEX_PITCH);
     V(areaTex->UnlockRect(0));
 }
-
-
 void SMAA::loadSearchTex() {
     HRESULT hr;
     V(device->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_L8, D3DPOOL_DEFAULT, &searchTex, NULL));
@@ -196,20 +167,15 @@ void SMAA::loadSearchTex() {
         CopyMemory(((char *) rect.pBits) + i * rect.Pitch, searchTexBytes + i * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
     V(searchTex->UnlockRect(0));
 }
-
-
 void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 1st pass");
     HRESULT hr;
-
     //Set the render target and clear both the color and the stencil buffers.
     V(device->SetRenderTarget(0, edgeSurface));
     V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
-
     //Setup variables.
     V(effect->SetFloat(thresholdHandle, threshold));
     V(effect->SetFloat(maxSearchStepsHandle, float(maxSearchSteps)));
-
     //Select the technique accordingly.
     switch (input) {
         case INPUT_LUMA:
@@ -227,7 +193,6 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
         default:
             throw logic_error("unexpected error");
     }
-
     //Do it!
     UINT passes;
     V(effect->Begin(&passes, 0));
@@ -235,25 +200,19 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
     quad(width, height);
     V(effect->EndPass());
     V(effect->End());
-
     //D3DPERF_EndEvent();
 }
-
-
 void SMAA::blendingWeightsCalculationPass() {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 2nd pass");
     HRESULT hr;
-
     //Set the render target and clear it.
     V(device->SetRenderTarget(0, blendSurface));
     V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
-
     //Setup the variables and the technique (yet again).
     V(effect->SetTexture(edgesTexHandle, edgeTex));
     V(effect->SetTexture(areaTexHandle, areaTex));
     V(effect->SetTexture(searchTexHandle, searchTex));
     V(effect->SetTechnique(blendWeightCalculationHandle));
-
     //And here we go!
     UINT passes;
     V(effect->Begin(&passes, 0));
@@ -261,21 +220,16 @@ void SMAA::blendingWeightsCalculationPass() {
     quad(width, height);
     V(effect->EndPass());
     V(effect->End());
-
     //D3DPERF_EndEvent();
 }
-
-
 void SMAA::neighborhoodBlendingPass(IDirect3DTexture9 *src, IDirect3DSurface9 *dst) {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 3rd pass");
     HRESULT hr;
-
     //Blah blah blah
     V(device->SetRenderTarget(0, dst));
     V(effect->SetTexture(colorTexHandle, src));
     V(effect->SetTexture(blendTexHandle, blendTex));
     V(effect->SetTechnique(neighborhoodBlendingHandle));
-
     //Yeah! We will finally have the antialiased image :D
     UINT passes;
     V(effect->Begin(&passes, 0));
@@ -283,6 +237,5 @@ void SMAA::neighborhoodBlendingPass(IDirect3DTexture9 *src, IDirect3DSurface9 *d
     quad(width, height);
     V(effect->EndPass());
     V(effect->End());
-
     //D3DPERF_EndEvent();
 }

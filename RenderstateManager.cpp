@@ -1,25 +1,20 @@
 #include "RenderstateManager.h"
-
 #include <time.h>
 #include <intsafe.h>
 #include <io.h>
 #include <fstream>
 #include <string>
-
 #include "d3dutil.h"
 #include "Settings.h"
 #include "Hash.h"
 #include "Detouring.h"
 #include "WindowManager.h"
 #include "FPS.h"
-
 RSManager RSManager::instance;
-
 static const char *PIXEL_SHADER_DUMP_DIR = "dsfix/pixelshader_dump";
 static const char *PIXEL_SHADER_OVERRIDE_DIR = "dsfix/pixelshader_override";
 static const char *VERTEX_SHADER_DUMP_DIR = "dsfix/vertexshader_dump";
 static const char *VERTEX_SHADER_OVERRIDE_DIR = "dsfix/vertexshader_override";
-
 void RSManager::initResources() {
 	SDLOG(0, "RenderstateManager resource initialization started\n");
 	unsigned rw = Settings::get().getRenderWidth(), rh = Settings::get().getRenderHeight();
@@ -41,17 +36,14 @@ void RSManager::initResources() {
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
     if (Settings::get().getEnableTextureOverride() && Settings::get().getEnableTexturePrefetch())
         prefetchTextures();
-
 	if (Settings::get().getEnableShaderDumping()) {
 		createDirectory(PIXEL_SHADER_DUMP_DIR);
 		createDirectory(VERTEX_SHADER_DUMP_DIR);
 	}
-
 	SDLOG(0, "RenderstateManager resource initialization completed\n");
-	if(!inited) startDetour(); // on first init only
+	if(!inited) startDetour();//on first init only
 	inited = true;
 }
-
 void RSManager::prefetchTextures()
 {
     SDLOG(0, "Prefetch overwrite textures to memory started\n");
@@ -103,7 +95,6 @@ void RSManager::prefetchTextures()
     }
     SDLOG(0, "Prefetch overwrite textures to memory ended, time: %f\n", getElapsedTime() - startTime);
 }
-
 RSManager::~RSManager()
 {
     for (auto texData : cachedTexFiles)
@@ -111,7 +102,6 @@ RSManager::~RSManager()
         SAFEDELETE(texData.second.buffer);
     }
 }
-
 void RSManager::releaseResources() {
 	SDLOG(0, "RenderstateManager releasing resources\n");
 	SAFERELEASE(rgbaBuffer1Surf);
@@ -125,7 +115,6 @@ void RSManager::releaseResources() {
 	SAFEDELETE(hud);
 	SDLOG(0, "RenderstateManager resource release completed\n");
 }
-
 HRESULT RSManager::redirectPresent(CONST RECT *pSourceRect, CONST RECT *pDestRect, HWND hDestWindowOverride, CONST RGNDATA *pDirtyRegion) {
 	capturing = false;
 	if(captureNextFrame) {
@@ -152,12 +141,10 @@ HRESULT RSManager::redirectPresent(CONST RECT *pSourceRect, CONST RECT *pDestRec
 	mainRT = NULL;
 	mainRTuses = 0;
 	zSurf = NULL;
-	
 	frameTimeManagement();
 	//if(Settings::get().getEnableTripleBuffering()) return ((IDirect3DDevice9Ex*)d3ddev)->PresentEx(NULL, NULL, NULL, NULL, D3DPRESENT_FORCEIMMEDIATE);
 	return d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 }
-
 D3DPRESENT_PARAMETERS RSManager::adjustPresentationParameters(const D3DPRESENT_PARAMETERS *pPresentationParameters) {
 	D3DPRESENT_PARAMETERS ret;
 	memcpy(&ret, pPresentationParameters, sizeof(D3DPRESENT_PARAMETERS));
@@ -181,26 +168,24 @@ D3DPRESENT_PARAMETERS RSManager::adjustPresentationParameters(const D3DPRESENT_P
 		SDLOG(0, " - - Backbuffer(s): %4u x %4u %16s *%d \n", ret.BackBufferWidth, ret.BackBufferHeight, D3DFormatToString(ret.BackBufferFormat), ret.BackBufferCount);
 		SDLOG(0, " - - PresentationInterval: %2u   Windowed: %5s    Refresh: %3u Hz\n", ret.PresentationInterval, ret.Windowed ? "true" : "false", ret.FullScreen_RefreshRateInHz);
 	}
-	//if(Settings::get().getEnableTripleBuffering()) {
-	//	ret.SwapEffect = D3DSWAPEFFECT_FLIPEX;
-	//	ret.PresentationInterval = D3DPRESENT_FORCEIMMEDIATE;
-	//	ret.BackBufferCount = 2;
-	//	ret.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-	//	ret.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	//}
-	//if(Settings::get().getUnlockFPS()) {
-	//	ret.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-	//	ret.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	//}
+	/*if(Settings::get().getEnableTripleBuffering()) {
+	ret.SwapEffect = D3DSWAPEFFECT_FLIPEX;
+	ret.PresentationInterval = D3DPRESENT_FORCEIMMEDIATE;
+	ret.BackBufferCount = 2;
+	ret.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+	ret.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	}
+	if(Settings::get().getUnlockFPS()) {
+	ret.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+	ret.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	}*/
 	return ret;
 }
-
 void RSManager::dumpSurface(const char* name, IDirect3DSurface9* surface) {
 	char fullname[128];
 	sprintf_s(fullname, 128, "dump%03d_%s.tga", dumpCaptureIndex++, name);
 	D3DXSaveSurfaceToFile(fullname, D3DXIFF_TGA, surface, NULL, NULL);
 }
-
 void RSManager::registerMainRenderTexture(IDirect3DTexture9* pTexture) {
 	if(pTexture) {
 		mainRenderTexIndices.insert(std::make_pair(pTexture, mainRenderTexIndex));
@@ -208,7 +193,6 @@ void RSManager::registerMainRenderTexture(IDirect3DTexture9* pTexture) {
 		mainRenderTexIndex++;
 	}
 }
-
 void RSManager::registerMainRenderSurface(IDirect3DSurface9* pSurface) {
 	if(pSurface) {
 		mainRenderSurfIndices.insert(std::make_pair(pSurface, mainRenderSurfIndex));
@@ -216,47 +200,45 @@ void RSManager::registerMainRenderSurface(IDirect3DSurface9* pSurface) {
 		mainRenderSurfIndex++;
 	}
 }
-
-
 HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
 	nrts++;
-	//if(RenderTargetIndex==0) lastReplacement = -1;
-	//SurfSurfMap::iterator it = renderTexSurfTargets.find(pRenderTarget);
-	//if(it != renderTexSurfTargets.end()) {
-	//	SDLOG(1, "Redirected SetRenderTarget(%d, %p) to %p\n", RenderTargetIndex, pRenderTarget, it->second);
-	//	if(capturing) dumpSurface("redirectRenderTarget", it->second);
-	//	lastReplacement = renderTexSurfIndices[pRenderTarget];
-	//	return d3ddev->SetRenderTarget(RenderTargetIndex, it->second);
-	//}
-	//if(capturing && hudStarted) {
-	//	//SurfIntMap::iterator it = renderTexSurfIndices.find(pRenderTarget);
-	//	//if(it != renderTexSurfIndices.end()) {
-	//		dumpSurface("hudTarget", pRenderTarget);
-	//		capturing = false;
-	//	//}
-	//}
-	// determine where we are rendering to
-	//{
-	//	SurfIntMap::iterator it = mainRenderSurfIndices.find(pRenderTarget);
-	//	if(it != mainRenderSurfIndices.end()) {
-	//		SDLOG(4, " - rendersurface #%d\n", it->second);
-	//	} else {
-	//		if(IDirect3DTexture9* tex = getSurfTexture(pRenderTarget)) {
-	//			TexIntMap::iterator it = mainRenderTexIndices.find(tex);
-	//			if(it != mainRenderTexIndices.end()) {
-	//				SDLOG(4, " - rendertexture #%d\n", it->second);
-	//			}
-	//			tex->Release();
-	//		} else {
-	//			IDirect3DSurface9* backBuffer;
-	//			d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backBuffer);
-	//			if(pRenderTarget == backBuffer) {
-	//				SDLOG(4, " - backbuffer\n");
-	//			}
-	//			backBuffer->Release();
-	//		}
-	//	}
-	//}
+	/*if(RenderTargetIndex==0) lastReplacement = -1;
+	SurfSurfMap::iterator it = renderTexSurfTargets.find(pRenderTarget);
+	if(it != renderTexSurfTargets.end()) {
+	SDLOG(1, "Redirected SetRenderTarget(%d, %p) to %p\n", RenderTargetIndex, pRenderTarget, it->second);
+	if(capturing) dumpSurface("redirectRenderTarget", it->second);
+	lastReplacement = renderTexSurfIndices[pRenderTarget];
+	return d3ddev->SetRenderTarget(RenderTargetIndex, it->second);
+	}
+	if(capturing && hudStarted) {
+	SurfIntMap::iterator it = renderTexSurfIndices.find(pRenderTarget);
+	if(it != renderTexSurfIndices.end()) {
+	dumpSurface("hudTarget", pRenderTarget);
+	capturing = false;
+	}
+	}
+	determine where we are rendering to
+	{
+	SurfIntMap::iterator it = mainRenderSurfIndices.find(pRenderTarget);
+	if(it != mainRenderSurfIndices.end()) {
+	SDLOG(4, " - rendersurface #%d\n", it->second);
+	} else {
+	if(IDirect3DTexture9* tex = getSurfTexture(pRenderTarget)) {
+	TexIntMap::iterator it = mainRenderTexIndices.find(tex);
+	if(it != mainRenderTexIndices.end()) {
+	SDLOG(4, " - rendertexture #%d\n", it->second);
+	}
+	tex->Release();
+	} else {
+	IDirect3DSurface9* backBuffer;
+	d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &backBuffer);
+	if(pRenderTarget == backBuffer) {
+	SDLOG(4, " - backbuffer\n");
+	}
+	backBuffer->Release();
+	}
+	}
+	)*/
 	if(capturing) {
 		IDirect3DSurface9 *oldRenderTarget, *depthStencilSurface;
 		d3ddev->GetRenderTarget(0, &oldRenderTarget);
@@ -273,65 +255,60 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 		SAFERELEASE(oldRenderTarget);
 		SAFERELEASE(depthStencilSurface);
 	}
-	
-	if(nrts == 1) { // we are switching to the RT that will be the main rendering target for this frame
-		// store it for later use
+	if(nrts == 1) {/*we are switching to the RT that will be the main rendering target for this frame
+		store it for later use*/
 		mainRT = pRenderTarget;
 		SDLOG(0, "Storing RT as main RT: %p\n", mainRT);
 	}
-
-	if(nrts == 11) { // we are switching to the RT used to store the Z value in the 24 RGB bits (among other things)
-		// lets store it for later use
+	if(nrts == 11) {/*we are switching to the RT used to store the Z value in the 24 RGB bits (among other things)
+		lets store it for later use*/
 		zSurf = pRenderTarget;
 		SDLOG(0, "Storing RT as Z buffer RT: %p\n", zSurf);
 	}
-
 	if(mainRT && pRenderTarget == mainRT) {
 		SDLOG(0, "MainRT uses: %d + 1\n", mainRTuses);
 		++mainRTuses;
 	}
-
-	// we are switching away from the initial 3D-rendered image, do AA and SSAO
+	//we are switching away from the initial 3D-rendered image, do AA and SSAO
 	if(mainRTuses == 2 && mainRT && zSurf && ((ssao && doSsao) || (doAA && (smaa || fxaa)))) { 
 		IDirect3DSurface9 *oldRenderTarget;
 		d3ddev->GetRenderTarget(0, &oldRenderTarget);
 		if(oldRenderTarget == mainRT) {
-			// final renderbuffer has to be from texture, just making sure here
+			//final renderbuffer has to be from texture, just making sure here
 			if(IDirect3DTexture9* tex = getSurfTexture(oldRenderTarget)) {
-				// check size just to make even more sure
+				//check size just to make even more sure
 				D3DSURFACE_DESC desc;
 				oldRenderTarget->GetDesc(&desc);
 				if(desc.Width == Settings::get().getRenderWidth() && desc.Height == Settings::get().getRenderHeight()) {
 					IDirect3DTexture9 *zTex = getSurfTexture(zSurf);
-					//if(takeScreenshot) D3DXSaveTextureToFile("0effect_pre.bmp", D3DXIFF_BMP, tex, NULL);
-					//if(takeScreenshot) D3DXSaveTextureToFile("0effect_z.bmp", D3DXIFF_BMP, zTex, NULL);
+					/*if(takeScreenshot) D3DXSaveTextureToFile("0effect_pre.bmp", D3DXIFF_BMP, tex, NULL);
+					if(takeScreenshot) D3DXSaveTextureToFile("0effect_z.bmp", D3DXIFF_BMP, zTex, NULL);*/
 					storeRenderState();
 					d3ddev->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 					d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 					d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
-					// perform AA processing
+					//perform AA processing
 					if(!lowFPSmode && doAA && (smaa || fxaa)) {
 						if(smaa) smaa->go(tex, tex, rgbaBuffer1Surf, SMAA::INPUT_COLOR);
 						else fxaa->go(tex, rgbaBuffer1Surf);
 						d3ddev->StretchRect(rgbaBuffer1Surf, NULL, oldRenderTarget, NULL, D3DTEXF_NONE);
 					}
-					// perform SSAO
+					//perform SSAO
 					if(ssao && doSsao) {
 						ssao->go(tex, zTex, rgbaBuffer1Surf);
 						d3ddev->StretchRect(rgbaBuffer1Surf, NULL, oldRenderTarget, NULL, D3DTEXF_NONE);
 					}
 					restoreRenderState();
 					zTex->Release();
-					//if(takeScreenshot) D3DXSaveSurfaceToFile("1effect_buff.bmp", D3DXIFF_BMP, rgbaBuffer1Surf, NULL, NULL);
-					//if(takeScreenshot) D3DXSaveSurfaceToFile("1effect_post.bmp", D3DXIFF_BMP, oldRenderTarget, NULL, NULL);
+					/*if(takeScreenshot) D3DXSaveSurfaceToFile("1effect_buff.bmp", D3DXIFF_BMP, rgbaBuffer1Surf, NULL, NULL);
+					if(takeScreenshot) D3DXSaveSurfaceToFile("1effect_post.bmp", D3DXIFF_BMP, oldRenderTarget, NULL, NULL);*/
 				}
 				tex->Release();				
 			}
 		}
 		oldRenderTarget->Release();
 	}
-
-	// DoF blur stuff
+	//DoF blur stuff
 	if(gauss && doDofGauss) {
 		IDirect3DSurface9 *oldRenderTarget;
 		d3ddev->GetRenderTarget(0, &oldRenderTarget);
@@ -341,11 +318,11 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 		if(dofIndex) {
 			doft[dofIndex]++;
 			SDLOG(6,"DOF index: %u, doft: %u\n", dofIndex, doft[dofIndex]);
-			//if(takeScreenshot) {
-			//	char buffer[256];
-			//	sprintf(buffer, "dof%1u_doft%1u.bmp", dofIndex, doft[dofIndex]);
-			//	D3DXSaveSurfaceToFile(buffer, D3DXIFF_BMP, oldRenderTarget, NULL, NULL);
-			//}
+			/*if(takeScreenshot) {
+			char buffer[256];
+			sprintf(buffer, "dof%1u_doft%1u.bmp", dofIndex, doft[dofIndex]);
+			D3DXSaveSurfaceToFile(buffer, D3DXIFF_BMP, oldRenderTarget, NULL, NULL);
+			}*/
 			if(dofIndex == 1 && doft[1] == 4) {
 				IDirect3DTexture9 *oldRTtex = getSurfTexture(oldRenderTarget);
 				if(oldRTtex) {
@@ -358,8 +335,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 		}
 		oldRenderTarget->Release();
 	}
-
-	// Timing for hudless screenshots
+	//Timing for hudless screenshots
 	if(mainRTuses == 11 && takeScreenshot) {
 		IDirect3DSurface9 *oldRenderTarget;
 		d3ddev->GetRenderTarget(0, &oldRenderTarget);
@@ -377,7 +353,6 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 				strftime(timebuf, 128, "screenshot_%Y-%m-%d_%H-%M-%S.png", timeinfo);
 				sprintf(buffer, "%s\\%s", Settings::get().getScreenshotDir().c_str(), timebuf);
 				SDLOG(0, " - to %s\n", buffer);
-				
 				D3DSURFACE_DESC desc;
 				oldRenderTarget->GetDesc(&desc);
 				IDirect3DSurface9 *convertedSurface;
@@ -389,17 +364,16 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 		}
 		oldRenderTarget->Release();
 	}
-
-	if(rddp >= 4) { // we just finished rendering the frame (pre-HUD)
+	if(rddp >= 4) {//we just finished rendering the frame (pre-HUD)
 		IDirect3DSurface9 *oldRenderTarget;
 		d3ddev->GetRenderTarget(0, &oldRenderTarget);
-		// final renderbuffer has to be from texture, just making sure here
+		//final renderbuffer has to be from texture, just making sure here
 		if(IDirect3DTexture9* tex = getSurfTexture(oldRenderTarget)) {
-			// check size just to make even more sure
+			//check size just to make even more sure
 			D3DSURFACE_DESC desc;
 			oldRenderTarget->GetDesc(&desc);
 			if(desc.Width == Settings::get().getRenderWidth() && desc.Height == Settings::get().getRenderHeight()) {
-				// HUD stuff
+				//HUD stuff
 				if(hud && doHud && rddp == 9) {
 					SDLOG(0, "Starting HUD rendering\n");
 					hddp = 0;
@@ -410,7 +384,6 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 					prevRenderTarget = pRenderTarget;
 					tex->Release();
 					oldRenderTarget->Release();
-					
 					d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 					d3ddev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_ADD);
 					d3ddev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
@@ -429,36 +402,34 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 	else rddp++;
 	return d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget);
 }
-
 HRESULT RSManager::redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect, D3DTEXTUREFILTERTYPE Filter) {
-	//SurfSurfMap::iterator it = renderTexSurfTargets.find(pSourceSurface);
-	//if(it != renderTexSurfTargets.end()) {
-	//	SDLOG(1, "Redirected StretchRect %p -> %p to %p -> %p\n", pSourceSurface, pDestSurface, it->second, pDestSurface);
-	//	if(capturing) dumpSurface("redirectStretchRect", it->second);
-	//	return d3ddev->StretchRect(it->second, pSourceRect, pDestSurface, pDestRect, Filter);
-	//}
+	/*SurfSurfMap::iterator it = renderTexSurfTargets.find(pSourceSurface);
+	if(it != renderTexSurfTargets.end()) {
+	SDLOG(1, "Redirected StretchRect %p -> %p to %p -> %p\n", pSourceSurface, pDestSurface, it->second, pDestSurface);
+	if(capturing) dumpSurface("redirectStretchRect", it->second);
+	return d3ddev->StretchRect(it->second, pSourceRect, pDestSurface, pDestRect, Filter);
+	}*/
 	return d3ddev->StretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, D3DTEXF_LINEAR);
 }
-
 HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9 * pTexture) {
 	if(pTexture == NULL) return d3ddev->SetTexture(Stage, pTexture);
-	//TexIntMap::iterator it = renderTexIndices.find((IDirect3DTexture9*)pTexture);
-	//if(it != renderTexIndices.end() && it->second == 2) {
-	//	IDirect3DSurface9* surf0;
-	//	((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf0);
-	//	SDLOG(1, "Redirected SetTexture(%d, %p) -- StretchRect from %p to %p\n", Stage, pTexture, renderTexSurfTargets[surf0], surf0);
-	//	if(capturing) dumpSurface("redirectSetTexture", renderTexSurfTargets[surf0]);
-	//	d3ddev->StretchRect(renderTexSurfTargets[surf0], NULL, surf0, NULL, D3DTEXF_LINEAR);
-	//}
-	//int index = getTextureIndex((IDirect3DTexture9*)pTexture);
-	//if(dumpedTextures.find(index) == dumpedTextures.end()) {
-	//	dumpedTextures.insert(index);
-	//	IDirect3DSurface9* surf;
-	//	((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf);
-	//	char buffer[16];
-	//	sprintf(buffer, "tex%4d__", index);
-	//	dumpSurface(buffer, surf);
-	//}
+	/*TexIntMap::iterator it = renderTexIndices.find((IDirect3DTexture9*)pTexture);
+	if(it != renderTexIndices.end() && it->second == 2) {
+	IDirect3DSurface9* surf0;
+	((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf0);
+	SDLOG(1, "Redirected SetTexture(%d, %p) -- StretchRect from %p to %p\n", Stage, pTexture, renderTexSurfTargets[surf0], surf0);
+	if(capturing) dumpSurface("redirectSetTexture", renderTexSurfTargets[surf0]);
+	d3ddev->StretchRect(renderTexSurfTargets[surf0], NULL, surf0, NULL, D3DTEXF_LINEAR);
+	}
+	int index = getTextureIndex((IDirect3DTexture9*)pTexture);
+	if(dumpedTextures.find(index) == dumpedTextures.end()) {
+	dumpedTextures.insert(index);
+	IDirect3DSurface9* surf;
+	((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf);
+	char buffer[16];
+	sprintf(buffer, "tex%4d__", index);
+	dumpSurface(buffer, surf);
+	}*/
 	if(Settings::get().getSkipIntro() && !timingIntroMode && isTextureBandainamcoLogo(pTexture)) {
 		SDLOG(1, "Intro mode started!\n");
 		timingIntroMode = true;
@@ -471,20 +442,20 @@ HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9 * pText
 		SDLOG(1, "HUD started!\n");
 		hudStarted = true;
 	}
-	//if(mainRT && mainRTuses > 3) {
-	//	IDirect3DTexture9* tex;
-	//	pTexture->QueryInterface(IID_IDirect3DTexture9, (void**)&tex);
-	//	if(tex) {
-	//		IDirect3DSurface9* surf;
-	//		if(tex->GetSurfaceLevel(0, &surf) == D3D_OK) {
-	//			bool main = surf == mainRT;
-	//			surf->Release();
-	//			if(main) {
-	//				d3ddev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-	//			}
-	//		}
-	//	}
-	//}
+	/*if(mainRT && mainRTuses > 3) {
+	IDirect3DTexture9* tex;
+	pTexture->QueryInterface(IID_IDirect3DTexture9, (void**)&tex);
+	if(tex) {
+	IDirect3DSurface9* surf;
+	if(tex->GetSurfaceLevel(0, &surf) == D3D_OK) {
+	bool main = surf == mainRT;
+	surf->Release();
+	if(main) {
+	d3ddev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	}
+	}
+	}
+	}*/
 	if(pTexture && rddp == 0 && Stage == 0) { ++rddp; }
 	else if(pTexture && rddp == 1 && Stage == 1) { ++rddp; }
 	else if(pTexture && rddp == 2 && Stage == 2) { ++rddp; }
@@ -492,28 +463,24 @@ HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9 * pText
 	else rddp = 0;
 	return d3ddev->SetTexture(Stage, pTexture);
 }
-
 HRESULT RSManager::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) {
-	//if(lastReplacement >= 0) {
-	//	SDLOG(1, "Redirected SetDepthStencilSurface(%p) to %p\n", pNewZStencil, renderTexDSBuffers[lastReplacement]);
-	//	d3ddev->SetDepthStencilSurface(renderTexDSBuffers[lastReplacement]);
-	//}
-	//lastReplacement = -1;
+	/*if(lastReplacement >= 0) {
+	SDLOG(1, "Redirected SetDepthStencilSurface(%p) to %p\n", pNewZStencil, renderTexDSBuffers[lastReplacement]);
+	d3ddev->SetDepthStencilSurface(renderTexDSBuffers[lastReplacement]);
+	}
+	lastReplacement = -1;*/
 	return d3ddev->SetDepthStencilSurface(pNewZStencil);
 }
-
 unsigned RSManager::getTextureIndex(IDirect3DTexture9* ppTexture) {
 	TexIntMap::iterator it = texIndices.find(ppTexture);
 	if(it != texIndices.end()) return it->second;
 	return UINT_MAX;
 }
-
 void RSManager::registerD3DXCreateTextureFromFileInMemory(LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture) {
 	SDLOG(1, "RenderstateManager: registerD3DXCreateTextureFromFileInMemory %p\n", pTexture);
 	if(Settings::get().getEnableTextureDumping()) {
 		UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), SrcDataSize);
 		SDLOG(1, " - size: %8u, hash: %8x\n", SrcDataSize, hash);
-
 		IDirect3DSurface9* surf;
 		((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf);
 		char buffer[128];
@@ -523,7 +490,6 @@ void RSManager::registerD3DXCreateTextureFromFileInMemory(LPCVOID pSrcData, UINT
 	}
 	registerKnowTexture(pSrcData, SrcDataSize, pTexture);
 }
-
 void RSManager::registerKnowTexture(LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture) {
 	if(foundKnownTextures < numKnownTextures) {
 		UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), SrcDataSize);
@@ -540,12 +506,10 @@ void RSManager::registerKnowTexture(LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT
 		}
 	}
 }
-
 void RSManager::registerD3DXCompileShader(LPCSTR pSrcData, UINT srcDataLen, const D3DXMACRO* pDefines, LPD3DXINCLUDE pInclude, LPCSTR pFunctionName, LPCSTR pProfile, DWORD Flags, LPD3DXBUFFER * ppShader, LPD3DXBUFFER * ppErrorMsgs, LPD3DXCONSTANTTABLE * ppConstantTable) {
 	SDLOG(0, "RenderstateManager: registerD3DXCompileShader %p, fun: %s, profile: %s", *ppShader, pFunctionName, pProfile);
 	SDLOG(0, "============= source:\n%s\n====================", pSrcData);
 }
-
 IDirect3DTexture9* RSManager::getSurfTexture(IDirect3DSurface9* pSurface) {
 	IUnknown *pContainer = NULL;
 	HRESULT hr = pSurface->GetContainer(IID_IDirect3DTexture9, (void**)&pContainer);
@@ -553,16 +517,13 @@ IDirect3DTexture9* RSManager::getSurfTexture(IDirect3DSurface9* pSurface) {
 	SAFERELEASE(pContainer);
 	return NULL;
 }
-
 void RSManager::enableSingleFrameCapture() {
 	captureNextFrame = true;
 }
-
 void RSManager::enableTakeScreenshot() {
 	takeScreenshot = true; 
 	SDLOG(0, "takeScreenshot: %s\n", takeScreenshot?"true":"false");
 }
-
 void RSManager::reloadVssao() {
 	SAFEDELETE(ssao); 
 	ssao = new SSAO(d3ddev, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), Settings::get().getSsaoStrength()-1, SSAO::VSSAO);
@@ -578,13 +539,11 @@ void RSManager::reloadScao() {
 	ssao = new SSAO(d3ddev, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), Settings::get().getSsaoStrength()-1, SSAO::SCAO);
 	SDLOG(0, "Reloaded SSAO\n");
 }
-
 void RSManager::reloadGauss() {
 	SAFEDELETE(gauss); 
 	gauss = new GAUSS(d3ddev, Settings::get().getDOFOverrideResolution()*16/9, Settings::get().getDOFOverrideResolution());
 	SDLOG(0, "Reloaded GAUSS\n");
 }
-
 void RSManager::reloadAA() {
 	SAFEDELETE(smaa); 
 	SAFEDELETE(fxaa); 
@@ -595,42 +554,37 @@ void RSManager::reloadAA() {
 	}
 	SDLOG(0, "Reloaded AA\n");
 }
-
-
 HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount, CONST void* pIndexData, D3DFORMAT IndexDataFormat, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
-	//if(onHudRT) {
-	//	SDLOG(0, "HUD render: primitive type: %d, MinIndex: %u, NumVertices: %u, PrimitiveCount: %u, IndexDataFormat: %s\n", PrimitiveType, MinIndex, NumVertices, PrimitiveCount, D3DFormatToString(IndexDataFormat));
+	/*if(onHudRT) {
+	SDLOG(0, "HUD render: primitive type: %d, MinIndex: %u, NumVertices: %u, PrimitiveCount: %u, IndexDataFormat: %s\n", PrimitiveType, MinIndex, NumVertices, PrimitiveCount, D3DFormatToString(IndexDataFormat));
+	Print vertex decl type
+	IDirect3DVertexDeclaration9* vDecl;
+	d3ddev->GetVertexDeclaration(&vDecl);
+	D3DVERTEXELEMENT9 decl[MAXD3DDECLLENGTH];
+	UINT numElements;
+	vDecl->GetDeclaration(decl, &numElements);
+	for(size_t i=0; i<numElements; ++i) {
+	SDLOG(0, "element %u -- stream: %d, offset: %d, type: %s, usage: %s\n", i, decl->Stream, decl->Offset, D3DDeclTypeToString((D3DDECLTYPE)decl->Type), D3DDeclUsageToString((D3DDECLUSAGE)decl->Usage));
+	}
+	vDecl->Release();
+	Print indices
+	SDLOG(0, "Indices: \n");
+	INT16 *indices = (INT16*)pIndexData;
+	for(size_t i=0; i<PrimitiveCount+2; ++i) {
+	SDLOG(0, "%8hd, ", indices[i]);
+	}
+	SDLOG(0, "\n");
+	Print vertices
+	SDLOG(0, "Vertices: \n");
+	INT16 *values = (INT16*)pVertexStreamZeroData;
+	for(size_t i=0; i<NumVertices*4*2; ++i) {
+	SDLOG(0, "%8hd, ", values[i]);
+	if((i+1)%2 == 0) SDLOG(0, "; ");
+	if((i+1)%8 == 0) SDLOG(0, "\n");
+	}
 
-	//	// Print vertex decl type
-	//	IDirect3DVertexDeclaration9* vDecl;
-	//	d3ddev->GetVertexDeclaration(&vDecl);
-	//	D3DVERTEXELEMENT9 decl[MAXD3DDECLLENGTH];
-	//	UINT numElements;
-	//	vDecl->GetDeclaration(decl, &numElements);
-	//	for(size_t i=0; i<numElements; ++i) {
-	//		SDLOG(0, "element %u -- stream: %d, offset: %d, type: %s, usage: %s\n", i, decl->Stream, decl->Offset, D3DDeclTypeToString((D3DDECLTYPE)decl->Type), D3DDeclUsageToString((D3DDECLUSAGE)decl->Usage));
-	//	}
-	//	vDecl->Release();
-	//	
-	//	// Print indices
-	//	//SDLOG(0, "Indices: \n");
-	//	//INT16 *indices = (INT16*)pIndexData;
-	//	//for(size_t i=0; i<PrimitiveCount+2; ++i) {
-	//	//	SDLOG(0, "%8hd, ", indices[i]);
-	//	//}
-	//	//SDLOG(0, "\n");
-
-	//	// Print vertices
-	//	SDLOG(0, "Vertices: \n");
-	//	INT16 *values = (INT16*)pVertexStreamZeroData;
-	//	for(size_t i=0; i<NumVertices*4*2; ++i) {
-	//		SDLOG(0, "%8hd, ", values[i]);
-	//		if((i+1)%2 == 0) SDLOG(0, "; ");
-	//		if((i+1)%8 == 0) SDLOG(0, "\n");
-	//	}
-
-	//	//return d3ddev->DrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, hudVertices, VertexStreamZeroStride);
-	//}
+	return d3ddev->DrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, hudVertices, VertexStreamZeroStride);
+	}*/
 	if(hudStarted && hideHud) {
 		return D3D_OK;
 	}
@@ -638,7 +592,7 @@ HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType
 	if(pausedHudRT) {
 		IDirect3DBaseTexture9 *t;
 		d3ddev->GetTexture(0, &t);
-		// check for target indicator
+		//check for target indicator
 		if(isTextureHudHealthbar(t)) {
 			INT16 *vertices = (INT16*)pVertexStreamZeroData;
 			if(vertices[3] > -2000) {
@@ -654,7 +608,7 @@ HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType
 		d3ddev->GetTexture(0, &t);
 		SDLOG(4, "On HUD, redirectDrawIndexedPrimitiveUP texture: %s\n", getTextureName(t));
 		if((hddp < 5 && isTextureHudHealthbar(t)) || (hddp >= 5 && hddp < 7 && isTextureCategoryIconsHumanityCount(t)) || (hddp>=7 && !isTextureCategoryIconsHumanityCount(t))) hddp++;
-		// check for target indicator
+		//check for target indicator
 		if(isTextureHudHealthbar(t)) {
 			INT16 *vertices = (INT16*)pVertexStreamZeroData;
 			if(vertices[3] < -2000) {
@@ -666,19 +620,18 @@ HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType
 		if(hddp == 8) {
 			finishHudRendering();
 		} else if(!isTargetIndicator) {
-			//d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
-			//d3ddev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_ADD);
-			//d3ddev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-			//d3ddev->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
+			/*d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+			d3ddev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_ADD);
+			d3ddev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+			d3ddev->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);*/
 		}
 	}
 	HRESULT hr = d3ddev->DrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
-	//if(onHudRT) {
-	//	if(takeScreenshot) dumpSurface("HUD_IndexPrimUP", rgbaBuffer1Surf);
-	//}
+	/*if(onHudRT) {
+	if(takeScreenshot) dumpSurface("HUD_IndexPrimUP", rgbaBuffer1Surf);
+	}*/
 	return hr;
 }
-
 HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	if(hudStarted && hideHud) {
 		IDirect3DBaseTexture9 *t;
@@ -695,14 +648,14 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 		bool isText = isTextureText(t);
 		SDLOG(4, "On HUD, PAUSED, redirectDrawPrimitiveUP texture: %s\n", getTextureName(t));
 		t->Release();
-		//// Print vertices
-		//SDLOG(0, "Vertices: \n");
-		//INT16 *values = (INT16*)pVertexStreamZeroData;
-		//for(size_t i=0; i<PrimitiveCount+2; ++i) {
-		//	SDLOG(0, "%8hd, ", values[i]);
-		//	if((i+1)%2 == 0) SDLOG(0, "; ");
-		//	if((i+1)%8 == 0) SDLOG(0, "\n");
-		//}
+		/*Print vertices
+		SDLOG(0, "Vertices: \n");
+		INT16 *values = (INT16*)pVertexStreamZeroData;
+		for(size_t i=0; i<PrimitiveCount+2; ++i) {
+		SDLOG(0, "%8hd, ", values[i]);
+		if((i+1)%2 == 0) SDLOG(0, "; ");
+		if((i+1)%8 == 0) SDLOG(0, "\n");
+		}*/
 		if(isText && PrimitiveCount >= 12) resumeHudRendering();
 	}
 	bool subbed = false;
@@ -721,12 +674,11 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 	}
 	HRESULT hr = d3ddev->DrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 	if(subbed) resumeHudRendering();
-	//if(onHudRT) {
-	//	if(takeScreenshot) dumpSurface("HUD_PrimUP", rgbaBuffer1Surf);
-	//}
+	/*if(onHudRT) {
+	if(takeScreenshot) dumpSurface("HUD_PrimUP", rgbaBuffer1Surf);
+	}*/
 	return hr;
 }
-
 void RSManager::reloadHudVertices() {
 	SDLOG(0, "Reloading HUD vertices\n");
 	std::ifstream vfile;
@@ -745,21 +697,18 @@ void RSManager::reloadHudVertices() {
 	}
 	vfile.close();	
 }
-
 bool RSManager::isTextureText(IDirect3DBaseTexture9* t) {
 	return isTextureText00(t) || isTextureText01(t) || isTextureText02(t) || isTextureText03(t) 
 		|| isTextureText04(t) || isTextureText05(t) || isTextureText06(t) || isTextureText07(t) 
 		|| isTextureText08(t) || isTextureText09(t) || isTextureText10(t) || isTextureText11(t) 
 		|| isTextureText12(t);
 }
-
 unsigned RSManager::isDof(unsigned width, unsigned height) {
 	unsigned topWidth = Settings::get().getDOFOverrideResolution()*16/9, topHeight = Settings::get().getDOFOverrideResolution();
 	if(width == topWidth && height == topHeight) return 1;
 	if(width == topWidth/2 && height == topHeight/2) return 2;
 	return 0;
 }
-
 HRESULT RSManager::redirectD3DXCreateTextureFromFileInMemoryEx(LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData, UINT SrcDataSize, UINT Width, UINT Height, UINT MipLevels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter, D3DCOLOR ColorKey, D3DXIMAGE_INFO* pSrcInfo, PALETTEENTRY* pPalette, LPDIRECT3DTEXTURE9* ppTexture) {
 	if(Settings::get().getEnableTextureOverride()) {
 		UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), SrcDataSize);
@@ -787,7 +736,6 @@ HRESULT RSManager::redirectD3DXCreateTextureFromFileInMemoryEx(LPDIRECT3DDEVICE9
 	}
     return TrueD3DXCreateTextureFromFileInMemoryEx(pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 }
-
 void RSManager::storeRenderState() {
 	prevStateBlock->Capture();
 	prevVDecl = NULL;
@@ -796,19 +744,17 @@ void RSManager::storeRenderState() {
 	d3ddev->GetDepthStencilSurface(&prevDepthStencilSurf);
 	d3ddev->SetDepthStencilSurface(depthStencilSurf);
 }
-
 void RSManager::restoreRenderState() {
 	if(prevVDecl) {
 		d3ddev->SetVertexDeclaration(prevVDecl);
 		prevVDecl->Release();
 	}
-	d3ddev->SetDepthStencilSurface(prevDepthStencilSurf); // also restore NULL!
+	d3ddev->SetDepthStencilSurface(prevDepthStencilSurf);//also restore NULL!
 	if(prevDepthStencilSurf) {
 		prevDepthStencilSurf->Release();
 	}
 	prevStateBlock->Apply();
 }
-
 const char* RSManager::getTextureName(IDirect3DBaseTexture9* pTexture) {
 	#define TEXTURE(_name, _hash) \
 	if(texture##_name == pTexture) return #_name;
@@ -816,19 +762,17 @@ const char* RSManager::getTextureName(IDirect3DBaseTexture9* pTexture) {
 	#undef TEXTURE
 	return "Unknown";
 }
-
 void RSManager::finishHudRendering() {
 	SDLOG(2, "FinishHudRendering\n");
 	if(takeScreenshot) dumpSurface("HUD_end", rgbaBuffer1Surf);
 	d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
 	d3ddev->SetRenderTarget(0, prevRenderTarget);
 	onHudRT = false;
-	// draw HUD to screen
+	//draw HUD to screen
 	storeRenderState();
 	hud->go(rgbaBuffer1Tex, prevRenderTarget);
 	restoreRenderState();
 }
-
 void RSManager::pauseHudRendering() {
 	SDLOG(3, "PauseHudRendering\n");
 	d3ddev->SetRenderTarget(0, prevRenderTarget);
@@ -837,7 +781,6 @@ void RSManager::pauseHudRendering() {
 	onHudRT = false;
 	pausedHudRT = true;
 }
-
 void RSManager::resumeHudRendering() {
 	SDLOG(3, "ResumeHudRendering\n");
 	d3ddev->SetRenderTarget(0, rgbaBuffer1Surf);
@@ -846,26 +789,23 @@ void RSManager::resumeHudRendering() {
 	onHudRT = true;
 	pausedHudRT = false;
 }
-
 HRESULT RSManager::redirectSetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value) {
 	//if(allowStateChanges()) {
 		return d3ddev->SetTextureStageState(Stage, Type, Value);
-	//} else {
-	//	SDLOG(3, "SetTextureStageState suppressed: %u  -  %u  -  %u\n", Stage, Type, Value);
-	//}
-	//return D3D_OK;
+	/*} else {
+	SDLOG(3, "SetTextureStageState suppressed: %u  -  %u  -  %u\n", Stage, Type, Value);
+	}
+	return D3D_OK;*/
 }
-
 HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 	if(State == D3DRS_COLORWRITEENABLE && !allowStateChanges()) return D3D_OK;
 	//if(allowStateChanges()) {
 		return d3ddev->SetRenderState(State, Value);
-	//} else {
-	//	SDLOG(3, "SetRenderState suppressed: %u  -  %u\n", State, Value);
-	//}
-	//return D3D_OK;
+	/*} else {
+	SDLOG(3, "SetRenderState suppressed: %u  -  %u\n", State, Value);
+	}
+	return D3D_OK;*/
 }
-
 HRESULT RSManager::redirectCreatePixelShader(CONST DWORD* pFunction, IDirect3DPixelShader9** ppShader)
 {
 	bool shouldDump = Settings::get().getEnableShaderDumping();
@@ -873,7 +813,6 @@ HRESULT RSManager::redirectCreatePixelShader(CONST DWORD* pFunction, IDirect3DPi
 	LPD3DXBUFFER pAssemblerBuffer = nullptr;
 	LPD3DXBUFFER pFunctionBuffer = nullptr;
 	UINT32 hash;
-
 	if (shouldDump || shouldOverride) {
 		if (disassembleShader(pFunction, &pAssemblerBuffer)) {
 			hash = SuperFastHash(static_cast<char *>(pAssemblerBuffer->GetBufferPointer()), pAssemblerBuffer->GetBufferSize());
@@ -883,17 +822,14 @@ HRESULT RSManager::redirectCreatePixelShader(CONST DWORD* pFunction, IDirect3DPi
 			shouldOverride = false;
 		}
 	}
-
 	if (shouldDump) {
 		dumpShader(hash, PIXEL_SHADER_DUMP_DIR, pAssemblerBuffer);
 	}
-
 	if (shouldOverride) {
 		if (getOverrideShader(hash, PIXEL_SHADER_OVERRIDE_DIR, &pFunctionBuffer)) {
 			pFunction = static_cast<DWORD *>(pFunctionBuffer->GetBufferPointer());
 		}
 	}
-
 	HRESULT result = d3ddev->CreatePixelShader(pFunction, ppShader);
 	if (shouldDump || shouldOverride) {
 		SDLOG(1, "Created pixel shader for hash %08x: 0x%p\n", hash, *ppShader);
@@ -902,7 +838,6 @@ HRESULT RSManager::redirectCreatePixelShader(CONST DWORD* pFunction, IDirect3DPi
 	SAFERELEASE(pFunctionBuffer);
 	return result;
 }
-
 HRESULT RSManager::redirectCreateVertexShader(CONST DWORD* pFunction, IDirect3DVertexShader9** ppShader)
 {
 	bool shouldDump = Settings::get().getEnableShaderDumping();
@@ -910,7 +845,6 @@ HRESULT RSManager::redirectCreateVertexShader(CONST DWORD* pFunction, IDirect3DV
 	LPD3DXBUFFER pAssemblerBuffer = nullptr;
 	LPD3DXBUFFER pFunctionBuffer = nullptr;
 	UINT32 hash;
-
 	if (shouldDump || shouldOverride) {
 		if (disassembleShader(pFunction, &pAssemblerBuffer)) {
 			hash = SuperFastHash(static_cast<char *>(pAssemblerBuffer->GetBufferPointer()), pAssemblerBuffer->GetBufferSize());
@@ -920,17 +854,14 @@ HRESULT RSManager::redirectCreateVertexShader(CONST DWORD* pFunction, IDirect3DV
 			shouldOverride = false;
 		}
 	}
-
 	if (shouldDump) {
 		dumpShader(hash, VERTEX_SHADER_DUMP_DIR, pAssemblerBuffer);
 	}
-
 	if (shouldOverride) {
 		if (getOverrideShader(hash, VERTEX_SHADER_OVERRIDE_DIR, &pFunctionBuffer)) {
 			pFunction = static_cast<DWORD *>(pFunctionBuffer->GetBufferPointer());
 		}
 	}
-
 	HRESULT result = d3ddev->CreateVertexShader(pFunction, ppShader);
 	if (shouldDump || shouldOverride) {
 		SDLOG(1, "Created vertex shader for hash %08x: 0x%p\n", hash, *ppShader);
@@ -939,7 +870,6 @@ HRESULT RSManager::redirectCreateVertexShader(CONST DWORD* pFunction, IDirect3DV
 	SAFERELEASE(pFunctionBuffer);
 	return result;
 }
-
 bool RSManager::disassembleShader(CONST DWORD *pFunction, LPD3DXBUFFER *ppBuffer) {
 	LPD3DXBUFFER buffer = nullptr;
 	HRESULT result = D3DXDisassembleShader(pFunction, false, NULL, ppBuffer);
@@ -948,7 +878,6 @@ bool RSManager::disassembleShader(CONST DWORD *pFunction, LPD3DXBUFFER *ppBuffer
 	}
 	return result == D3D_OK;
 }
-
 void RSManager::dumpShader(UINT32 hash, const char *directory, LPD3DXBUFFER pBuffer) {
 	char fileNameBuffer[64];
 	sprintf_s(fileNameBuffer, "%s/%08x.asm", directory, hash);
@@ -960,7 +889,6 @@ void RSManager::dumpShader(UINT32 hash, const char *directory, LPD3DXBUFFER pBuf
 		SDLOG(0, "Failed to write disassembled shader to %s\n", fileNameBuffer);
 	}
 }
-
 bool RSManager::getOverrideShader(UINT32 hash, const char *directory, LPD3DXBUFFER *ppBuffer) {
 	char fileNameBuffer[64];
 	sprintf_s(fileNameBuffer, "%s/%08x.asm", directory, hash);
@@ -977,16 +905,13 @@ bool RSManager::getOverrideShader(UINT32 hash, const char *directory, LPD3DXBUFF
 	}
 	return false;
 }
-
 void RSManager::frameTimeManagement() {
 	double renderTime = getElapsedTime() - lastPresentTime;
-
-	// implement FPS threshold
+	//implement FPS threshold
 	double thresholdRenderTime = (1000.0f / Settings::get().getFPSThreshold()) + 0.2;
 	if(renderTime > thresholdRenderTime) lowFPSmode = true;
 	else if(renderTime < thresholdRenderTime - 1.0f) lowFPSmode = false;
-
-	// implement FPS cap
+	//implement FPS cap
 	if(Settings::get().getUnlockFPS()) {
 		double desiredRenderTime = (1000.0 / Settings::get().getCurrentFPSLimit()) - 0.1;
 		while(renderTime < desiredRenderTime) {

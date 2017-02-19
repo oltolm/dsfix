@@ -1,24 +1,17 @@
 #include "SaveManager.h"
-
 #include <algorithm>
-
 #include "Settings.h"
-
 #define QUOTE(str) #str
 #define EXPAND_AND_QUOTE(str) QUOTE(str)
-
 #define TIMESTAMP_LENGTH 12
 #define TIMESTAMP_LENGTH_STR EXPAND_AND_QUOTE(TIMESTAMP_LENGTH)
-
 SaveManager SaveManager::instance;
-
 void SaveManager::init() {
 	if(Settings::get().getEnableBackups()) {
 		CHAR documents[MAX_PATH];
 		HRESULT hr = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, documents);
 		char buffer[MAX_PATH];
 		sprintf_s(buffer, "%s%s", documents, "\\NBGI\\DarkSouls\\*");
-
 		//find user save folder
 		WIN32_FIND_DATA userSaveFolderData;
 		HANDLE searchHandle = FindFirstFile(buffer, &userSaveFolderData);
@@ -45,11 +38,9 @@ void SaveManager::init() {
 			SDLOG(0, "SaveManager: could not determine user save folder\n");
 			return;
 		}
-
 		removeOldBackups();
 	}
 }
-
 void SaveManager::tick() {
 	if(Settings::get().getEnableBackups()) {
 		time_t curTime = time(NULL);
@@ -59,7 +50,6 @@ void SaveManager::tick() {
 		}
 	}
 }
-
 time_t SaveManager::getLastBackupTime() {
 	if(lastBackupTime == 0) {
 		vector<string> backupFiles = getSaveFiles(".bak");
@@ -71,7 +61,6 @@ time_t SaveManager::getLastBackupTime() {
 	SDLOG(3, "SaveManager: last backup time %ld\n", lastBackupTime);
 	return lastBackupTime;
 }
-
 vector<string> SaveManager::getSaveFiles(const char* ending /*= ".sl2"*/) {
 	SDLOG(2, "SaveManager: searching for files ending on %s\n", ending);
 	vector<string> ret;
@@ -96,7 +85,6 @@ vector<string> SaveManager::getSaveFiles(const char* ending /*= ".sl2"*/) {
 	}
 	return ret;
 }
-
 void SaveManager::backup(const time_t curTime) {
 	SDLOG(1, "SaveManager: Backing up save files\n");
 	char buffer[MAX_PATH];
@@ -113,7 +101,6 @@ void SaveManager::backup(const time_t curTime) {
 	}
 	removeOldBackups();
 }
-
 void SaveManager::removeOldBackups() {
 	vector<string> backupFiles = getSaveFiles(".bak");
 	if(Settings::get().getMaxBackups() < backupFiles.size()) {
@@ -123,7 +110,6 @@ void SaveManager::removeOldBackups() {
 		}
 	}
 }
-
 string SaveManager::getFileNameFromPath(const string& path) {
 	size_t pos = path.rfind('\\');
 	if(pos != path.npos) {
