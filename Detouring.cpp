@@ -8,8 +8,8 @@
 bool timingIntroMode = false;
 
 DWORD WINAPI DetouredSleepEx(DWORD dwMilliseconds, BOOL bAlertable) {
-	//SDLOG(12, "T %6lu: Detouring: Sleep for %lu ms\n", GetCurrentThreadId(), dwMilliseconds);
-	//return TrueSleepEx(dwMilliseconds, bAlertable);
+	/*SDLOG(12, "T %6lu: Detouring: Sleep for %lu ms\n", GetCurrentThreadId(), dwMilliseconds);
+	return TrueSleepEx(dwMilliseconds, bAlertable);*/
 	return 0;
 }
 
