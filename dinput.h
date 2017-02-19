@@ -14,29 +14,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/*To build applications for older versions of DirectInput
- *#define DIRECTINPUT_VERSION [ 0x0300 | 0x0500 | 0x0700 ]
+/*#define DIRECTINPUT_VERSION (0x0800)
  *before #include <dinput.h>.  By default, #include <dinput.h>
  *will produce a DirectX 8-compatible header file.*/
-
 #define DIRECTINPUT_HEADER_VERSION  0x0800
 #ifndef DIRECTINPUT_VERSION
 #define DIRECTINPUT_VERSION         DIRECTINPUT_HEADER_VERSION
 #pragma message(__FILE__ ": DIRECTINPUT_VERSION undefined. Defaulting to version 0x0800")
 #endif
-
 #ifndef DIJ_RINGZERO
-
 //Class IDs
-
 DEFINE_GUID(CLSID_DirectInput,       0x25E609E0,0xB259,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(CLSID_DirectInputDevice, 0x25E609E1,0xB259,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
-
 DEFINE_GUID(CLSID_DirectInput8,      0x25E609E4,0xB259,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(CLSID_DirectInputDevice8,0x25E609E5,0xB259,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
-
 //Interfaces
-
 DEFINE_GUID(IID_IDirectInputA,     0x89521360,0xAA8A,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(IID_IDirectInputW,     0x89521361,0xAA8A,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(IID_IDirectInput2A,    0x5944E662,0xAA8A,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
@@ -54,9 +46,7 @@ DEFINE_GUID(IID_IDirectInputDevice7W,0x57D7C6BD,0x2356,0x11D3,0x8E,0x9D,0x00,0xC
 DEFINE_GUID(IID_IDirectInputDevice8A,0x54D41080,0xDC15,0x4833,0xA4,0x1B,0x74,0x8F,0x73,0xA3,0x81,0x79);
 DEFINE_GUID(IID_IDirectInputDevice8W,0x54D41081,0xDC15,0x4833,0xA4,0x1B,0x74,0x8F,0x73,0xA3,0x81,0x79);
 DEFINE_GUID(IID_IDirectInputEffect,  0xE7E1F7C0,0x88D2,0x11D0,0x9A,0xD0,0x00,0xA0,0xC9,0xA0,0x6E,0x35);
-
 //Predefined object types
-
 DEFINE_GUID(GUID_XAxis,   0xA36D02E0,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(GUID_YAxis,   0xA36D02E1,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(GUID_ZAxis,   0xA36D02E2,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
@@ -64,16 +54,11 @@ DEFINE_GUID(GUID_RxAxis,  0xA36D02F4,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54
 DEFINE_GUID(GUID_RyAxis,  0xA36D02F5,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(GUID_RzAxis,  0xA36D02E3,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(GUID_Slider,  0xA36D02E4,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
-
 DEFINE_GUID(GUID_Button,  0xA36D02F0,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(GUID_Key,     0x55728220,0xD33C,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
-
 DEFINE_GUID(GUID_POV,     0xA36D02F2,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
-
 DEFINE_GUID(GUID_Unknown, 0xA36D02F3,0xC9F3,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
-
 //Predefined product GUIDs
-
 DEFINE_GUID(GUID_SysMouse,   0x6F1D2B60,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(GUID_SysKeyboard,0x6F1D2B61,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(GUID_Joystick   ,0x6F1D2B70,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
@@ -81,9 +66,7 @@ DEFINE_GUID(GUID_SysMouseEm, 0x6F1D2B80,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0
 DEFINE_GUID(GUID_SysMouseEm2,0x6F1D2B81,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(GUID_SysKeyboardEm, 0x6F1D2B82,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
 DEFINE_GUID(GUID_SysKeyboardEm2,0x6F1D2B83,0xD5A0,0x11CF,0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00);
-
 //Predefined force feedback effects
-
 DEFINE_GUID(GUID_ConstantForce, 0x13541C20,0x8E33,0x11D0,0x9A,0xD0,0x00,0xA0,0xC9,0xA0,0x6E,0x35);
 DEFINE_GUID(GUID_RampForce,     0x13541C21,0x8E33,0x11D0,0x9A,0xD0,0x00,0xA0,0xC9,0xA0,0x6E,0x35);
 DEFINE_GUID(GUID_Square,        0x13541C22,0x8E33,0x11D0,0x9A,0xD0,0x00,0xA0,0xC9,0xA0,0x6E,0x35);
@@ -96,16 +79,11 @@ DEFINE_GUID(GUID_Damper,        0x13541C28,0x8E33,0x11D0,0x9A,0xD0,0x00,0xA0,0xC
 DEFINE_GUID(GUID_Inertia,       0x13541C29,0x8E33,0x11D0,0x9A,0xD0,0x00,0xA0,0xC9,0xA0,0x6E,0x35);
 DEFINE_GUID(GUID_Friction,      0x13541C2A,0x8E33,0x11D0,0x9A,0xD0,0x00,0xA0,0xC9,0xA0,0x6E,0x35);
 DEFINE_GUID(GUID_CustomForce,   0x13541C2B,0x8E33,0x11D0,0x9A,0xD0,0x00,0xA0,0xC9,0xA0,0x6E,0x35);
-
 #endif/*DIJ_RINGZERO
 Interfaces and Structures...*/
-
 #if(DIRECTINPUT_VERSION >= 0x0500)
-
 /*IDirectInputEffect*/
-
 #define DIEFT_ALL                   0x00000000
-
 #define DIEFT_CONSTANTFORCE         0x00000001
 #define DIEFT_RAMPFORCE             0x00000002
 #define DIEFT_PERIODIC              0x00000003
@@ -120,22 +98,18 @@ Interfaces and Structures...*/
 #define DIEFT_DEADBAND              0x00004000
 #define DIEFT_STARTDELAY            0x00008000
 #define DIEFT_GETTYPE(n)            LOBYTE(n)
-
 #define DI_DEGREES                  100
 #define DI_FFNOMINALMAX             10000
 #define DI_SECONDS                  1000000
-
 typedef struct DICONSTANTFORCE {
     LONG  lMagnitude;
 } DICONSTANTFORCE, *LPDICONSTANTFORCE;
 typedef const DICONSTANTFORCE *LPCDICONSTANTFORCE;
-
 typedef struct DIRAMPFORCE {
     LONG  lStart;
     LONG  lEnd;
 } DIRAMPFORCE, *LPDIRAMPFORCE;
 typedef const DIRAMPFORCE *LPCDIRAMPFORCE;
-
 typedef struct DIPERIODIC {
     DWORD dwMagnitude;
     LONG  lOffset;
@@ -143,7 +117,6 @@ typedef struct DIPERIODIC {
     DWORD dwPeriod;
 } DIPERIODIC, *LPDIPERIODIC;
 typedef const DIPERIODIC *LPCDIPERIODIC;
-
 typedef struct DICONDITION {
     LONG  lOffset;
     LONG  lPositiveCoefficient;
@@ -153,7 +126,6 @@ typedef struct DICONDITION {
     LONG  lDeadBand;
 } DICONDITION, *LPDICONDITION;
 typedef const DICONDITION *LPCDICONDITION;
-
 typedef struct DICUSTOMFORCE {
     DWORD cChannels;
     DWORD dwSamplePeriod;
@@ -161,8 +133,6 @@ typedef struct DICUSTOMFORCE {
     LPLONG rglForceData;
 } DICUSTOMFORCE, *LPDICUSTOMFORCE;
 typedef const DICUSTOMFORCE *LPCDICUSTOMFORCE;
-
-
 typedef struct DIENVELOPE {
     DWORD dwSize;//sizeof(DIENVELOPE)
     DWORD dwAttackLevel;
@@ -171,8 +141,6 @@ typedef struct DIENVELOPE {
     DWORD dwFadeTime;//Microseconds
 } DIENVELOPE, *LPDIENVELOPE;
 typedef const DIENVELOPE *LPCDIENVELOPE;
-
-
 //This structure is defined for DirectX 5.0 compatibility
 typedef struct DIEFFECT_DX5 {
     DWORD dwSize;                   /*sizeof(DIEFFECT_DX5) */
@@ -190,7 +158,6 @@ typedef struct DIEFFECT_DX5 {
     LPVOID lpvTypeSpecificParams;   /* Pointer to params    */
 } DIEFFECT_DX5, *LPDIEFFECT_DX5;
 typedef const DIEFFECT_DX5 *LPCDIEFFECT_DX5;
-
 typedef struct DIEFFECT {
     DWORD dwSize;                   /* sizeof(DIEFFECT)     */
     DWORD dwFlags;                  /* DIEFF_*              */
@@ -212,8 +179,6 @@ typedef struct DIEFFECT {
 typedef DIEFFECT DIEFFECT_DX6;
 typedef LPDIEFFECT LPDIEFFECT_DX6;
 typedef const DIEFFECT *LPCDIEFFECT;
-
-
 #if(DIRECTINPUT_VERSION >= 0x0700)
 #ifndef DIJ_RINGZERO
 typedef struct DIFILEEFFECT{
@@ -226,13 +191,11 @@ typedef const DIFILEEFFECT *LPCDIFILEEFFECT;
 typedef BOOL (FAR PASCAL * LPDIENUMEFFECTSINFILECALLBACK)(LPCDIFILEEFFECT , LPVOID);
 #endif /* DIJ_RINGZERO */
 #endif /* DIRECTINPUT_VERSION >= 0x0700 */
-
 #define DIEFF_OBJECTIDS             0x00000001
 #define DIEFF_OBJECTOFFSETS         0x00000002
 #define DIEFF_CARTESIAN             0x00000010
 #define DIEFF_POLAR                 0x00000020
 #define DIEFF_SPHERICAL             0x00000040
-
 #define DIEP_DURATION               0x00000001
 #define DIEP_SAMPLEPERIOD           0x00000002
 #define DIEP_GAIN                   0x00000004
@@ -253,13 +216,10 @@ typedef BOOL (FAR PASCAL * LPDIENUMEFFECTSINFILECALLBACK)(LPCDIFILEEFFECT , LPVO
 #define DIEP_NORESTART              0x40000000
 #define DIEP_NODOWNLOAD             0x80000000
 #define DIEB_NOTRIGGER              0xFFFFFFFF
-
 #define DIES_SOLO                   0x00000001
 #define DIES_NODOWNLOAD             0x80000000
-
 #define DIEGES_PLAYING              0x00000001
 #define DIEGES_EMULATED             0x00000002
-
 typedef struct DIEFFESCAPE {
     DWORD   dwSize;
     DWORD   dwCommand;
@@ -268,19 +228,15 @@ typedef struct DIEFFESCAPE {
     LPVOID  lpvOutBuffer;
     DWORD   cbOutBuffer;
 } DIEFFESCAPE, *LPDIEFFESCAPE;
-
 #ifndef DIJ_RINGZERO
-
 #undef INTERFACE
 #define INTERFACE IDirectInputEffect
-
 DECLARE_INTERFACE_(IDirectInputEffect, IUnknown)
 {
     /*** IUnknown methods ***/
     STDMETHOD(QueryInterface)(THIS_ REFIID riid, LPVOID * ppvObj) PURE;
     STDMETHOD_(ULONG,AddRef)(THIS) PURE;
     STDMETHOD_(ULONG,Release)(THIS) PURE;
-
     /*** IDirectInputEffect methods ***/
     STDMETHOD(Initialize)(THIS_ HINSTANCE,DWORD,REFGUID) PURE;
     STDMETHOD(GetEffectGuid)(THIS_ LPGUID) PURE;
@@ -293,9 +249,7 @@ DECLARE_INTERFACE_(IDirectInputEffect, IUnknown)
     STDMETHOD(Unload)(THIS) PURE;
     STDMETHOD(Escape)(THIS_ LPDIEFFESCAPE) PURE;
 };
-
 typedef struct IDirectInputEffect *LPDIRECTINPUTEFFECT;
-
 #if !defined(__cplusplus) || defined(CINTERFACE)
 #define IDirectInputEffect_QueryInterface(p,a,b) (p)->lpVtbl->QueryInterface(p,a,b)
 #define IDirectInputEffect_AddRef(p) (p)->lpVtbl->AddRef(p)
@@ -325,7 +279,6 @@ typedef struct IDirectInputEffect *LPDIRECTINPUTEFFECT;
 #define IDirectInputEffect_Unload(p) (p)->Unload()
 #define IDirectInputEffect_Escape(p,a) (p)->Escape(a)
 #endif
-
 #endif /* DIJ_RINGZERO */
 
 #endif /* DIRECTINPUT_VERSION >= 0x0500 */
