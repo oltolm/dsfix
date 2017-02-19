@@ -3,13 +3,11 @@
 // - screen-space ambient occlusion using existing z data (rendertexture #3 after first pass!)
 // - integrate FXAA/SMAA (on framebuffer, pre-HUD, ~step 79-81)
 //- HUD toggle
-//- HUD scaling
 //	+ DrawIndexedPrimitiveUP for all non-text graphics
 //	+ DrawPrimitiveUp for text
 - fix the disappearing sun/moon issue (well, first find out what's causing it)
 	+ NOTE: only happens for vertical res > 720
 // - improve performance with changed HUD (hit should be negligible, why isn't it?)
-// - configurable hotkeys
 - improve SSAO quality / support alternative implementations
 - variable rendering resolution (hysteresis thresholding, drop res when hitting ~ >30 ms frame time)
 // - fix window shrink after toggling borderless fullscreen multiple times
@@ -18,15 +16,14 @@
 - fix sporadic SMAA issue reported (first need to reproduce)
 - look into problems reported with save backup system
 - figure out where / when / how projection matrix is set (for aspect ratio fix and to know exact nearZ/farZ)
-// - texture override
 // - prefix checksums with 0
 // - fix text cutoff at 1024x720
 // - fix dynamic shadow cutoff
 - turn off SSAO when activating bonfire
 - make individual parts of HUD scale separately
 - save management with more than 1 GFWL account
-
-========= HUD
+HUD
+___
 - separate scaling factors for different parts of the HUD
 - Bugs:
   + boss health bars
@@ -35,8 +32,8 @@
   + subtitles
   + interaction with sun/moon
   + damage numbers
-
-========= Cleanup
+Cleanup
+_______
 - move Effect compilation to base class, with nice wrapper for setting defines
 - split texture handling part of renderstate manager into separate texture manager
 - create some kind of generic interface for the detection of different positions in the renderpipeling, use in renderstate manager
