@@ -1,6 +1,5 @@
 DSfix Developer Readme
-======================
-
+______________________
 This file is intended for developers who want to improve DSfix or use it as a base for other modifications.
 
 All the source code is released under the conditions of the GPLv3, except for
@@ -20,8 +19,7 @@ Additionally, if you start working on some feature, I'd appreciate if you contac
 
 
 Requirements
-============
-
+____________
 - Visual C++
 - The DirectX SDK
 - Microsoft Detours (Express) 3
@@ -29,8 +27,7 @@ Requirements
 
 
 File Overview
-=============
-
+_____________
 - The "DATA" folder contains the files for distribution, including .inis, effects and textures
 - "TODO.txt" contains a list of open (and closed) TODOs, look here if you want to find something to work on
 - "main.*" includes the main function and a few utilities
@@ -46,4 +43,29 @@ File Overview
 - "RenderstateManager.*" is where most of the magic happens, implements detection and rerouting of the games' rendering pipeline state
 - "SMAA.*", "VSSAO.*", "GAUSS.*" and "Hud.*" are effects optionally used during rendering (derive from the base Effect)
 - "Textures.def" is a database of known texture hashes
-
+Standardisation
+_______________
+introduction
+____________
+with a view towards improving file size/general code legibility as well as ensuring that the code all flows together as one; it becomes clear that guidelines need to be created in order to promote these values. please feel free to discuss these choices and make changes as and when needed to ensure that the largest number possible find the code legible and easy to use whilst also performing at its best.
+sectioning
+__________
+when doing this please use underscores as they join together, creating a smooth, neat, connected line. ensure they only underline the length of the word and only use them below the section header to avoid confusion. done this way a section header need not have an upper gap. each section header should only take up one line, with an additional line for the underscores.
+commenting:one line
+___________________
+please comment using "//". using "/*" & "*/" for just one line adds unnecessary extra characters and is easier to break accidentally. do not leave a space before or after the mark used to denote a comment.
+commenting:two lines
+____________________
+please comment "/*" & "*/". using "//" for multiple lines adds unnecessary extra characters. if required, "*" may be used to align text on lines below the topmost line along with a preceding space however only do this if necessary, otherwise do not use any spaces or other such characters for alignment. do not leave spaces around the comment marks.
+empty lines
+___________
+put simply, don't. it is rare that this would even be required.
+quoting
+_______
+please follow the author's example by using ""
+lists
+_____
+please follow the author's example by creating a section header and subsequently preceding each list item with "- "
+writing the word and
+____________________
+please use "&"
