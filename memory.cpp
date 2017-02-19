@@ -1,18 +1,15 @@
 /*Pattern search algorithm and other memory related issues. 
-<thohell@home.se>*/ 
-
+- thohell@home.se*/ 
 #include "memory.h"
 #include "main.h"
-
 #ifdef WITHOUT_GFWL_LIB
-
 /*GetMemoryAddressFromPattern 
 _____________________________
 Returns the address of szSearchPattern+offset if found in szDllName 
 The search criteria are determined by the first character of 
 szSearchPattern:
-!:An ordinal inside	(ex. !NameOfFuntion or !10005)
-#:An actual hexadecimal address (ex. #6fba80b4)
+!:An ordinal inside	(e.g. !NameOfFuntion or !10005)
+#:An actual hexadecimal address (e.g. #6fba80b4)
 other:Fingerprint pattern (see below)
 Patterns are interpreted as a string of bytes. The value 00 to ff 
 represents an actual value. A byte represented as 'xx' is not 
@@ -23,11 +20,10 @@ Once the address of the ordinal, actual address or fingerprint has
 been found, the offset is added to the result and passed back to 
 the calling function. 
 If the address is not found the function returns 0
-<thohell>*/ 
+- thohell*/ 
 DWORD GetMemoryAddressFromPattern(LPSTR szDllName, LPCSTR szSearchPattern, DWORD offset) 
 { 
 	DWORD lResult = 0; 
-	 
 	//Check for actual address 
 	if (szSearchPattern[0] == '#') 
 	{ 
@@ -35,30 +31,24 @@ DWORD GetMemoryAddressFromPattern(LPSTR szDllName, LPCSTR szSearchPattern, DWORD
 		lResult=strtoul(&szSearchPattern[1], &t, 0x10); 
 		return lResult+=(lResult?offset:0); 
 	}  
-	 
 	//Check for ordinal 
 	if (szSearchPattern[0] == '!') 
 	{ 
 		HMODULE hModule = GetModuleHandle(szDllName); 
- 
 		//First let's try to find ordinal by name 
 		if (hModule) 
 			lResult = (DWORD)GetProcAddress(hModule, &szSearchPattern[1]); 
- 
 		//No luck, lets try by ordinal number instead 
 		if (!lResult) 
 		{ 
 			LPSTR x=""; 
 			lResult = (DWORD)GetProcAddress(hModule, (LPCSTR)MAKELONG(strtoul(&szSearchPattern[1], &x, 10),0)); 
 		} 
- 
 		return lResult+=(lResult?offset:0); 
 	}  
-	 
 	//Parse fingerprint 
 	DWORD len=(strlen(szSearchPattern))/2; 
 	WORD *pPattern=new WORD[len];
-
 	DWORD SearchSize = NULL, SearchAddress = NULL;
 	MODULEINFO moduleInfo;
 	HMODULE hDllModule = GetModuleHandle(szDllName);
@@ -67,18 +57,15 @@ DWORD GetMemoryAddressFromPattern(LPSTR szDllName, LPCSTR szSearchPattern, DWORD
 		{
 			SearchAddress = (DWORD)moduleInfo.lpBaseOfDll;
 			SearchSize = moduleInfo.SizeOfImage; 
-
 			MakeSearchPattern(szSearchPattern,pPattern); 
 			if (lResult = (DWORD)PatternSearch((BYTE*)SearchAddress, SearchSize, pPattern, len)) 
 				lResult+=offset;
 		}
 		else
 			lResult = NULL;
-
 	delete [] pPattern;
 	return lResult; 
 } 
- 
 /*Pattern search algorithm written by Druttis. 
 Patterns string is in the form of 
 0xMMVV, 0xMMVV, 0xMMVV 
@@ -100,8 +87,9 @@ BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen)
 	DWORD ofs = 0; 
 	//Loop 
 	for (i = 0; plen > 0; i++) { 
-		/*Compare mask buf and compare result 
-		<thohell>Swapped mask/data. Old code was buggy.</thohell>*/
+		/*Compare mask buf and compare result.
+		Swapped mask/data. Old code was buggy.
+		- thohell*/
 		if ((buf[ofs] & ((pat[ofs] & 0xff00)>>8)) != (pat[ofs] & 0xff)) 
 			return FALSE; 
 		//Move ofs in zigzag direction 
@@ -114,7 +102,6 @@ BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen)
 	//Yep, we found 
 	return TRUE; 
 } 
- 
 /*Search for the pattern, returns the pointer to buf+ofset matching 
 the pattern or null.*/
 LPVOID PatternSearch(LPBYTE buf, DWORD blen, LPWORD pat, DWORD plen) 
@@ -136,18 +123,15 @@ LPVOID PatternSearch(LPBYTE buf, DWORD blen, LPWORD pat, DWORD plen)
 	//Me no find, me return 0, NULL, nil 
 	return NULL; 
 } 
- 
- 
 /*MakeSearchPattern 
 ___________________
 Convert a pattern-string into a pattern array for use with pattern  
 search. 
-<thohell>*/ 
+- thohell*/ 
 VOID MakeSearchPattern(LPCSTR pString, LPWORD pat) 
 { 
 	char *tmp=new char[strlen(pString)+1]; 
 	strcpy(tmp, pString); 
- 
 	for (int i=(strlen(tmp)/2)-1; strlen(tmp) > 0; i--) 
 	{ 
 		char *x=""; 
@@ -156,14 +140,12 @@ VOID MakeSearchPattern(LPCSTR pString, LPWORD pat)
 			pat[i]=0; 
 		 else 
 			pat[i]=MAKEWORD(value, 0xff); 
- 
 		tmp[i*2]=0; 
 	} 
 	delete [] tmp; 
 }
 
 #endif
-
 //Misc. Functions
 void writeToAddress(void* Data, DWORD Address, int Size)
 {
@@ -172,7 +154,6 @@ void writeToAddress(void* Data, DWORD Address, int Size)
 	memcpy((void*)Address, Data, Size);
 	VirtualProtect((LPVOID)Address, Size, oldProtect, &oldProtect);
 }
-
 /*Detour
 ________
 Make sure to adjust length according to instructions below detoured address!
@@ -192,26 +173,19 @@ void *DetourApply(BYTE *orig, BYTE *hook, int len, BYTE type)
 		SZ = CALL32_SZ;
 	}
 	else return 0;
-
 	DWORD dwProt = 0;
 	BYTE *jmp = (BYTE*)malloc(len+SZ);
 	VirtualProtect(orig, len, PAGE_READWRITE, &dwProt);
 	memcpy(jmp, orig, len);
-
 	jmp += len;//increment to the end of the copied bytes
 	jmp[0] = OP;
 	*(DWORD*)(jmp+1) = (DWORD)(orig+len - jmp) - SZ;
-
 	memset(orig, NOPOP, len); 
-
 	orig[0] = OP;
 	*(DWORD*)(orig+1) = (DWORD)(hook - orig) - SZ;
 	VirtualProtect(orig, len, dwProt, 0);
-
 	return (jmp-len);
 }
-
-
 void DetourRemove(BYTE *src, BYTE *jmp, int len)
 {
 	DWORD dwProt = 0;

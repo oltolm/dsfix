@@ -1,30 +1,19 @@
 #ifndef DIRECTINPUT_VERSION
 #define DIRECTINPUT_VERSION 0x0800
 #endif
-
 /*Copyright (C) 1996-2000 Microsoft Corporation.  All Rights Reserved.
  *Content:DirectInput include file*/
-
 #ifndef __DINPUT_INCLUDED__
 #define __DINPUT_INCLUDED__
-
 #ifndef DIJ_RINGZERO
-
 #ifdef _WIN32
 #define COM_NO_WINDOWS_H
 #include <objbase.h>
 #endif
-
 #endif//DIJ_RINGZERO
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-
-
-
 /*To build applications for older versions of DirectInput
  *#define DIRECTINPUT_VERSION [ 0x0300 | 0x0500 | 0x0700 ]
  *before #include <dinput.h>.  By default, #include <dinput.h>

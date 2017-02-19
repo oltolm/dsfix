@@ -1,4 +1,3 @@
-
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 #include <windows.h>
 #include <fstream>
@@ -10,7 +9,6 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <strsafe.h>
-
 #include "main.h"
 #include "d3d9.h"
 #include "d3dutil.h"
@@ -19,17 +17,14 @@
 #include "Detouring.h"
 #include "SaveManager.h"
 #include "FPS.h"
-
-// globals
+//globals
 tDirect3DCreate9 oDirect3DCreate9 = Direct3DCreate9;
 tDirectInput8Create oDirectInput8Create;
 std::ofstream ofile;	
 char dlldir[320];
-
 bool WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 	TCHAR fileName[512];
 	GetModuleFileName(NULL, fileName, 512);
-
 	if(dwReason == DLL_PROCESS_ATTACH) {
 		DisableThreadLibraryCalls(hDll);
 		GetModuleFileName(hDll, dlldir, 512);
@@ -37,15 +32,12 @@ bool WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		ofile.open(GetDirectoryFile("DSfix.log"), std::ios::out);
 		sdlogtime();
 		SDLOG(0, "===== start DSfix %s = fn: %s\n", VERSION, fileName);
-		
-		// load settings
+		//load settings
 		Settings::get().load();
 		Settings::get().report();
-		
 		KeyActions::get().load();
 		KeyActions::get().report();
-
-		// load original dinput8.dll
+		//load original dinput8.dll
 		HMODULE hMod;
 		if(Settings::get().getDinput8dllWrapper().empty() || (Settings::get().getDinput8dllWrapper().find("none") == 0)) {
 			char syspath[320];
@@ -61,14 +53,10 @@ bool WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 			errorExit("Loading of specified dinput wrapper");
 		}
 		oDirectInput8Create = (tDirectInput8Create)GetProcAddress(hMod, "DirectInput8Create");
-		
 		SaveManager::get().init();
-
 		earlyDetour();
-
 		initFPSTimer();
 		if(Settings::get().getUnlockFPS()) applyFPSPatch();
-
 		return true;
 	} else if(dwReason == DLL_PROCESS_DETACH) {
 		Settings::get().shutdown();
@@ -76,17 +64,14 @@ bool WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		SDLOG(0, "===== end = fn: %s\n", fileName);
 		if(ofile) { ofile.close(); }
 	}
-
     return false;
 }
-
 char *GetDirectoryFile(const char *filename) {
 	static char path[320];
 	strcpy_s(path, dlldir);
 	strcat_s(path, filename);
 	return path;
 }
-
 void __cdecl sdlogtime() {
 	char timebuf[26];
     time_t ltime;
@@ -94,49 +79,39 @@ void __cdecl sdlogtime() {
 	time(&ltime);
     _gmtime64_s(&gmt, &ltime);
     asctime_s(timebuf, 26, &gmt);
-	timebuf[24] = '\0'; // remove newline
+	timebuf[24] = '\0';//remove newline
 	SDLOG(0, "===== %s =====\n", timebuf);
 }
-
 void __cdecl sdlog(const char *fmt, ...) {
 	if(ofile.good()) {
 		if(!fmt) { return; }
-
 		va_list va_alist;
 		char logbuf[9999] = {0};
-
 		va_start (va_alist, fmt);
 		_vsnprintf_s(logbuf+strlen(logbuf), sizeof(logbuf) - strlen(logbuf), _TRUNCATE, fmt, va_alist);
 		va_end (va_alist);
-
 		ofile << logbuf;
 		ofile.flush();
 	}
 }
-
 void errorExit(LPTSTR lpszFunction) { 
-    // Retrieve the system error message for the last-error code
+    //Retrieve the system error message for the last-error code
     LPVOID lpMsgBuf;
     LPVOID lpDisplayBuf;
     DWORD dw = GetLastError(); 
-
     FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
         NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL );
-
-    // Display the error message and exit the process
+    //Display the error message and exit the process
     lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR)); 
     StringCchPrintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s failed with error %d: %s"), lpszFunction, dw, lpMsgBuf); 
     MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK); 
-
     LocalFree(lpMsgBuf);
     LocalFree(lpDisplayBuf);
     ExitProcess(dw); 
 }
-
 bool fileExists(const char *filename) {
   return std::ifstream(filename).good();
 }
-
 void createDirectory(const char *fileName) {
 	CreateDirectory(GetDirectoryFile(fileName), nullptr);
 	DWORD error = GetLastError();
@@ -144,7 +119,6 @@ void createDirectory(const char *fileName) {
 		SDLOG(0, "Failed to create %s: %s\n", fileName, formatMessage(error));
 	}
 }
-
 bool writeFile(const char *filename, const char *data, size_t length) {
 	std::ofstream file(filename, std::ios::out | std::ios::binary);
 	if (!file) {
@@ -163,7 +137,6 @@ bool writeFile(const char *filename, const char *data, size_t length) {
 	}
 	return true;
 }
-
 std::string formatMessage(DWORD messageId) {
 	char *buffer = nullptr;
 	size_t length = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -172,7 +145,6 @@ std::string formatMessage(DWORD messageId) {
 	LocalFree(buffer);
 	return result;
 }
-
 std::string strError(int err) {
 	std::string result(4096, '\0');
 	strerror_s(&result[0], result.length(), err);
