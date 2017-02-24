@@ -87,6 +87,9 @@ class RSManager {
 	bool disassembleShader(CONST DWORD *pFunction, LPD3DXBUFFER *ppBuffer);
 	void dumpShader(UINT32 hash, const char *directory, LPD3DXBUFFER pBuffer);
 	bool getOverrideShader(UINT32 hash, const char *directory, LPD3DXBUFFER *ppBuffer);
+	bool haveOcclusionScale;
+	float occlusionScale;
+		void measureOcclusionScale();
 private:
     ~RSManager();
 public:
@@ -95,7 +98,7 @@ public:
 	}
 	RSManager() : smaa(NULL), fxaa(NULL), ssao(NULL), gauss(NULL), rgbaBuffer1Surf(NULL), rgbaBuffer1Tex(NULL),
 			inited(false), doAA(true), doSsao(true), doDofGauss(true), doHud(true), captureNextFrame(false), capturing(false), hudStarted(false), takeScreenshot(false), hideHud(false),
-			mainRenderTexIndex(0), mainRenderSurfIndex(0), dumpCaptureIndex(0), numKnownTextures(0), foundKnownTextures(0), skippedPresents(0) {
+			mainRenderTexIndex(0), mainRenderSurfIndex(0), dumpCaptureIndex(0), numKnownTextures(0), foundKnownTextures(0), skippedPresents(0), haveOcclusionScale(false), occlusionScale(1) {
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
 		#include "Textures.def"
 		#undef TEXTURE
@@ -150,4 +153,5 @@ public:
 	HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value);
 	HRESULT redirectCreatePixelShader(CONST DWORD *pfunction, IDirect3DPixelShader9 **ppShader);
 	HRESULT redirectCreateVertexShader(CONST DWORD *pfunction, IDirect3DVertexShader9 **ppShader);
+	float getOcclusionScale() const { return occlusionScale; }
 };
