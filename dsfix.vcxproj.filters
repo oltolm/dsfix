@@ -139,11 +139,11 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Textures.def" />
-    <ClInclude Include="d3d9query.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="detours.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="d3d9query.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
