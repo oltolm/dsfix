@@ -76,7 +76,7 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Windows\System32;C:\dev\OculusSDK\LibOVR\Include;C:\dev\Detours Express 3.0\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Users\Seirra\Source\Repos\dsfix\minhook;C:\Windows\System32;C:\dev\OculusSDK\LibOVR\Include;C:\dev\Detours Express 3.0\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">DINPUT8</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">d3d9</TargetName>
@@ -84,7 +84,7 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">d3d9</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>C:\dev\OculusSDK\LibOVR\Lib\Win32;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;C:\dev\Detours Express 3.0\lib.X86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\Seirra\Source\Repos\dsfix\lib;C:\dev\OculusSDK\LibOVR\Lib\Win32;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;C:\dev\Detours Express 3.0\lib.X86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -92,7 +92,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SECURE_SCL=0;WIN32_LEAN_AND_MEAN;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
       </PrecompiledHeader>
