@@ -317,7 +317,6 @@
     <ClInclude Include="d3d9query.h" />
     <ClInclude Include="d3dutil.h" />
     <ClInclude Include="Detouring.h" />
-    <ClInclude Include="detours.h" />
     <ClInclude Include="dinput.h" />
     <ClInclude Include="dinputWrapper.h" />
     <ClInclude Include="Effect.h" />
