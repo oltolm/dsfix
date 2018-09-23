@@ -36,30 +36,39 @@ _______________
 introduction
 ____________
 with a view towards improving file size/general code legibility as well as ensuring that the code all flows together as one; it becomes clear that guidelines need to be created in order to promote these values. please feel free to discuss these choices & make changes as & when needed to ensure that the largest number possible find the code legible & easy to use whilst also performing at its best.
+__________
 sectioning
 __________
-when doing this please use underscores as they join together, creating a smooth, neat, connected line. ensure they only underline the length of the word & only use them below the section header to avoid confusion. done this way a section header need not have an upper gap. each section header should only take up one line, with an additional line for the underscores.
+when doing this please use underscores as they join together, creating a smooth, neat, connected line. ensure they only underline the length of the word & only use them above & below the section header to avoid confusion. done this way a section header need not have an upper gap. each section header should only take up one line, with an additional line above and below for the underscores.
+___________________
 commenting:one line
 ___________________
 please comment using "//". using "/*" & "*/" for just one line adds unnecessary extra characters & is easier to break accidentally. do not leave a space before or after the mark used to denote a comment.
+____________________
 commenting:two lines
 ____________________
 please comment "/*" & "*/". using "//" for multiple lines adds unnecessary extra characters. if required, "*" may be used to align text on lines below the topmost line along with a preceding space however only do this if necessary, otherwise do not use any spaces or other such characters for alignment. do not leave spaces around the comment marks.
+___________
 empty lines
 ___________
 put simply, don't. it is rare that this would even be required.
+_______
 quoting
 _______
 please follow the author's example by using ""
+_____
 lists
 _____
 please follow the author's example by creating a section header (where applicable) & subsequently preceding each list item with "- ". when unable to use a section header please write a statement ending in ":".
+______________________
 writing the word "and"
 ______________________
 please use "&". if it is required during a quote you may use "and"
+______
 colons
 ______
 do not add a space following them.
+__________
 signatures
 __________
 please follow the the authors example by preceding a signature with "- "
