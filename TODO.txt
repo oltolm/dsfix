@@ -14,14 +14,14 @@
 - minimize/move initial loading window
 - efficiently reuse buffers when multiple effects are used
 - fix sporadic SMAA issue reported (first need to reproduce)
-- look into problems reported with save backup system
 - figure out where / when / how projection matrix is set (for aspect ratio fix and to know exact nearZ/farZ)
 // - prefix checksums with 0
 // - fix text cutoff at 1024x720
 // - fix dynamic shadow cutoff
 - turn off SSAO when activating bonfire
 - make individual parts of HUD scale separately
-- save management with more than 1 GFWL account
+- save management with more than 1 GFWL/Steam account
+
 HUD
 ___
 - separate scaling factors for different parts of the HUD
@@ -32,6 +32,7 @@ ___
   + subtitles
   + interaction with sun/moon
   + damage numbers
+  
 Cleanup
 _______
 - move Effect compilation to base class, with nice wrapper for setting defines
