@@ -5,8 +5,9 @@
 //- HUD toggle
 //	+ DrawIndexedPrimitiveUP for all non-text graphics
 //	+ DrawPrimitiveUp for text
-- fix the disappearing sun/moon issue (well, first find out what's causing it)
+// - fix the disappearing sun/moon issue (well, first find out what's causing it)
 	+ NOTE: only happens for vertical res > 720
+	+ Mostly fixed: Certain resolution/setting combinations still have issues though.
 // - improve performance with changed HUD (hit should be negligible, why isn't it?)
 - improve SSAO quality / support alternative implementations
 - variable rendering resolution (hysteresis thresholding, drop res when hitting ~ >30 ms frame time)
@@ -14,14 +15,15 @@
 - minimize/move initial loading window
 - efficiently reuse buffers when multiple effects are used
 - fix sporadic SMAA issue reported (first need to reproduce)
-- look into problems reported with save backup system
+// - look into problems reported with save backup system
 - figure out where / when / how projection matrix is set (for aspect ratio fix and to know exact nearZ/farZ)
 // - prefix checksums with 0
 // - fix text cutoff at 1024x720
 // - fix dynamic shadow cutoff
 - turn off SSAO when activating bonfire
 - make individual parts of HUD scale separately
-- save management with more than 1 GFWL account
+- save management with more than 1 GFWL/Steam account
+
 HUD
 ___
 - separate scaling factors for different parts of the HUD
@@ -32,6 +34,8 @@ ___
   + subtitles
   + interaction with sun/moon
   + damage numbers
+  + black boxes appearing semi-opaque under certain events
+  
 Cleanup
 _______
 - move Effect compilation to base class, with nice wrapper for setting defines
