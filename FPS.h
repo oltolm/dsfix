@@ -1,6 +1,9 @@
-//Dark Souls FPS fix by Clement Barnier (Nwks)
+// Dark Souls FPS fix by Clement Barnier (Nwks)
 #pragma once
+
 void initFPSTimer();
 void applyFPSPatch();
-//returns time since startup in milliseconds
+// returns time since startup in milliseconds
 double getElapsedTime(void);
+void removeFPSHook();
+void ApplyDS1Patches();

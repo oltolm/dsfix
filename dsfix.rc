@@ -1,0 +1,31 @@
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 2,6,0,0
+PRODUCTVERSION 2,6,0,0
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+FILEFLAGS 0x0
+FILEOS VOS__WINDOWS32
+FILETYPE VFT_DLL
+FILESUBTYPE VFT2_UNKNOWN
+{
+	BLOCK "StringFileInfo"
+	{
+		BLOCK "040904E4"
+		{
+			VALUE "CompanyName", "Peter ""Durante"" Thoman"
+			VALUE "FileDescription", "DSfix - Interceptor DLL for the improvement of Dark Souls PC"
+			VALUE "FileVersion", "2.6.0.0"
+			VALUE "InternalName", "dinput8"
+			VALUE "LegalCopyright", "\xA9 Copyright 2019. Peter ""Durante"" Thoman."
+			VALUE "OriginalFilename", "dinput8.dll"
+			VALUE "ProductName", "DSfix"
+			VALUE "ProductVersion", "2.6.0.0"
+		}
+	}
+
+	BLOCK "VarFileInfo"
+	{
+		VALUE "Translation", 0x0409, 1252
+	}
+}
