@@ -2,10 +2,10 @@
 *.user
 *.opensdf
 *.suo
-Release
-.vs
 Debug/
 Release/
 .vs/
 *.VC.VC.opendb
 *.VC.db
+/.vscode/
+/build/

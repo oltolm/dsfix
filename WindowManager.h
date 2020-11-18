@@ -1,19 +1,19 @@
 #pragma once
 #include <Windows.h>
+
 class WindowManager {
-	static WindowManager instance;
-	bool captureCursor, cursorVisible;
-	bool borderlessFullscreen;
-	RECT prevWindowRect;
-	long prevStyle, prevExStyle;
+  static WindowManager instance;
+  bool captureCursor = false, cursorVisible = true;
+  bool borderlessFullscreen = false;
+  RECT prevWindowRect;
+  long prevStyle = 0, prevExStyle = 0;
+
 public:
-	static WindowManager& get() {
-		return instance;
-	}
-	WindowManager() : captureCursor(false), cursorVisible(true), borderlessFullscreen(false) { }
-	void applyCursorCapture();
-	void toggleCursorCapture();
-	void toggleCursorVisibility();
-	void toggleBorderlessFullscreen();
-	void resize(unsigned clientW, unsigned clientH);
+  static WindowManager& get() { return instance; }
+  WindowManager() {}
+  void applyCursorCapture();
+  void toggleCursorCapture();
+  void toggleCursorVisibility();
+  void toggleBorderlessFullscreen();
+  void resize(unsigned clientW, unsigned clientH);
 };

@@ -1,73 +1,66 @@
 #include "KeyActions.h"
-#include <fstream>
-#include <string>
-#include <sstream>
-#include <vector>
-using namespace std;
-#include "main.h"
-#include "WindowManager.h"
-#include "Settings.h"
+#include "FPS.h"
 #include "RenderstateManager.h"
+#include "WindowManager.h"
+#include "log.h"
+#include "util.h"
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 KeyActions KeyActions::instance;
+
 void KeyActions::load() {
-	std::ifstream sfile;
-	sfile.open(GetDirectoryFile("DSfixKeys.ini"), std::ios::in);
-	char buffer[256];
-	while(!sfile.eof()) {
-		sfile.getline(buffer, 256);
-		if(buffer[0] == '#') continue;
-		if(sfile.gcount() <= 1) continue;
-		string bstring(buffer);
-		size_t pos = bstring.npos;
-		char postChar;
-		#define KEY(_name, _val) \
-		pos = bstring.find(#_name); \
-		postChar = buffer[pos + strlen(#_name)]; \
-		if(pos != bstring.npos && (postChar == '\r' || postChar == '\n' || postChar == ' ' || postChar == '\0')) { \
-			string action; stringstream ss(bstring); ss >> action; \
-			keyBindingMap.insert(make_pair(_val, action)); \
-		}
-		#include "Keys.def"
-		#undef KEY
-	}
-	sfile.close();
+  fs::path iniFilename = GetModuleDirectoryPath() / L"DSfixKeys.ini";
+  std::ifstream settings(iniFilename);
+  std::string line;
+  while (std::getline(settings, line)) {
+    if (line[0] == '#' || line.empty())
+      continue;
+    std::string action, keyName;
+    std::istringstream iss(line);
+    iss >> action;
+    iss >> keyName;
+#define KEY(_name, _val)                                                                           \
+  if (keyName == #_name) {                                                                         \
+    keyBindingMap.insert({_val, action});                                                          \
+    continue;                                                                                      \
+  }
+#include "Keys.inc"
+#undef KEY
+  }
 }
+
 void KeyActions::report() {
-	SDLOG(0, "= Loaded Keybindings:\n");
-	for(IntStrMap::const_iterator i = keyBindingMap.begin(); i != keyBindingMap.end(); ++i) {
-		SDLOG(0, " - %p => %s\n", i->first, i->second.c_str());
-	}
-	SDLOG(0, "=============\n");
-	SDLOG(5, "= Possible Actions:\n");
-	#define ACTION(_name, _action) \
-	SDLOG(5, "%s, ", #_name);
- 	#include "Actions.def"
-	#undef ACTION
-	SDLOG(5, "=============\n");
-	SDLOG(5, "= Possible Keys:\n");
-	#define KEY(_name, _val) \
-	SDLOG(5, "%s, ", #_name);
- 	#include "Keys.def"
-	#undef KEY
-	SDLOG(5, "=============\n");
+  SDLOG(LogLevel::Info, "= Loaded Keybindings:");
+  for (auto& keyActionPair : keyBindingMap) {
+    SDLOG(LogLevel::Info, " - %p => %s", keyActionPair.first, keyActionPair.second);
+  }
+  SDLOG(LogLevel::Info, "=============");
 }
-void KeyActions::performAction(const char* name) {
-	#define ACTION(_name, _action) \
-	if(strcmp(#_name, name) == 0) _name();
- 	#include "Actions.def"
-	#undef ACTION
+
+void KeyActions::performAction(const std::string& name) {
+#define ACTION(_name, _action)                                                                     \
+  if (name.compare(#_name) == 0)                                                                   \
+    _name();
+#include "Actions.inc"
+#undef ACTION
 }
+
 void KeyActions::processIO() {
-	if(::GetForegroundWindow() != NULL && ::GetActiveWindow() != NULL) {
-		for(IntStrMap::const_iterator i = keyBindingMap.begin(); i != keyBindingMap.end(); ++i) {
-			if(GetAsyncKeyState(i->first)&1) {
-				SDLOG(0, "Action triggered: %s\n", i->second.c_str());
-				performAction(i->second.c_str());
-			}
-		}
-	}
+  if (::GetForegroundWindow() != NULL && ::GetActiveWindow() != NULL) {
+    for (auto& keyActionPair : keyBindingMap) {
+      if (::GetAsyncKeyState(keyActionPair.first) & 1) {
+        performAction(keyActionPair.second);
+      }
+    }
+  }
 }
-#define ACTION(_name, _action) \
-void KeyActions::##_name() { _action; };
-#include "Actions.def"
+
+#define ACTION(_name, _action)                                                                     \
+  void KeyActions::_name() { _action; };
+#include "Actions.inc"
 #undef ACTION

@@ -1,9 +1,12 @@
 #pragma once
-#include "d3d9.h"
-TCHAR* D3DFormatToString(D3DFORMAT format, bool bWithPrefix = true);
-TCHAR* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state);
-TCHAR* D3DDeclTypeToString(D3DDECLTYPE type);
-TCHAR* D3DDeclUsageToString(D3DDECLUSAGE type);
+#include <d3d9.h>
+const char* D3DFormatToString(D3DFORMAT format, bool bWithPrefix = true);
+const char* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state);
+const char* D3DDeclTypeToString(D3DDECLTYPE type);
+const char* D3DDeclUsageToString(D3DDECLUSAGE type);
 // not thread safe
-TCHAR* RectToString(const RECT* rect);
-TCHAR* D3DMatrixToString(const D3DMATRIX* pMatrix);
+const char* RectToString(const RECT* rect);
+const char* D3DMatrixToString(const D3DMATRIX* pMatrix);
+#ifndef D3DPRESENT_FORCEIMMEDIATE
+#define D3DPRESENT_FORCEIMMEDIATE 0x00000100L
+#endif
