@@ -96,30 +96,3 @@ install(
   DIRECTORY "DATA/"
   DESTINATION "."
 )
-
-if(NOT MSVC)
-  find_program(cv2pdb cv2pdb)
-  include(cmake/cv2pdb.cmake)
-  if(cv2pdb)
-    add_cv2pdb_target(dsfix dinput.dll dinput.pdb)
-  endif()
-endif()
-
-include(cmake/CPM.cmake)
-CPMAddPackage(
-  NAME ThreadPool
-  GIT_REPOSITORY "https://github.com/jhasse/ThreadPool"
-  GIT_TAG ae65651
-)
-target_link_libraries(dsfix PRIVATE ThreadPool)
-
-# if(NOT MSVC)
-#   include(cmake/CPM.cmake)
-#   CPMAddPackage(
-#     NAME mingw-std-threads
-#     GITHUB_REPOSITORY oltolm/mingw-std-threads
-#     GIT_TAG a1e82eea75c65a278bf7f220d75e536f1e5d821a
-#     OPTIONS "MINGW_STDTHREADS_GENERATE_STDHEADERS ON"
-#   )
-#   target_link_libraries(dsfix PRIVATE mingw_stdthreads)
-# endif()
