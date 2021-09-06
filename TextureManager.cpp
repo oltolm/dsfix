@@ -49,7 +49,7 @@ HRESULT TextureManager::redirectD3DXCreateTextureFromFileInMemoryEx(
     D3DCOLOR ColorKey, D3DXIMAGE_INFO* pSrcInfo, PALETTEENTRY* pPalette,
     LPDIRECT3DTEXTURE9* ppTexture) {
   if (Settings::get().getEnableTextureOverride()) {
-    UINT32 hash = SuperFastHash(reinterpret_cast<const char*>(pSrcData), SrcDataSize);
+    UINT32 hash = SuperFastHash(static_cast<const char*>(pSrcData), SrcDataSize);
     SDLOG(LogLevel::Trace, "Trying texture override size: %8u, hash: %8x", SrcDataSize, hash);
 
     fs::path png = GetModuleDirectoryPath() / "dsfix\\tex_override" / tfm::format("%08x.png", hash);

@@ -10,9 +10,9 @@
 #include "util.h"
 #include <ctime>
 #include <d3d9.h>
+#include <filesystem>
 #include <fstream>
 #include <windows.h>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 

@@ -17,9 +17,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/ */
 #include <d3d9.h>
 #include <string>
 
-typedef IDirect3D9*(APIENTRY* Direct3DCreate9_t)(UINT);
+using Direct3DCreate9_t = IDirect3D9*(APIENTRY*)(UINT);
 extern Direct3DCreate9_t oDirect3DCreate9;
-typedef HRESULT(WINAPI* DirectInput8Create_t)(HINSTANCE inst_handle, DWORD version, const IID& r_iid,
-                                             LPVOID* out_wrapper, LPUNKNOWN p_unk);
+using DirectInput8Create_t = HRESULT(WINAPI*)(HINSTANCE inst_handle, DWORD version,
+                                              const IID& r_iid, LPVOID* out_wrapper,
+                                              LPUNKNOWN p_unk);
 extern DirectInput8Create_t oDirectInput8Create;
 void init();

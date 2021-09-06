@@ -3,7 +3,7 @@
 #include <string>
 class KeyActions {
   static KeyActions instance;
-  typedef std::map<int, std::string> IntStrMap;
+  using IntStrMap = std::map<int, std::string>;
   IntStrMap keyBindingMap;
 #define ACTION(_name, _action) void _name();
 #include "Actions.inc"
