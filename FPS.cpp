@@ -1,3 +1,5 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
 // Dark Souls FPS fix by Clement Barnier (Nwks)
 #include "FPS.h"
 #include "RenderstateManager.h"
@@ -28,7 +30,6 @@ void writeToAddress(const void* Data, void* Address, size_t Size) {
     return;
   }
 }
-
 // Memory
 void updateAnimationStepTime(float stepTime, float minFPS, float maxFPS) {
   float FPS = 1.0f / (stepTime / 1000);
@@ -76,14 +77,15 @@ void applyFPSPatch() {
   // Binary patches
   // Override D3D Presentation Interval
   const DWORD data = 5; // Set to immediate
-  writeToAddress(&data, (void*)ADDR_PRESINT, sizeof(data));
+  writeToAddress(&data, reinterpret_cast<void*>(ADDR_PRESINT), sizeof(data));
   // Detour call to getDrawThreadMsgCommand
-  MH_STATUS ret = MH_CreateHook((LPVOID)ADDR_GETCMD, (LPVOID)hkGetDrawThreadMsgCommand, nullptr);
+  MH_STATUS ret = MH_CreateHook(reinterpret_cast<LPVOID>(ADDR_GETCMD),
+                                reinterpret_cast<LPVOID>(hkGetDrawThreadMsgCommand), nullptr);
   if (ret != MH_OK) {
     SDLOG(LogLevel::Error, "applyFPSPatch: MH_CreateHook failed: %s", MH_StatusToString(ret));
     return;
   }
-  ret = MH_EnableHook((LPVOID)ADDR_GETCMD);
+  ret = MH_EnableHook(reinterpret_cast<LPVOID>(ADDR_GETCMD));
   if (ret != MH_OK) {
     SDLOG(LogLevel::Error, "applyFPSPatch: MH_EnableHook failed: %s", MH_StatusToString(ret));
     return;
@@ -92,10 +94,10 @@ void applyFPSPatch() {
 }
 
 void removeFPSHook() {
-  MH_STATUS ret = MH_DisableHook((LPVOID)ADDR_GETCMD);
+  MH_STATUS ret = MH_DisableHook(reinterpret_cast<LPVOID>(ADDR_GETCMD));
   if (ret != MH_OK)
     return;
-  ret = MH_RemoveHook((LPVOID)ADDR_GETCMD);
+  ret = MH_RemoveHook(reinterpret_cast<LPVOID>(ADDR_GETCMD));
   if (ret != MH_OK)
     return;
   SDLOG(LogLevel::Info, "FPS hook removed");
@@ -107,3 +109,4 @@ void initFPSTimer() {
   ::QueryPerformanceFrequency(&timerFreq);
   ::QueryPerformanceCounter(&counterAtStart);
 }
+#pragma GCC diagnostic pop
