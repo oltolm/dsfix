@@ -32,9 +32,9 @@ policies, either expressed or implied, of the copyright holders.*/
 #include "SearchTex.h"
 #include "Settings.h"
 #include "log.h"
+#include <filesystem>
 #include <sstream>
 #include <vector>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -43,8 +43,7 @@ namespace fs = std::filesystem;
 #else
 #define STRINGIFY(x) #x
 #endif
-#pragma region Useful Macros from DXUT(copy - pasted here as we prefer this to be as self -        \
-                                       contained as possible)
+
 #if defined(DEBUG) || defined(_DEBUG)
 #ifndef V
 #define V(x)                                                                                       \
@@ -79,7 +78,7 @@ namespace fs = std::filesystem;
   }
 #endif
 #endif
-#pragma endregion
+
 SMAA::SMAA(IDirect3DDevice9* device, int width, int height, Preset preset,
            const ExternalStorage& storage)
     : Effect(device), threshold(0.1f), maxSearchSteps(8), width(width), height(height) {
@@ -152,7 +151,7 @@ SMAA::SMAA(IDirect3DDevice9* device, int width, int height, Preset preset,
 }
 void SMAA::go(IDirect3DTexture9* edges, IDirect3DTexture9* src, IDirect3DSurface9* dst,
               Input input) {
-  HRESULT hr;
+  HRESULT hr __attribute__((unused));
   // Setup the layout for our fullscreen quad.
   V(device->SetVertexDeclaration(vertexDeclaration));
   // And here we go!
@@ -161,7 +160,7 @@ void SMAA::go(IDirect3DTexture9* edges, IDirect3DTexture9* src, IDirect3DSurface
   neighborhoodBlendingPass(src, dst);
 }
 void SMAA::loadAreaTex() {
-  HRESULT hr;
+  HRESULT hr __attribute__((unused));
   V(device->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8L8,
                           D3DPOOL_DEFAULT, &areaTex, NULL));
   D3DLOCKED_RECT rect;
@@ -172,7 +171,7 @@ void SMAA::loadAreaTex() {
   V(areaTex->UnlockRect(0));
 }
 void SMAA::loadSearchTex() {
-  HRESULT hr;
+  HRESULT hr __attribute__((unused));
   V(device->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_L8,
                           D3DPOOL_DEFAULT, &searchTex, NULL));
   D3DLOCKED_RECT rect;
@@ -184,7 +183,7 @@ void SMAA::loadSearchTex() {
 }
 void SMAA::edgesDetectionPass(IDirect3DTexture9* edges, Input input) {
   // D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 1st pass");
-  HRESULT hr;
+  HRESULT hr __attribute__((unused));
   // Set the render target and clear both the color and the stencil buffers.
   V(device->SetRenderTarget(0, edgeSurface));
   V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
@@ -219,7 +218,7 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9* edges, Input input) {
 }
 void SMAA::blendingWeightsCalculationPass() {
   // D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 2nd pass");
-  HRESULT hr;
+  HRESULT hr __attribute__((unused));
   // Set the render target and clear it.
   V(device->SetRenderTarget(0, blendSurface));
   V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
@@ -239,7 +238,7 @@ void SMAA::blendingWeightsCalculationPass() {
 }
 void SMAA::neighborhoodBlendingPass(IDirect3DTexture9* src, IDirect3DSurface9* dst) {
   // D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 3rd pass");
-  HRESULT hr;
+  HRESULT hr __attribute__((unused));
   // Blah blah blah
   V(device->SetRenderTarget(0, dst));
   V(effect->SetTexture(colorTexHandle, src));

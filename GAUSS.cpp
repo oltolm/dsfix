@@ -21,7 +21,7 @@ GAUSS::GAUSS(IDirect3DDevice9* device, int width, int height) noexcept
     fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\GAUSS.fx";
     HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), NULL,
                                              D3DXFX_NOT_CLONEABLE, NULL, &effect, &errors);
-    if (FAILED(D3D_OK)) {
+    if (FAILED(hr)) {
       SDLOG(LogLevel::Error, "ERRORS:");
       SDLOG(LogLevel::Error, " %s", errors->GetBufferPointer());
     }

@@ -28,7 +28,6 @@ add_library(dsfix
   d3d9dev.cpp
   d3d9int.cpp
   d3d9query.cpp
-  d3dutil.cpp
   Detouring.cpp
   dinputWrapper.cpp
   Effect.cpp
@@ -49,15 +48,19 @@ add_library(dsfix
 
 target_link_libraries(dsfix
   PRIVATE
-  -Wl,--enable-stdcall-fixup
-  -static-libgcc
-  -static-libstdc++
-  -static
   minhook
   -ld3d9
   -ld3dx9
   -ldxguid
   -ldxerr9
+)
+
+target_link_options(dsfix
+  PRIVATE
+  -Wl,--enable-stdcall-fixup
+  -static-libgcc
+  -static-libstdc++
+  -static
 )
 
 target_compile_features(dsfix PRIVATE cxx_std_17)
@@ -67,9 +70,19 @@ target_include_directories(dsfix
   "${PROJECT_SOURCE_DIR}/include"
 )
 
-target_compile_options(dsfix PRIVATE -fno-omit-frame-pointer -msse2 -msse)
+target_compile_options(dsfix
+  PRIVATE
+  -msse2
+  -msse
+  -Wall
+  -Werror
+  -Wno-array-bounds
+  -Wextra
+  -Wno-cast-function-type
+)
 
-target_compile_definitions(dsfix PRIVATE
+target_compile_definitions(dsfix
+  PRIVATE
   -DTINYFORMAT_ALLOW_WCHAR_STRINGS=1
   -DUNICODE
   -DWIN32_LEAN_AND_MEAN

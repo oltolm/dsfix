@@ -36,7 +36,7 @@ void KeyActions::load() {
 
 void KeyActions::report() {
   SDLOG(LogLevel::Info, "= Loaded Keybindings:");
-  for (auto& keyActionPair : keyBindingMap) {
+  for (const auto& keyActionPair __attribute__((unused)) : keyBindingMap) {
     SDLOG(LogLevel::Info, " - %p => %s", keyActionPair.first, keyActionPair.second);
   }
   SDLOG(LogLevel::Info, "=============");

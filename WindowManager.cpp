@@ -39,7 +39,8 @@ void WindowManager::toggleBorderlessFullscreen() {
     ::SetWindowLong(hwnd, GWL_EXSTYLE, lExStyle);
     // adjust size & position
     HMONITOR monitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-    MONITORINFO info = {sizeof(MONITORINFO)};
+    MONITORINFO info = {};
+    info.cbSize = sizeof(MONITORINFO);
     ::GetMonitorInfo(monitor, &info);
     int monitorWidth = info.rcMonitor.right - info.rcMonitor.left;
     int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
@@ -64,7 +65,8 @@ void WindowManager::resize(unsigned clientW, unsigned clientH) {
   ::GetClientRect(hwnd, &prevWindowRect);
   // Get monitor size
   HMONITOR monitor = ::MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-  MONITORINFO info = {sizeof(MONITORINFO)};
+  MONITORINFO info = {};
+  info.cbSize = sizeof(MONITORINFO);
   ::GetMonitorInfo(monitor, &info);
   int monitorWidth = info.rcMonitor.right - info.rcMonitor.left;
   int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;

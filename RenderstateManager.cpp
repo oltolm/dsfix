@@ -460,7 +460,6 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
     if (onHudRT) {
       IDirect3DBaseTexture9Ptr t;
       throw_if_fail(d3ddev->GetTexture(0, &t));
-      bool isText = tm.isTextureText(t);
       bool isSub = tm.isTextureText00(t);
       if (isSub) {
         pauseHudRendering();

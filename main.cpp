@@ -49,8 +49,6 @@ void init() {
   Settings::get().report();
   KeyActions::get().load();
   KeyActions::get().report();
-  std::time_t now = std::time(nullptr);
-  SDLOG(LogLevel::Info, "===== %.24s =====", std::ctime(&now));
   SDLOG(LogLevel::Info, "===== start DSfix %s = fn: %s", VERSION, GetModuleFileNamePath(NULL));
   loadOriginalDinput8dll();
   initFPSTimer();
@@ -58,7 +56,7 @@ void init() {
     applyFPSPatch();
 }
 
-BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
+BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved __attribute__((unused))) {
   if (dwReason == DLL_PROCESS_ATTACH) {
     ::DisableThreadLibraryCalls(hDll);
     earlyDetour();

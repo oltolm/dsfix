@@ -47,8 +47,10 @@ public:
                     IDirect3DSurface9Ptr blendSurface = nullptr)
         : edgeTex(edgeTex), edgeSurface(edgeSurface), blendTex(blendTex),
           blendSurface(blendSurface) {}
-    IDirect3DTexture9Ptr edgeTex, blendTex;
-    IDirect3DSurface9Ptr edgeSurface, blendSurface;
+    IDirect3DTexture9Ptr edgeTex;
+    IDirect3DSurface9Ptr edgeSurface;
+    IDirect3DTexture9Ptr blendTex;
+    IDirect3DTexture9Ptr blendSurface;
   };
   enum Preset { PRESET_LOW, PRESET_MEDIUM, PRESET_HIGH, PRESET_ULTRA, PRESET_CUSTOM };
   enum Input { INPUT_LUMA, INPUT_COLOR, INPUT_DEPTH };
@@ -102,8 +104,8 @@ private:
   D3DXHANDLE edgesTexHandle, blendTexHandle;
   D3DXHANDLE lumaEdgeDetectionHandle, colorEdgeDetectionHandle, depthEdgeDetectionHandle,
       blendWeightCalculationHandle, neighborhoodBlendingHandle;
-  int maxSearchSteps;
   float threshold;
+  int maxSearchSteps;
   int width, height;
 };
 #endif

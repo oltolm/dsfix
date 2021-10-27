@@ -3,7 +3,6 @@
 #include "RenderstateManager.h"
 #include "Settings.h"
 #include "d3d9dev.h"
-#include "d3dutil.h"
 #include "log.h"
 #include <windows.h>
 

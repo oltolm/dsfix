@@ -2,10 +2,10 @@
 #include "Settings.h"
 #include "log.h"
 #include "util.h"
+#include <filesystem>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -17,7 +17,7 @@ HUD::HUD(IDirect3DDevice9* device, int width, int height)
   fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\HUD.fx";
   HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), NULL, NULL,
                                            D3DXFX_NOT_CLONEABLE, NULL, &effect, &errors);
-  if (FAILED(D3D_OK)) {
+  if (FAILED(hr)) {
     SDLOG(LogLevel::Error, "ERRORS:");
     SDLOG(LogLevel::Error, " %s", errors->GetBufferPointer());
   }

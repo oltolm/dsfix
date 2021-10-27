@@ -85,8 +85,9 @@ public:
   void releaseResources() noexcept;
   void setViewport(const D3DVIEWPORT9& vp) { viewport = vp; }
   bool isViewport(const RECT& r) {
-    return (r.left == viewport.X) && (r.top == viewport.Y) && (r.bottom == viewport.Height) &&
-           (r.right == viewport.Width);
+    return (r.left == static_cast<LONG>(viewport.X)) && (r.top == static_cast<LONG>(viewport.Y)) &&
+           (r.bottom == static_cast<LONG>(viewport.Height)) &&
+           (r.right == static_cast<LONG>(viewport.Width));
   }
   D3DPRESENT_PARAMETERS
   adjustPresentationParameters(const D3DPRESENT_PARAMETERS* pPresentationParameters) noexcept;

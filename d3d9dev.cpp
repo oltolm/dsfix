@@ -4,7 +4,6 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "d3d9query.h"
-#include "d3dutil.h"
 #include "log.h"
 #include "main.h"
 #include <cstring>
