@@ -57,7 +57,6 @@ target_link_libraries(dsfix
 
 target_link_options(dsfix
   PRIVATE
-  -Wl,--enable-stdcall-fixup
   -static-libgcc
   -static-libstdc++
   -static
