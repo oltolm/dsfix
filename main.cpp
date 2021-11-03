@@ -49,7 +49,7 @@ void init() {
   Settings::get().report();
   KeyActions::get().load();
   KeyActions::get().report();
-  SDLOG(LogLevel::Info, "===== start DSfix %s = fn: %s", VERSION, GetModuleFileNamePath(NULL));
+  SDLOG(LogLevel::Info, "===== start DSfix %s = fn: %s", VERSION, GetModuleFileNamePath(nullptr));
   loadOriginalDinput8dll();
   initFPSTimer();
   if (Settings::get().getUnlockFPS())

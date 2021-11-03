@@ -51,7 +51,7 @@ void KeyActions::performAction(const std::string& name) {
 }
 
 void KeyActions::processIO() {
-  if (::GetForegroundWindow() != NULL && ::GetActiveWindow() != NULL) {
+  if (::GetForegroundWindow() != nullptr && ::GetActiveWindow() != nullptr) {
     for (auto& keyActionPair : keyBindingMap) {
       if (::GetAsyncKeyState(keyActionPair.first) & 1) {
         performAction(keyActionPair.second);

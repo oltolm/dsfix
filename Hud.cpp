@@ -15,15 +15,15 @@ HUD::HUD(IDirect3DDevice9* device, int width, int height)
   SDLOG(LogLevel::Info, "Hud Effect load");
   ID3DXBufferPtr errors;
   fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\HUD.fx";
-  HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), NULL, NULL,
-                                           D3DXFX_NOT_CLONEABLE, NULL, &effect, &errors);
+  HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), nullptr, nullptr,
+                                           D3DXFX_NOT_CLONEABLE, nullptr, &effect, &errors);
   if (FAILED(hr)) {
     SDLOG(LogLevel::Error, "ERRORS:");
     SDLOG(LogLevel::Error, " %s", errors->GetBufferPointer());
   }
   // get handles
-  frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
-  opacityHandle = effect->GetParameterByName(NULL, "opacity");
+  frameTexHandle = effect->GetParameterByName(nullptr, "frameTex2D");
+  opacityHandle = effect->GetParameterByName(nullptr, "opacity");
 }
 
 void HUD::go(IDirect3DTexture9* input, IDirect3DSurface9* dst) {

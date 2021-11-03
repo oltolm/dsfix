@@ -98,7 +98,7 @@ SMAA::SMAA(IDirect3DDevice9* device, int width, int height, Preset preset,
                               {"SMAA_PRESET_ULTRA", "1"},
                               {"SMAA_PRESET_CUSTOM", "1"}};
   defines.push_back(presetMacros[int(preset)]);
-  D3DXMACRO null = {NULL, NULL};
+  D3DXMACRO null = {nullptr, nullptr};
   defines.push_back(null);
   // Setup the flags for the effect.
   DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
@@ -109,7 +109,7 @@ SMAA::SMAA(IDirect3DDevice9* device, int width, int height, Preset preset,
   SDLOG(LogLevel::Info, "SMAA load");
   ID3DXBufferPtr errors;
   fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\SMAA.fx";
-  hr = D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), NULL, flags, NULL,
+  hr = D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), nullptr, flags, nullptr,
                                  &effect, &errors);
   if (hr != D3D_OK)
     SDLOG(LogLevel::Error, "ERRORS:\n %s", errors->GetBufferPointer());
@@ -119,7 +119,7 @@ SMAA::SMAA(IDirect3DDevice9* device, int width, int height, Preset preset,
     edgeSurface = storage.edgeSurface;
   } else {
     V(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
-                            D3DPOOL_DEFAULT, &edgeTex, NULL));
+                            D3DPOOL_DEFAULT, &edgeTex, nullptr));
     V(edgeTex->GetSurfaceLevel(0, &edgeSurface));
   }
   // Same for blending weights.
@@ -128,21 +128,21 @@ SMAA::SMAA(IDirect3DDevice9* device, int width, int height, Preset preset,
     blendSurface = storage.blendSurface;
   } else {
     V(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
-                            D3DPOOL_DEFAULT, &blendTex, NULL));
+                            D3DPOOL_DEFAULT, &blendTex, nullptr));
     V(blendTex->GetSurfaceLevel(0, &blendSurface));
   }
   // Load the precomputed textures.
   loadAreaTex();
   loadSearchTex();
   // Create some handles for techniques and variables.
-  thresholdHandle = effect->GetParameterByName(NULL, "threshold");
-  maxSearchStepsHandle = effect->GetParameterByName(NULL, "maxSearchSteps");
-  areaTexHandle = effect->GetParameterByName(NULL, "areaTex2D");
-  searchTexHandle = effect->GetParameterByName(NULL, "searchTex2D");
-  colorTexHandle = effect->GetParameterByName(NULL, "colorTex2D");
-  depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
-  edgesTexHandle = effect->GetParameterByName(NULL, "edgesTex2D");
-  blendTexHandle = effect->GetParameterByName(NULL, "blendTex2D");
+  thresholdHandle = effect->GetParameterByName(nullptr, "threshold");
+  maxSearchStepsHandle = effect->GetParameterByName(nullptr, "maxSearchSteps");
+  areaTexHandle = effect->GetParameterByName(nullptr, "areaTex2D");
+  searchTexHandle = effect->GetParameterByName(nullptr, "searchTex2D");
+  colorTexHandle = effect->GetParameterByName(nullptr, "colorTex2D");
+  depthTexHandle = effect->GetParameterByName(nullptr, "depthTex2D");
+  edgesTexHandle = effect->GetParameterByName(nullptr, "edgesTex2D");
+  blendTexHandle = effect->GetParameterByName(nullptr, "blendTex2D");
   lumaEdgeDetectionHandle = effect->GetTechniqueByName("LumaEdgeDetection");
   colorEdgeDetectionHandle = effect->GetTechniqueByName("ColorEdgeDetection");
   depthEdgeDetectionHandle = effect->GetTechniqueByName("DepthEdgeDetection");
@@ -162,9 +162,9 @@ void SMAA::go(IDirect3DTexture9* edges, IDirect3DTexture9* src, IDirect3DSurface
 void SMAA::loadAreaTex() {
   HRESULT hr __attribute__((unused));
   V(device->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8L8,
-                          D3DPOOL_DEFAULT, &areaTex, NULL));
+                          D3DPOOL_DEFAULT, &areaTex, nullptr));
   D3DLOCKED_RECT rect;
-  V(areaTex->LockRect(0, &rect, NULL, D3DLOCK_DISCARD));
+  V(areaTex->LockRect(0, &rect, nullptr, D3DLOCK_DISCARD));
   for (int i = 0; i < AREATEX_HEIGHT; i++)
     CopyMemory(((char*)rect.pBits) + i * rect.Pitch, areaTexBytes + i * AREATEX_PITCH,
                AREATEX_PITCH);
@@ -173,9 +173,9 @@ void SMAA::loadAreaTex() {
 void SMAA::loadSearchTex() {
   HRESULT hr __attribute__((unused));
   V(device->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_L8,
-                          D3DPOOL_DEFAULT, &searchTex, NULL));
+                          D3DPOOL_DEFAULT, &searchTex, nullptr));
   D3DLOCKED_RECT rect;
-  V(searchTex->LockRect(0, &rect, NULL, D3DLOCK_DISCARD));
+  V(searchTex->LockRect(0, &rect, nullptr, D3DLOCK_DISCARD));
   for (int i = 0; i < SEARCHTEX_HEIGHT; i++)
     CopyMemory(((char*)rect.pBits) + i * rect.Pitch, searchTexBytes + i * SEARCHTEX_PITCH,
                SEARCHTEX_PITCH);
@@ -186,7 +186,7 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9* edges, Input input) {
   HRESULT hr __attribute__((unused));
   // Set the render target and clear both the color and the stencil buffers.
   V(device->SetRenderTarget(0, edgeSurface));
-  V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
+  V(device->Clear(0, nullptr, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
   // Setup variables.
   V(effect->SetFloat(thresholdHandle, threshold));
   V(effect->SetFloat(maxSearchStepsHandle, float(maxSearchSteps)));
@@ -221,7 +221,7 @@ void SMAA::blendingWeightsCalculationPass() {
   HRESULT hr __attribute__((unused));
   // Set the render target and clear it.
   V(device->SetRenderTarget(0, blendSurface));
-  V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
+  V(device->Clear(0, nullptr, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
   // Setup the variables and the technique (yet again).
   V(effect->SetTexture(edgesTexHandle, edgeTex));
   V(effect->SetTexture(areaTexHandle, areaTex));

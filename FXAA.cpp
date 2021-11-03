@@ -22,22 +22,22 @@ FXAA::FXAA(IDirect3DDevice9* device, int width, int height, Quality quality) noe
                                  {"FXAA_QUALITY__PRESET", "28"},
                                  {"FXAA_QUALITY__PRESET", "39"}};
     defines.push_back(qualityMacros[(int)quality]);
-    defines.push_back({NULL, NULL});
+    defines.push_back({nullptr, nullptr});
     // Load effect from file
     SDLOG(LogLevel::Info, "FXAA load");
     ID3DXBufferPtr errors;
     fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\FXAA.fx";
-    HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines[0], NULL,
+    HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines[0], nullptr,
                                              D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3,
-                                             NULL, &effect, &errors);
+                                             nullptr, &effect, &errors);
     if (FAILED(hr))
       SDLOG(LogLevel::Error, "ERRORS:\n %s", errors->GetBufferPointer());
     // Create buffer
     throw_if_fail(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
-                                        D3DPOOL_DEFAULT, &buffer1Tex, NULL));
+                                        D3DPOOL_DEFAULT, &buffer1Tex, nullptr));
     throw_if_fail(buffer1Tex->GetSurfaceLevel(0, &buffer1Surf));
     // get handles
-    frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
+    frameTexHandle = effect->GetParameterByName(nullptr, "frameTex2D");
   } catch (const std::system_error& err) {
     SDLOG(LogLevel::Error, "%s", err.what());
   }

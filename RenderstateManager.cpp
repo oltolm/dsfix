@@ -44,10 +44,10 @@ void RSManager::initResources() noexcept {
     hud.reset(new HUD(d3ddev, rw, rh));
   try {
     throw_if_fail(d3ddev->CreateTexture(rw, rh, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
-                                        D3DPOOL_DEFAULT, &rgbaBuffer1Tex, NULL));
+                                        D3DPOOL_DEFAULT, &rgbaBuffer1Tex, nullptr));
     throw_if_fail(rgbaBuffer1Tex->GetSurfaceLevel(0, &rgbaBuffer1Surf));
     throw_if_fail(d3ddev->CreateDepthStencilSurface(rw, rh, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0,
-                                                    FALSE, &depthStencilSurf, NULL));
+                                                    FALSE, &depthStencilSurf, nullptr));
     throw_if_fail(d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock));
     if (!initialized) { // on first init only
       init();
@@ -172,13 +172,13 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
               else
                 fxaa->go(tex, rgbaBuffer1Surf);
               throw_if_fail(
-                  d3ddev->StretchRect(rgbaBuffer1Surf, NULL, oldRenderTarget, NULL, D3DTEXF_NONE));
+                  d3ddev->StretchRect(rgbaBuffer1Surf, nullptr, oldRenderTarget, nullptr, D3DTEXF_NONE));
             }
             // perform SSAO
             if (ssao && doSsao) {
               ssao->go(tex, zTex, rgbaBuffer1Surf);
               throw_if_fail(
-                  d3ddev->StretchRect(rgbaBuffer1Surf, NULL, oldRenderTarget, NULL, D3DTEXF_NONE));
+                  d3ddev->StretchRect(rgbaBuffer1Surf, nullptr, oldRenderTarget, nullptr, D3DTEXF_NONE));
             }
             restoreRenderState();
           }
@@ -225,11 +225,11 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
           IDirect3DSurface9Ptr convertedSurface;
           throw_if_fail(d3ddev->CreateRenderTarget(desc.Width, desc.Height, D3DFMT_X8R8G8B8,
                                                    D3DMULTISAMPLE_NONE, 0, true, &convertedSurface,
-                                                   NULL));
-          throw_if_fail(::D3DXLoadSurfaceFromSurface(convertedSurface, NULL, NULL, oldRenderTarget,
-                                                     NULL, NULL, D3DX_FILTER_POINT, 0));
+                                                   nullptr));
+          throw_if_fail(::D3DXLoadSurfaceFromSurface(convertedSurface, nullptr, nullptr, oldRenderTarget,
+                                                     nullptr, nullptr, D3DX_FILTER_POINT, 0));
           throw_if_fail(::D3DXSaveSurfaceToFileW(destfile.c_str(), D3DXIFF_JPG, convertedSurface,
-                                                 NULL, NULL));
+                                                 nullptr, nullptr));
         }
       }
     }
@@ -251,7 +251,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
             onHudRT = true;
             throw_if_fail(d3ddev->SetRenderTarget(0, rgbaBuffer1Surf));
             throw_if_fail(
-                d3ddev->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 0), 0.0f, 0));
+                d3ddev->Clear(0, nullptr, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 0), 0.0f, 0));
             prevRenderTarget = pRenderTarget;
             throw_if_fail(d3ddev->SetRenderState(
                 D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN |
@@ -343,7 +343,7 @@ void RSManager::measureOcclusionScale() {
 HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) noexcept {
   auto& tm = TextureManager::get();
   try {
-    if (pTexture == NULL)
+    if (pTexture == nullptr)
       return throw_if_fail(d3ddev->SetTexture(Stage, pTexture));
     if (Settings::get().getSkipIntro() && !timingIntroMode &&
         tm.isTextureBandainamcoLogo(pTexture)) {
@@ -499,7 +499,7 @@ void RSManager::restoreRenderState() {
   if (prevVDecl) {
     throw_if_fail(d3ddev->SetVertexDeclaration(prevVDecl));
   }
-  throw_if_fail(d3ddev->SetDepthStencilSurface(prevDepthStencilSurf)); // also restore NULL!
+  throw_if_fail(d3ddev->SetDepthStencilSurface(prevDepthStencilSurf)); // also restore nullptr!
   throw_if_fail(prevStateBlock->Apply());
 }
 

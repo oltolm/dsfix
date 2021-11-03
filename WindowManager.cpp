@@ -11,7 +11,7 @@ void WindowManager::applyCursorCapture() {
     ::ClientToScreen(hwnd, reinterpret_cast<LPPOINT>(&clientrect.right));
     ::ClipCursor(&clientrect);
   } else {
-    ::ClipCursor(NULL);
+    ::ClipCursor(nullptr);
   }
 }
 
@@ -44,7 +44,7 @@ void WindowManager::toggleBorderlessFullscreen() {
     ::GetMonitorInfo(monitor, &info);
     int monitorWidth = info.rcMonitor.right - info.rcMonitor.left;
     int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
-    ::SetWindowPos(hwnd, NULL, info.rcMonitor.left, info.rcMonitor.top, monitorWidth, monitorHeight,
+    ::SetWindowPos(hwnd, nullptr, info.rcMonitor.left, info.rcMonitor.top, monitorWidth, monitorHeight,
                    SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
   } else {
     // restore previous window
@@ -54,7 +54,7 @@ void WindowManager::toggleBorderlessFullscreen() {
     ::AdjustWindowRect(&desiredRect, prevStyle, false);
     int wWidth = desiredRect.right - desiredRect.left,
         wHeight = desiredRect.bottom - desiredRect.top;
-    ::SetWindowPos(hwnd, NULL, prevWindowRect.left, prevWindowRect.top, wWidth, wHeight,
+    ::SetWindowPos(hwnd, nullptr, prevWindowRect.left, prevWindowRect.top, wWidth, wHeight,
                    SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
   }
 }
@@ -80,5 +80,5 @@ void WindowManager::resize(unsigned clientW, unsigned clientH) {
   desiredRect.bottom = monitorHeight - (heightDiff / 2);
   LONG lStyle = ::GetWindowLong(hwnd, GWL_STYLE);
   ::AdjustWindowRect(&desiredRect, lStyle, false);
-  ::SetWindowPos(hwnd, NULL, desiredRect.left, desiredRect.top, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+  ::SetWindowPos(hwnd, nullptr, desiredRect.left, desiredRect.top, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 }

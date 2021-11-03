@@ -14,23 +14,23 @@ GAUSS::GAUSS(IDirect3DDevice9* device, int width, int height) noexcept
     // Setup pixel size macro
     std::string pixelSize = tfm::format("float2(1.0 / %d, 1.0 / %d)", width, height);
     // Setup the defines for compiling the effect
-    std::vector<D3DXMACRO> defines = {{"PIXEL_SIZE", pixelSize.c_str()}, {NULL, NULL}};
+    std::vector<D3DXMACRO> defines = {{"PIXEL_SIZE", pixelSize.c_str()}, {nullptr, nullptr}};
     // Load effect from file
     SDLOG(LogLevel::Info, "Gauss load");
     ID3DXBufferPtr errors;
     fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\GAUSS.fx";
-    HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), NULL,
-                                             D3DXFX_NOT_CLONEABLE, NULL, &effect, &errors);
+    HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), nullptr,
+                                             D3DXFX_NOT_CLONEABLE, nullptr, &effect, &errors);
     if (FAILED(hr)) {
       SDLOG(LogLevel::Error, "ERRORS:");
       SDLOG(LogLevel::Error, " %s", errors->GetBufferPointer());
     }
     // Create buffers
     throw_if_fail(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
-                                        D3DPOOL_DEFAULT, &buffer1Tex, NULL));
+                                        D3DPOOL_DEFAULT, &buffer1Tex, nullptr));
     throw_if_fail(buffer1Tex->GetSurfaceLevel(0, &buffer1Surf));
     // get handles
-    frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
+    frameTexHandle = effect->GetParameterByName(nullptr, "frameTex2D");
   } catch (const std::system_error& err) {
     SDLOG(LogLevel::Error, "%s", err.what());
   }

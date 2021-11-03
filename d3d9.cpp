@@ -15,7 +15,7 @@ int hkDirect3DCreate9CallCount = 0;
 
 IDirect3D9* APIENTRY hkDirect3DCreate9(UINT SDKVersion) {
   IDirect3D9* d3dint = oDirect3DCreate9(SDKVersion);
-  if (d3dint != NULL && hkDirect3DCreate9CallCount < 2) {
+  if (d3dint != nullptr && hkDirect3DCreate9CallCount < 2) {
     d3dint = new hkIDirect3D9(d3dint);
     ++hkDirect3DCreate9CallCount;
   }

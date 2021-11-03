@@ -12,7 +12,7 @@ namespace fs = std::filesystem;
 fs::path GetModuleFileNamePath(HMODULE hModule);
 fs::path GetModuleDirectory(HMODULE hModule);
 fs::path GetSystemDirectoryPath();
-fs::path GetModuleDirectoryPath(HMODULE hModule = NULL);
+fs::path GetModuleDirectoryPath(HMODULE hModule = nullptr);
 std::wstring GetLastErrorString();
 std::wstring FormatMessageString(DWORD dwMessageId);
 std::ostream& operator<<(std::ostream& os, const std::wstring& s);

@@ -28,7 +28,7 @@ void TextureManager::registerD3DXCreateTextureFromFileInMemory(
           GetModuleDirectoryPath() / "dsfix\\tex_dump" / tfm::format("%08x.dds", hash);
       auto Function = [](LPVOID lpThreadParameter) WINAPI -> DWORD {
         auto context = static_cast<std::pair<fs::path, IDirect3DSurface9*>*>(lpThreadParameter);
-        ::D3DXSaveSurfaceToFileW(context->first.c_str(), D3DXIFF_DDS, context->second, NULL, NULL);
+        ::D3DXSaveSurfaceToFileW(context->first.c_str(), D3DXIFF_DDS, context->second, nullptr, nullptr);
         context->second->Release();
         delete context;
         return 0;
