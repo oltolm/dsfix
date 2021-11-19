@@ -14,6 +14,15 @@ UINT32 SuperFastHash(const char* data, int len);
 
 TextureManager TextureManager::instance;
 
+using Parameter = std::pair<fs::path, IDirect3DSurface9Ptr>;
+
+auto Function = [](LPVOID lpThreadParameter) WINAPI -> DWORD {
+  auto& [destfile, srcsurface] = *static_cast<Parameter*>(lpThreadParameter);
+  ::D3DXSaveSurfaceToFileW(destfile.c_str(), D3DXIFF_DDS, srcsurface, nullptr, nullptr);
+  delete static_cast<Parameter*>(lpThreadParameter);
+  return 0;
+};
+
 void TextureManager::registerD3DXCreateTextureFromFileInMemory(
     LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture) noexcept {
   SDLOG(LogLevel::Trace, "RenderstateManager: registerD3DXCreateTextureFromFileInMemory %p",
@@ -22,18 +31,11 @@ void TextureManager::registerD3DXCreateTextureFromFileInMemory(
     if (Settings::get().getEnableTextureDumping()) {
       UINT32 hash = SuperFastHash(static_cast<const char*>(pSrcData), SrcDataSize);
       SDLOG(LogLevel::Debug, " - size: %8u, hash: %8x", SrcDataSize, hash);
-      IDirect3DSurface9* surf;
+      IDirect3DSurface9Ptr surf;
       throw_if_fail(pTexture->GetSurfaceLevel(0, &surf));
       fs::path destfile =
           GetModuleDirectoryPath() / "dsfix\\tex_dump" / tfm::format("%08x.dds", hash);
-      auto Function = [](LPVOID lpThreadParameter) WINAPI -> DWORD {
-        auto context = static_cast<std::pair<fs::path, IDirect3DSurface9*>*>(lpThreadParameter);
-        ::D3DXSaveSurfaceToFileW(context->first.c_str(), D3DXIFF_DDS, context->second, nullptr, nullptr);
-        context->second->Release();
-        delete context;
-        return 0;
-      };
-      auto Context = new std::pair(destfile, surf);
+      auto Context = new Parameter(destfile, surf);
       ::QueueUserWorkItem(Function, static_cast<LPVOID>(Context), WT_EXECUTEINPERSISTENTTHREAD);
     }
 
