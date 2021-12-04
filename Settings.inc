@@ -39,10 +39,6 @@ SETTING(std::wstring, Dinput8dllWrapper, "dinput8dllWrapper", L"");
 // Folder options
 SETTING(std::wstring, ScreenshotDir, "screenshotDir", L".");
 
-// Texture Override Options
-SETTING(bool, EnableTextureDumping, "enableTextureDumping", false);
-SETTING(bool, EnableTextureOverride, "enableTextureOverride", false);
-
 // HUD options
 SETTING(bool, EnableHudMod, "enableHudMod", false)
 SETTING(bool, EnableMinimalHud, "enableMinimalHud", false)

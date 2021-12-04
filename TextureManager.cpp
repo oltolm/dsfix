@@ -14,31 +14,11 @@ UINT32 SuperFastHash(const char* data, int len);
 
 TextureManager TextureManager::instance;
 
-using Parameter = std::pair<fs::path, IDirect3DSurface9Ptr>;
-
-auto Function = [](LPVOID lpThreadParameter) WINAPI -> DWORD {
-  auto& [destfile, srcsurface] = *static_cast<Parameter*>(lpThreadParameter);
-  ::D3DXSaveSurfaceToFileW(destfile.c_str(), D3DXIFF_DDS, srcsurface, nullptr, nullptr);
-  delete static_cast<Parameter*>(lpThreadParameter);
-  return 0;
-};
-
 void TextureManager::registerD3DXCreateTextureFromFileInMemory(
     LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture) noexcept {
   SDLOG(LogLevel::Trace, "RenderstateManager: registerD3DXCreateTextureFromFileInMemory %p",
         pTexture);
   try {
-    if (Settings::get().getEnableTextureDumping()) {
-      UINT32 hash = SuperFastHash(static_cast<const char*>(pSrcData), SrcDataSize);
-      SDLOG(LogLevel::Debug, " - size: %8u, hash: %8x", SrcDataSize, hash);
-      IDirect3DSurface9Ptr surf;
-      throw_if_fail(pTexture->GetSurfaceLevel(0, &surf));
-      fs::path destfile =
-          GetModuleDirectoryPath() / "dsfix\\tex_dump" / tfm::format("%08x.dds", hash);
-      auto Context = new Parameter(destfile, surf);
-      ::QueueUserWorkItem(Function, static_cast<LPVOID>(Context), WT_EXECUTEINPERSISTENTTHREAD);
-    }
-
     registerKnownTexture(pSrcData, SrcDataSize, pTexture);
   } catch (const std::system_error& err) {
     SDLOG(LogLevel::Error, "%s", err.what());
@@ -50,25 +30,6 @@ HRESULT TextureManager::redirectD3DXCreateTextureFromFileInMemoryEx(
     UINT MipLevels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter,
     D3DCOLOR ColorKey, D3DXIMAGE_INFO* pSrcInfo, PALETTEENTRY* pPalette,
     LPDIRECT3DTEXTURE9* ppTexture) {
-  if (Settings::get().getEnableTextureOverride()) {
-    UINT32 hash = SuperFastHash(static_cast<const char*>(pSrcData), SrcDataSize);
-    SDLOG(LogLevel::Trace, "Trying texture override size: %8u, hash: %8x", SrcDataSize, hash);
-
-    fs::path png = GetModuleDirectoryPath() / "dsfix\\tex_override" / tfm::format("%08x.png", hash);
-    if (std::ifstream(png)) {
-      SDLOG(LogLevel::Debug, "Texture override (png)! hash: %08x", hash);
-      return ::D3DXCreateTextureFromFileExW(pDevice, png.c_str(), D3DX_DEFAULT, D3DX_DEFAULT,
-                                            MipLevels, Usage, D3DFMT_FROM_FILE, Pool, Filter,
-                                            MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
-    }
-    fs::path dds = GetModuleDirectoryPath() / "dsfix\\tex_override" / tfm::format("%08x.dds", hash);
-    if (std::ifstream(dds)) {
-      SDLOG(LogLevel::Debug, "Texture override (dds)! hash: %08x", hash);
-      return ::D3DXCreateTextureFromFileExW(pDevice, dds.c_str(), D3DX_DEFAULT, D3DX_DEFAULT,
-                                            MipLevels, Usage, D3DFMT_FROM_FILE, Pool, Filter,
-                                            MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
-    }
-  }
   HRESULT res = OrigD3DXCreateTextureFromFileInMemoryEx(
       pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter,
       MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
