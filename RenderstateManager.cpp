@@ -73,19 +73,6 @@ void RSManager::releaseResources() noexcept {
 
 HRESULT RSManager::redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRect,
                                    HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) noexcept {
-  if (timingIntroMode) {
-    skippedPresents++;
-    if (skippedPresents >= 1200u && !Settings::get().getUnlockFPS()) {
-      SDLOG(LogLevel::Info, "Intro mode ended (timeout)!");
-      timingIntroMode = false;
-    }
-    if (skippedPresents >= 3000u) {
-      SDLOG(LogLevel::Info, "Intro mode ended (full timeout)!");
-      timingIntroMode = false;
-    }
-    return S_OK;
-  }
-  skippedPresents = 0;
   hudStarted = false;
   nrts = 0;
   doft = {0};
@@ -345,16 +332,6 @@ HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTextu
   try {
     if (pTexture == nullptr)
       return throw_if_fail(d3ddev->SetTexture(Stage, pTexture));
-    if (Settings::get().getSkipIntro() && !timingIntroMode &&
-        tm.isTextureBandainamcoLogo(pTexture)) {
-      SDLOG(LogLevel::Info, "Intro mode started!");
-      timingIntroMode = true;
-    }
-    if (timingIntroMode && (tm.isTextureGuiElements1(pTexture) ||
-                            tm.isTextureMenuscreenLogo(pTexture) || tm.isTextureText(pTexture))) {
-      SDLOG(LogLevel::Info, "Intro mode ended due to texture!");
-      timingIntroMode = false;
-    }
     if (!hudStarted && tm.isTextureHudHealthbar(pTexture)) {
       hudStarted = true;
     }

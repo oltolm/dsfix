@@ -30,9 +30,6 @@ SETTING(bool, CaptureCursor, "captureCursor", false);
 // Language Options
 SETTING(std::wstring, OverrideLanguage, "overrideLanguage", L"");
 
-// Skipping Options
-SETTING(bool, SkipIntro, "skipIntro", false);
-
 // Wrapper chaining options
 SETTING(std::wstring, Dinput8dllWrapper, "dinput8dllWrapper", L"");
 

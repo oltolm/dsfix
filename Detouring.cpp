@@ -9,23 +9,6 @@
 #include <MinHook.h>
 #include <Windows.h>
 
-bool timingIntroMode = false;
-static LARGE_INTEGER perfCountIncrease, countsPerSec;
-
-BOOL(WINAPI* OrigQueryPerformanceCounter)
-(_Out_ LARGE_INTEGER* lpPerformanceCount) = QueryPerformanceCounter;
-
-BOOL WINAPI DetouredQueryPerformanceCounter(_Out_ LARGE_INTEGER* lpPerformanceCount) {
-  void* traces[128];
-  int captured = CaptureStackBackTrace(0, 128, traces, nullptr);
-  BOOL ret = OrigQueryPerformanceCounter(lpPerformanceCount);
-  if (timingIntroMode && captured < 3) {
-    perfCountIncrease.QuadPart += countsPerSec.QuadPart / 50;
-  }
-  lpPerformanceCount->QuadPart += perfCountIncrease.QuadPart;
-  return ret;
-}
-
 D3DXCreateTexture_FNType OrigD3DXCreateTexture = D3DXCreateTexture;
 
 HRESULT WINAPI DetouredD3DXCreateTexture(_In_ LPDIRECT3DDEVICE9 pDevice, _In_ UINT Width,
@@ -80,12 +63,10 @@ void* hookFunction(const char* pFunctionName, const wchar_t* pModuleName, void* 
 
 namespace {
 void* Direct3DCreate9Handle;
-void* QueryPerformanceCounterHandle;
 void* D3DXCreateTextureFromFileInMemoryHandle;
 void* D3DXCreateTextureFromFileInMemoryExHandle;
 } // namespace
 void earlyDetour() {
-  QueryPerformanceFrequency(&countsPerSec);
   try {
     MH_Initialize();
     Direct3DCreate9Handle = hookFunction("Direct3DCreate9", L"d3d9.dll", (void*)&hkDirect3DCreate9,
@@ -97,11 +78,6 @@ void earlyDetour() {
 
 void startDetour() {
   try {
-    if (Settings::get().getSkipIntro()) {
-      QueryPerformanceCounterHandle = hookFunction("QueryPerformanceCounter", L"kernel32.dll",
-                                                   (void*)&DetouredQueryPerformanceCounter,
-                                                   (void**)&OrigQueryPerformanceCounter);
-    }
     D3DXCreateTextureFromFileInMemoryHandle =
         hookFunction("D3DXCreateTextureFromFileInMemory", L"d3dx9_43.dll",
                      (void*)&DetouredD3DXCreateTextureFromFileInMemory,
@@ -119,7 +95,6 @@ void endDetour() {
   MH_STATUS res = MH_RemoveHook(Direct3DCreate9Handle);
   if (res != MH_OK)
     SDLOG(LogLevel::Error, "MH_RemoveHook failed %s", MH_StatusToString(res));
-  res = MH_RemoveHook(QueryPerformanceCounterHandle);
   if (res != MH_OK)
     SDLOG(LogLevel::Error, "MH_RemoveHook failed %s", MH_StatusToString(res));
   res = MH_RemoveHook(D3DXCreateTextureFromFileInMemoryHandle);

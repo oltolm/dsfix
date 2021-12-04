@@ -33,7 +33,6 @@ private:
   bool paused = false;
   bool hudStarted = false;
   bool takeScreenshot = false;
-  unsigned skippedPresents = 0;
   // RenderDoneDetectionProgress
   // basically, when the game switches rendertargets after setting texture 0 to 3
   // in order, but no others, we assume we just finished rendering the hud-less
