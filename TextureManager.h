@@ -36,5 +36,4 @@ public:
                                                       PALETTEENTRY* pPalette,
                                                       LPDIRECT3DTEXTURE9* ppTexture);
   bool isTextureText(IDirect3DBaseTexture9* t);
-  const char* getTextureName(IDirect3DBaseTexture9* pTexture);
 };

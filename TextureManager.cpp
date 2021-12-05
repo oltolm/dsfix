@@ -61,12 +61,3 @@ bool TextureManager::isTextureText(IDirect3DBaseTexture9* t) {
          isTextureText08(t) || isTextureText09(t) || isTextureText10(t) || isTextureText11(t) ||
          isTextureText12(t);
 }
-
-const char* TextureManager::getTextureName(IDirect3DBaseTexture9* pTexture) {
-#define TEXTURE(_name, _hash)                                                                      \
-  if (texture##_name == pTexture)                                                                  \
-    return #_name;
-#include "Textures.inc"
-#undef TEXTURE
-  return "Unknown";
-}
