@@ -37,6 +37,7 @@ add_library(dsfix
   Hud.cpp
   KeyActions.cpp
   main.cpp
+  memory.cpp
   RenderstateManager.cpp
   Settings.cpp
   SMAA.cpp
