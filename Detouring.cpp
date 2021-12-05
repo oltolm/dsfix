@@ -1,5 +1,4 @@
 #include "Detouring.h"
-#include "Settings.h"
 #include "TextureManager.h"
 #include "d3d9.h"
 #include "log.h"
@@ -7,57 +6,40 @@
 #include "tinyformat.h"
 #include "util.h"
 #include <MinHook.h>
-#include <Windows.h>
 
-D3DXCreateTexture_FNType OrigD3DXCreateTexture = D3DXCreateTexture;
+decltype(Direct3DCreate9)* oDirect3DCreate9;
 
-HRESULT WINAPI DetouredD3DXCreateTexture(_In_ LPDIRECT3DDEVICE9 pDevice, _In_ UINT Width,
-                                         _In_ UINT Height, _In_ UINT MipLevels, _In_ DWORD Usage,
-                                         _In_ D3DFORMAT Format, _In_ D3DPOOL Pool,
-                                         _Out_ LPDIRECT3DTEXTURE9* ppTexture) {
-  return OrigD3DXCreateTexture(pDevice, Width, Height, MipLevels, Usage, Format, Pool, ppTexture);
-}
-
-D3DXCreateTextureFromFileInMemory_FNType OrigD3DXCreateTextureFromFileInMemory =
-    D3DXCreateTextureFromFileInMemory;
+decltype(D3DXCreateTextureFromFileInMemory)* OrigD3DXCreateTextureFromFileInMemory;
 
 HRESULT WINAPI DetouredD3DXCreateTextureFromFileInMemory(_In_ LPDIRECT3DDEVICE9 pDevice,
                                                          _In_ LPCVOID pSrcData,
                                                          _In_ UINT SrcDataSize,
                                                          _Out_ LPDIRECT3DTEXTURE9* ppTexture) {
   HRESULT res = OrigD3DXCreateTextureFromFileInMemory(pDevice, pSrcData, SrcDataSize, ppTexture);
-  TextureManager::get().registerD3DXCreateTextureFromFileInMemory(pSrcData, SrcDataSize,
-                                                                  *ppTexture);
+  TextureManager::get().registerKnownTexture(pSrcData, SrcDataSize, *ppTexture);
   return res;
 }
 
-D3DXCreateTextureFromFileInMemoryEx_FNType OrigD3DXCreateTextureFromFileInMemoryEx =
-    D3DXCreateTextureFromFileInMemoryEx;
+decltype(D3DXCreateTextureFromFileInMemoryEx)* OrigD3DXCreateTextureFromFileInMemoryEx;
 
 HRESULT WINAPI DetouredD3DXCreateTextureFromFileInMemoryEx(
     LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData, UINT SrcDataSize, UINT Width, UINT Height,
     UINT MipLevels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter,
     D3DCOLOR ColorKey, D3DXIMAGE_INFO* pSrcInfo, PALETTEENTRY* pPalette,
     LPDIRECT3DTEXTURE9* ppTexture) {
-  return TextureManager::get().redirectD3DXCreateTextureFromFileInMemoryEx(
+  HRESULT res = OrigD3DXCreateTextureFromFileInMemoryEx(
       pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter,
       MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+  TextureManager::get().registerKnownTexture(pSrcData, SrcDataSize, *ppTexture);
+  return res;
 }
 
 void* hookFunction(const char* pFunctionName, const wchar_t* pModuleName, void* const pDetour,
                    void** ppOriginal) {
   HMODULE hModule = GetModuleHandleW(pModuleName);
-  throw_if_null(hModule);
   void* pTarget = reinterpret_cast<void*>(::GetProcAddress(hModule, pFunctionName));
-  throw_if_null(pTarget);
-  MH_STATUS ret = MH_CreateHook(pTarget, pDetour, ppOriginal);
-  if (ret != MH_OK)
-    throw std::runtime_error(tfm::format("hooking %s in %s failed: %s", pFunctionName, pModuleName,
-                                         MH_StatusToString(ret)));
-  SDLOG(LogLevel::Info, "hooking %s in %s succeeded", pFunctionName, pModuleName);
-  ret = MH_EnableHook(pTarget);
-  if (ret != MH_OK)
-    throw std::runtime_error(tfm::format("MH_EnableHook failed: %s", MH_StatusToString(ret)));
+  MH_CreateHook(pTarget, pDetour, ppOriginal);
+  MH_EnableHook(pTarget);
   return pTarget;
 }
 
@@ -66,9 +48,9 @@ void* Direct3DCreate9Handle;
 void* D3DXCreateTextureFromFileInMemoryHandle;
 void* D3DXCreateTextureFromFileInMemoryExHandle;
 } // namespace
-void earlyDetour() {
+
+void hookDirect3DCreate9() {
   try {
-    MH_Initialize();
     Direct3DCreate9Handle = hookFunction("Direct3DCreate9", L"d3d9.dll", (void*)&hkDirect3DCreate9,
                                          (void**)&oDirect3DCreate9);
   } catch (const std::runtime_error& exp) {
@@ -92,18 +74,7 @@ void startDetour() {
 }
 
 void endDetour() {
-  MH_STATUS res = MH_RemoveHook(Direct3DCreate9Handle);
-  if (res != MH_OK)
-    SDLOG(LogLevel::Error, "MH_RemoveHook failed %s", MH_StatusToString(res));
-  if (res != MH_OK)
-    SDLOG(LogLevel::Error, "MH_RemoveHook failed %s", MH_StatusToString(res));
-  res = MH_RemoveHook(D3DXCreateTextureFromFileInMemoryHandle);
-  if (res != MH_OK)
-    SDLOG(LogLevel::Error, "MH_RemoveHook failed %s", MH_StatusToString(res));
-  res = MH_RemoveHook(D3DXCreateTextureFromFileInMemoryExHandle);
-  if (res != MH_OK)
-    SDLOG(LogLevel::Error, "MH_RemoveHook failed %s", MH_StatusToString(res));
-  res = MH_Uninitialize();
-  if (res != MH_OK)
-    SDLOG(LogLevel::Error, "MH_Uninitialize failed %s", MH_StatusToString(res));
+  MH_RemoveHook(Direct3DCreate9Handle);
+  MH_RemoveHook(D3DXCreateTextureFromFileInMemoryHandle);
+  MH_RemoveHook(D3DXCreateTextureFromFileInMemoryExHandle);
 }

@@ -13,14 +13,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see http://www.gnu.org/licenses/ */
 #pragma once
-#define VERSION "2.6.0"
-#include <d3d9.h>
-#include <string>
 
-using Direct3DCreate9_t = IDirect3D9*(APIENTRY*)(UINT);
-extern Direct3DCreate9_t oDirect3DCreate9;
+#include <dinput.h>
+
+#define VERSION "2.6.0"
+
 using DirectInput8Create_t = HRESULT(WINAPI*)(HINSTANCE inst_handle, DWORD version,
                                               const IID& r_iid, LPVOID* out_wrapper,
                                               LPUNKNOWN p_unk);
 extern DirectInput8Create_t oDirectInput8Create;
-void init();
+void onDirect3D9Create();

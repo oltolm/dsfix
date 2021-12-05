@@ -29,7 +29,7 @@ add_library(dsfix
   d3d9int.cpp
   d3d9query.cpp
   Detouring.cpp
-  dinputWrapper.cpp
+  dinput.cpp
   Effect.cpp
   FPS.cpp
   FXAA.cpp

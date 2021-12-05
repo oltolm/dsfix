@@ -1,14 +1,16 @@
 #include "RenderstateManager.h"
-#include "Detouring.h"
 #include "FPS.h"
+#include "FXAA.h"
+#include "GAUSS.h"
 #include "Hash.h"
+#include "Hud.h"
+#include "SMAA.h"
+#include "SSAO.h"
 #include "Settings.h"
 #include "TextureManager.h"
 #include "WindowManager.h"
 #include "log.h"
-#include "main.h"
 #include "tinyformat.h"
-#include "util.h"
 #include <ctime>
 #include <fstream>
 #include <iomanip>
@@ -23,7 +25,8 @@ unsigned getDOFResolution() {
 } // namespace
 
 void RSManager::initResources() noexcept {
-  unsigned rw = Settings::get().getRenderWidth(), rh = Settings::get().getRenderHeight();
+  unsigned rw = Settings::get().getRenderWidth();
+  unsigned rh = Settings::get().getRenderHeight();
   haveOcclusionScale = false;
   occlusionScale = 1;
   unsigned dofRes = getDOFResolution();
@@ -49,11 +52,6 @@ void RSManager::initResources() noexcept {
     throw_if_fail(d3ddev->CreateDepthStencilSurface(rw, rh, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0,
                                                     FALSE, &depthStencilSurf, nullptr));
     throw_if_fail(d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock));
-    if (!initialized) { // on first init only
-      init();
-      startDetour();
-      initialized = true;
-    }
   } catch (const std::system_error& err) {
     SDLOG(LogLevel::Error, "%s", err.what());
   }
@@ -158,14 +156,14 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
                 smaa->go(tex, tex, rgbaBuffer1Surf, SMAA::INPUT_COLOR);
               else
                 fxaa->go(tex, rgbaBuffer1Surf);
-              throw_if_fail(
-                  d3ddev->StretchRect(rgbaBuffer1Surf, nullptr, oldRenderTarget, nullptr, D3DTEXF_NONE));
+              throw_if_fail(d3ddev->StretchRect(rgbaBuffer1Surf, nullptr, oldRenderTarget, nullptr,
+                                                D3DTEXF_NONE));
             }
             // perform SSAO
             if (ssao && doSsao) {
               ssao->go(tex, zTex, rgbaBuffer1Surf);
-              throw_if_fail(
-                  d3ddev->StretchRect(rgbaBuffer1Surf, nullptr, oldRenderTarget, nullptr, D3DTEXF_NONE));
+              throw_if_fail(d3ddev->StretchRect(rgbaBuffer1Surf, nullptr, oldRenderTarget, nullptr,
+                                                D3DTEXF_NONE));
             }
             restoreRenderState();
           }
@@ -213,8 +211,9 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
           throw_if_fail(d3ddev->CreateRenderTarget(desc.Width, desc.Height, D3DFMT_X8R8G8B8,
                                                    D3DMULTISAMPLE_NONE, 0, true, &convertedSurface,
                                                    nullptr));
-          throw_if_fail(::D3DXLoadSurfaceFromSurface(convertedSurface, nullptr, nullptr, oldRenderTarget,
-                                                     nullptr, nullptr, D3DX_FILTER_POINT, 0));
+          throw_if_fail(::D3DXLoadSurfaceFromSurface(convertedSurface, nullptr, nullptr,
+                                                     oldRenderTarget, nullptr, nullptr,
+                                                     D3DX_FILTER_POINT, 0));
           throw_if_fail(::D3DXSaveSurfaceToFileW(destfile.c_str(), D3DXIFF_JPG, convertedSurface,
                                                  nullptr, nullptr));
         }

@@ -7,12 +7,13 @@
 #include "log.h"
 #include "main.h"
 #include <cstring>
-#include <windows.h>
+#include <dxerr9.h>
 
 hkIDirect3DDevice9::hkIDirect3DDevice9(IDirect3DDevice9* pIDirect3DDevice9, IDirect3D9* pIDirect3D9)
     : m_pD3Ddev(pIDirect3DDevice9), m_pD3Dint(pIDirect3D9) {
   RSManager::get().setD3DDevice(m_pD3Ddev);
   RSManager::get().initResources();
+  onDirect3D9Create();
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect,

@@ -1,6 +1,5 @@
+#include "Detouring.h"
 #include "d3d9int.h"
-#include "main.h"
-#include <windows.h>
 
 namespace {
 // Direct3DCreate9 seems to be called twice when the game first launches, and

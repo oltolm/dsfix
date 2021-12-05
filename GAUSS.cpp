@@ -1,9 +1,9 @@
 #include "GAUSS.h"
 #include "log.h"
 #include "util.h"
+#include <array>
 #include <filesystem>
 #include <string>
-#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -14,7 +14,7 @@ GAUSS::GAUSS(IDirect3DDevice9* device, int width, int height) noexcept
     // Setup pixel size macro
     std::string pixelSize = tfm::format("float2(1.0 / %d, 1.0 / %d)", width, height);
     // Setup the defines for compiling the effect
-    std::vector<D3DXMACRO> defines = {{"PIXEL_SIZE", pixelSize.c_str()}, {nullptr, nullptr}};
+    std::array<D3DXMACRO, 2> defines = {{{"PIXEL_SIZE", pixelSize.c_str()}, {nullptr, nullptr}}};
     // Load effect from file
     SDLOG(LogLevel::Info, "Gauss load");
     ID3DXBufferPtr errors;

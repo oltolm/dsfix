@@ -4,7 +4,6 @@
 #include "Settings.h"
 #include "d3d9dev.h"
 #include "log.h"
-#include <windows.h>
 
 HRESULT APIENTRY hkIDirect3D9::QueryInterface(REFIID riid, void** ppvObj) {
   return m_pD3Dint->QueryInterface(riid, ppvObj);

@@ -1,8 +1,5 @@
 #pragma once
-#include "log.h"
-#include "tinyformat.h"
 #include <Windows.h>
-#include <dxerr9.h>
 #include <string>
 #include <system_error>
 #include <filesystem>
@@ -42,7 +39,7 @@ inline DWORD throw_if_zero(DWORD status) {
 }
 
 template<class T>
-inline T throw_if_null(T ptr) {
+inline T* throw_if_null(T* ptr) {
   if (ptr == nullptr) {
     throw std::system_error(::GetLastError(), std::system_category());
   }

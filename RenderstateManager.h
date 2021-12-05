@@ -1,16 +1,17 @@
 #pragma once
-#include "FXAA.h"
-#include "GAUSS.h"
-#include "HUD.h"
-#include "SMAA.h"
-#include "SSAO.h"
 #include "comptr.h"
+#include "log.h"
 #include <memory>
+
+class SMAA;
+class FXAA;
+class SSAO;
+class GAUSS;
+class HUD;
 
 class RSManager {
 private:
   static RSManager instance;
-  bool initialized = false;
   D3DVIEWPORT9 viewport;
   IDirect3DDevice9Ptr d3ddev;
   double lastPresentTime = 0;

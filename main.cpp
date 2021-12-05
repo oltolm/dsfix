@@ -4,11 +4,10 @@
 #include "FPS.h"
 #include "KeyActions.h"
 #include "Settings.h"
-#include "TextureManager.h"
 #include "log.h"
 #include "tinyformat.h"
 #include "util.h"
-#include <ctime>
+#include <MinHook.h>
 #include <d3d9.h>
 #include <filesystem>
 #include <fstream>
@@ -16,7 +15,6 @@
 
 namespace fs = std::filesystem;
 
-Direct3DCreate9_t oDirect3DCreate9 = Direct3DCreate9;
 DirectInput8Create_t oDirectInput8Create;
 
 namespace dsfix {
@@ -26,8 +24,8 @@ std::ofstream log;
 void loadOriginalDinput8dll() {
   HMODULE hMod;
   auto wrapper = Settings::get().getDinput8dllWrapper();
-  fs::path dinput8Filename = GetSystemDirectoryPath() / L"dinput8.dll";
   if (wrapper.empty() || (wrapper.find(L"none") == 0)) {
+    fs::path dinput8Filename = GetSystemDirectoryPath() / L"dinput8.dll";
     hMod = ::LoadLibraryW(dinput8Filename.c_str());
   } else {
     tfm::format(dsfix::log, "Loading dinput wrapper %s\n", wrapper);
@@ -42,7 +40,10 @@ void loadOriginalDinput8dll() {
   oDirectInput8Create = (DirectInput8Create_t)::GetProcAddress(hMod, "DirectInput8Create");
 }
 
-void init() {
+void onDirect3D9Create() {
+  static bool initialized = false;
+  if (initialized)
+    return;
   fs::path logFilename = GetModuleDirectoryPath() / L"DSfix.log";
   dsfix::log.open(logFilename);
   Settings::get().load();
@@ -54,17 +55,22 @@ void init() {
   initFPSTimer();
   if (Settings::get().getUnlockFPS())
     applyFPSPatch();
+  startDetour();
+  initialized = true;
+  SDLOG(LogLevel::Debug, "onDirect3D9Create finished");
 }
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved __attribute__((unused))) {
   if (dwReason == DLL_PROCESS_ATTACH) {
     ::DisableThreadLibraryCalls(hDll);
-    earlyDetour();
+    MH_Initialize();
+    hookDirect3DCreate9();
     return TRUE;
   } else if (dwReason == DLL_PROCESS_DETACH) {
     SDLOG(LogLevel::Info, "shutting down");
     Settings::get().shutdown();
     endDetour();
+    MH_Uninitialize();
   }
   return FALSE;
 }
