@@ -2,7 +2,7 @@
 #include "comptr.h"
 #include "log.h"
 #include "util.h"
-#include <d3d9.h>
+#include <d3dx9.h>
 
 // Base class for effects
 class Effect {

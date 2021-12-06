@@ -6,6 +6,7 @@
 #include "tinyformat.h"
 #include "util.h"
 #include <MinHook.h>
+#include <d3dx9.h>
 
 decltype(Direct3DCreate9)* oDirect3DCreate9;
 

@@ -33,7 +33,9 @@ policies, either expressed or implied, of the copyright holders.*/
 #include "main.h"
 #include <d3d9.h>
 #include <d3dx9.h>
+#ifndef _MSC_VER
 #include <dxerr9.h>
+#endif
 #include <dxgi.h>
 
 class SMAA : public Effect {

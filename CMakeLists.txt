@@ -6,13 +6,15 @@
 # cpack
 # cpack --config CPackSourceConfig.cmake
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 project(dsfix VERSION 2.6.0 LANGUAGES CXX)
 
-find_program(CCACHE ccache)
-if (CCACHE)
-  message(STATUS "found ccache: ${CCACHE}")
-  set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+if(NOT MSVC)
+  find_program(CCACHE ccache)
+  if (CCACHE)
+    message(STATUS "found ccache: ${CCACHE}")
+    set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+  endif()
 endif()
 
 set(CPACK_GENERATOR ZIP)
@@ -50,26 +52,33 @@ add_library(dsfix
 target_link_libraries(dsfix
   PRIVATE
   minhook
-  -ld3d9
-  -ld3dx9
-  -ldxguid
-  -ldxerr9
+  d3d9
+  dxguid
 )
 
+if(NOT MSVC)
+target_link_libraries(dsfix
+  PRIVATE
+  d3dx9
+  dxerr9
+)
+endif()
+
+if(NOT MSVC)
 target_link_options(dsfix
   PRIVATE
   -static-libgcc
   -static-libstdc++
   -static
 )
-
+endif()
 target_compile_features(dsfix PRIVATE cxx_std_17)
 
 target_include_directories(dsfix
   PRIVATE
   "${PROJECT_SOURCE_DIR}/include"
 )
-
+if(NOT MSVC)
 target_compile_options(dsfix
   PRIVATE
   -msse2
@@ -79,8 +88,10 @@ target_compile_options(dsfix
   -Wno-array-bounds
   -Wextra
   -Wno-cast-function-type
+  -Wno-unused-parameter
+  -Wno-unused-but-set-variable
 )
-
+endif()
 target_compile_definitions(dsfix
   PRIVATE
   -DTINYFORMAT_ALLOW_WCHAR_STRINGS=1
@@ -99,6 +110,16 @@ set_target_properties(dsfix
   PREFIX ""
   OUTPUT_NAME "dinput8"
 )
+
+if(MSVC)
+  find_path(d3dx9_include_dir "d3dx9.h"
+    REQUIRED
+    PATH_SUFFIXES "dxsdk-d3dx"
+  )
+  target_include_directories(dsfix PRIVATE ${d3dx9_include_dir})
+  find_library(d3dx9_library "d3dx9.lib" REQUIRED)
+  target_link_libraries(dsfix PRIVATE ${d3dx9_library})
+endif()
 
 install(
   TARGETS dsfix

@@ -4,6 +4,7 @@ Pattern search algorithm and other memory related issues.
 */
 #include "memory.h"
 #include <Psapi.h>
+#include <cstdlib>
 #include <cstring>
 
 BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen);
@@ -41,12 +42,13 @@ DWORD GetMemoryAddressFromPattern(LPCWSTR szDllName, LPCSTR szSearchPattern, DWO
   if (szSearchPattern[0] == '!') {
     HMODULE hModule = GetModuleHandleW(szDllName);
     // First let's try to find ordinal by name
-    if (hModule)
+    if (hModule) {
       lResult = (DWORD)GetProcAddress(hModule, &szSearchPattern[1]);
-    // No luck, lets try by ordinal number instead
-    if (!lResult) {
-      lResult = (DWORD)GetProcAddress(
-          hModule, (LPCSTR)MAKELONG(strtoul(&szSearchPattern[1], nullptr, 10), 0));
+      // No luck, lets try by ordinal number instead
+      if (!lResult) {
+        lResult = (DWORD)GetProcAddress(
+            hModule, (LPCSTR)MAKELONG(std::strtoul(&szSearchPattern[1], nullptr, 10), 0));
+      }
     }
     return lResult += (lResult ? offset : 0);
   }
@@ -136,7 +138,7 @@ search.
 - thohell
 */
 VOID MakeSearchPattern(LPCSTR pString, LPWORD pat) {
-  size_t len = std::strlen(pString);
+  size_t len = std::strlen(pString) / 2;
   char tmp[3] = { };
   for (size_t i = 0; i < len; i++) {
     std::memcpy(tmp, &pString[i * 2], 2);

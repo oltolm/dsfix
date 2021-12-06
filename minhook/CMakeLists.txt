@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+﻿cmake_minimum_required(VERSION 3.12)
 project(minhook VERSION 1.3.3 LANGUAGES C)
 
 add_library(minhook
@@ -12,20 +12,18 @@ add_library(minhook
     dll_resources/MinHook.def
 )
 
+if(NOT MSVC)
 target_link_libraries(minhook
     PRIVATE
     -Wl,--enable-stdcall-fixup
     -static-libgcc
     -static
 )
+endif()
 
 target_include_directories(minhook INTERFACE include)
 
-if("${CMAKE_VERSION}" VERSION_GREATER "3.7")
-  target_compile_features(minhook PRIVATE c_std_11)
-else()
-  set_property(TARGET minhook PROPERTY C_STANDARD 11)
-endif()
+target_compile_features(minhook PRIVATE c_std_11)
 
 target_compile_options(minhook PRIVATE -masm=intel)
 

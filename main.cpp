@@ -60,7 +60,7 @@ void onDirect3D9Create() {
   SDLOG(LogLevel::Debug, "onDirect3D9Create finished");
 }
 
-BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved __attribute__((unused))) {
+BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
   if (dwReason == DLL_PROCESS_ATTACH) {
     ::DisableThreadLibraryCalls(hDll);
     MH_Initialize();

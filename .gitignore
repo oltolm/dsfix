@@ -8,4 +8,5 @@ Release/
 *.VC.VC.opendb
 *.VC.db
 /.vscode/
-/build/
+/build*/
+out/

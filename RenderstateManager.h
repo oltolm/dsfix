@@ -1,6 +1,7 @@
 #pragma once
 #include "comptr.h"
 #include "log.h"
+#include <array>
 #include <memory>
 
 class SMAA;

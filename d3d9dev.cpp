@@ -7,7 +7,9 @@
 #include "log.h"
 #include "main.h"
 #include <cstring>
+#ifndef _MSC_VER
 #include <dxerr9.h>
+#endif
 
 hkIDirect3DDevice9::hkIDirect3DDevice9(IDirect3DDevice9* pIDirect3DDevice9, IDirect3D9* pIDirect3D9)
     : m_pD3Ddev(pIDirect3DDevice9), m_pD3Dint(pIDirect3D9) {
