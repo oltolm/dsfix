@@ -9,7 +9,7 @@ Pattern search algorithm and other memory related issues.
 
 BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen);
 LPVOID PatternSearch(LPBYTE buf, DWORD blen, LPWORD pat, DWORD plen);
-VOID MakeSearchPattern(LPCSTR pString, LPWORD pat);
+VOID MakeSearchPattern(LPCSTR pString, LPWORD pat, DWORD plen);
 
 /*
 GetMemoryAddressFromPattern
@@ -53,8 +53,8 @@ DWORD GetMemoryAddressFromPattern(LPCWSTR szDllName, LPCSTR szSearchPattern, DWO
     return lResult += (lResult ? offset : 0);
   }
   // Parse fingerprint
-  DWORD len = (strlen(szSearchPattern)) / 2;
-  WORD* pPattern = new WORD[len];
+  DWORD plen = (strlen(szSearchPattern)) / 2;
+  WORD* pPattern = new WORD[plen];
   DWORD SearchSize = 0;
   DWORD SearchAddress = 0;
   MODULEINFO moduleInfo;
@@ -63,8 +63,8 @@ DWORD GetMemoryAddressFromPattern(LPCWSTR szDllName, LPCSTR szSearchPattern, DWO
     if (GetModuleInformation(GetCurrentProcess(), hDllModule, &moduleInfo, sizeof(moduleInfo))) {
       SearchAddress = (DWORD)moduleInfo.lpBaseOfDll;
       SearchSize = moduleInfo.SizeOfImage;
-      MakeSearchPattern(szSearchPattern, pPattern);
-      if ((lResult = (DWORD)PatternSearch((BYTE*)SearchAddress, SearchSize, pPattern, len)))
+      MakeSearchPattern(szSearchPattern, pPattern, plen);
+      if ((lResult = (DWORD)PatternSearch((BYTE*)SearchAddress, SearchSize, pPattern, plen)))
         lResult += offset;
     } else {
       lResult = 0;
@@ -137,10 +137,9 @@ Convert a pattern-string into a pattern array for use with pattern
 search.
 - thohell
 */
-VOID MakeSearchPattern(LPCSTR pString, LPWORD pat) {
-  size_t len = std::strlen(pString) / 2;
+VOID MakeSearchPattern(LPCSTR pString, LPWORD pat, DWORD plen) {
   char tmp[3] = { };
-  for (size_t i = 0; i < len; i++) {
+  for (size_t i = 0; i < plen; i++) {
     std::memcpy(tmp, &pString[i * 2], 2);
     char* x;
     BYTE value = (BYTE)std::strtoul(tmp, &x, 16);
