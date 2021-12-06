@@ -5,6 +5,7 @@
 #include "RenderstateManager.h"
 #include "Settings.h"
 #include "log.h"
+#include "memory.h"
 #include <MinHook.h>
 #include <windows.h>
 
@@ -14,8 +15,10 @@ static LARGE_INTEGER timerFreq;
 static LARGE_INTEGER counterAtStart;
 
 // Time-step value address
-// search pattern for Cheat Engine: 0080264400009444000058420000C0428988083D0000A044
-// code offset: 0x00000010
+// search pattern
+const char* TS_PATTERN = "0080264400009444000058420000C0428988083D0000A044";
+// code offset
+const DWORD TS_OFFSET = 0x00000010;
 //
 // 011E4D50 - 00 80 26440000        - add [eax+00004426],al
 // 011E4D56 - 94                    - xchg eax,esp
@@ -29,8 +32,10 @@ static LARGE_INTEGER counterAtStart;
 static DWORD ADDR_TS = 0x011E4D60;
 
 // Presentation interval address
-// search pattern for Cheat Engine: FF15xxxxxxxx83C408C78648020000020000005EC20800
-// code offset: 0x0000000F
+// search pattern
+const char* PRESINT_PATTERN = "FF15xxxxxxxx83C408C78648020000020000005EC20800";
+// code offset
+const DWORD PRESINT_OFFSET = 0x0000000F;
 //
 // 00FFA2FF - FF 15 ACFB1501        - call dword ptr [0115FBAC] { ->006E9C00 }
 // 00FFA305 - 83 C4 08              - add esp,08 { 8 }
@@ -40,8 +45,10 @@ static DWORD ADDR_TS = 0x011E4D60;
 static DWORD ADDR_PRESINT = 0x00FFA30E;
 
 // getDrawThreadMsgCommand address in HGCommandDispatcher loop
-// search pattern for Cheat Engine: 6A018BCDE8xxxxxxxx8BF08BCEE8xxxxxxxx83F805
-// code offset: 0x0000000D
+// search pattern
+const char* GETCMD_PATTERN = "6A018BCDE8xxxxxxxx8BF08BCEE8xxxxxxxx83F805";
+// code offset
+const DWORD GETCMD_OFFSET = 0x0000000D;
 //
 // 00BAC4D0 - 6A 01                 - push 01 { 1 }
 // 00BAC4D2 - 8B CD                 - mov ecx,ebp
@@ -53,7 +60,7 @@ static DWORD ADDR_PRESINT = 0x00FFA30E;
 //
 // code at 00BAC4DD calls the function:
 // 00577F40 - 8B 41 0C              - mov eax,[ecx+0C]
-// 00577F43 - C3                    - ret 
+// 00577F43 - C3                    - ret
 //
 // in C:
 // __attribute__((fastcall)) unsigned getDrawThreadMsgCommand(unsigned* cmd) {
@@ -113,6 +120,12 @@ __attribute__((fastcall)) unsigned int hkGetDrawThreadMsgCommand(unsigned int* c
 // Game Patches
 void applyFPSPatch() {
   SDLOG(LogLevel::Info, "Starting FPS unlock...");
+  ADDR_TS = GetMemoryAddressFromPattern(nullptr, TS_PATTERN, TS_OFFSET);
+  SDLOG(LogLevel::Info, "found time-step address at 0x%X", ADDR_TS);
+  ADDR_PRESINT = GetMemoryAddressFromPattern(nullptr, PRESINT_PATTERN, PRESINT_OFFSET);
+  SDLOG(LogLevel::Info, "found presentation interval address at 0x%X", ADDR_PRESINT);
+  ADDR_GETCMD = GetMemoryAddressFromPattern(nullptr, GETCMD_PATTERN, GETCMD_OFFSET);
+  SDLOG(LogLevel::Info, "found getDrawThreadMsgCommand address at 0x%X", ADDR_GETCMD);
   // Binary patches
   // Override D3D Presentation Interval
   const DWORD data = 5; // Set to immediate

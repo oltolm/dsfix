@@ -9,9 +9,6 @@ Pattern search algorithm and other memory related issues.
 BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen);
 LPVOID PatternSearch(LPBYTE buf, DWORD blen, LPWORD pat, DWORD plen);
 VOID MakeSearchPattern(LPCSTR pString, LPWORD pat);
-void writeToAddress(void* Data, DWORD Address, int Size);
-void* DetourApply(BYTE* orig, BYTE* hook, int len, BYTE type);
-void DetourRemove(BYTE* src, BYTE* restore, const int len);
 
 /*
 GetMemoryAddressFromPattern
@@ -33,7 +30,7 @@ the calling function.
 If the address is not found the function returns 0
 - thohell
 */
-DWORD GetMemoryAddressFromPattern(LPWSTR szDllName, LPCSTR szSearchPattern, DWORD offset) {
+DWORD GetMemoryAddressFromPattern(LPCWSTR szDllName, LPCSTR szSearchPattern, DWORD offset) {
   DWORD lResult = 0;
   // Check for actual address
   if (szSearchPattern[0] == '#') {
@@ -56,10 +53,11 @@ DWORD GetMemoryAddressFromPattern(LPWSTR szDllName, LPCSTR szSearchPattern, DWOR
   // Parse fingerprint
   DWORD len = (strlen(szSearchPattern)) / 2;
   WORD* pPattern = new WORD[len];
-  DWORD SearchSize = NULL, SearchAddress = NULL;
+  DWORD SearchSize = 0;
+  DWORD SearchAddress = 0;
   MODULEINFO moduleInfo;
   HMODULE hDllModule = GetModuleHandleW(szDllName);
-  if (hDllModule != NULL) {
+  if (hDllModule != nullptr) {
     if (GetModuleInformation(GetCurrentProcess(), hDllModule, &moduleInfo, sizeof(moduleInfo))) {
       SearchAddress = (DWORD)moduleInfo.lpBaseOfDll;
       SearchSize = moduleInfo.SizeOfImage;
@@ -67,7 +65,7 @@ DWORD GetMemoryAddressFromPattern(LPWSTR szDllName, LPCSTR szSearchPattern, DWOR
       if ((lResult = (DWORD)PatternSearch((BYTE*)SearchAddress, SearchSize, pPattern, len)))
         lResult += offset;
     } else {
-      lResult = NULL;
+      lResult = 0;
     }
   }
   delete[] pPattern;
@@ -90,16 +88,14 @@ a0, b0, c0, d0, e0 is equal to
 I think you got the idea of it...BOOL _fastcall PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen)
 */
 BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen) {
-  // Just a counter
-  DWORD i;
   // Offset
   DWORD ofs = 0;
   // Loop
-  for (i = 0; plen > 0; i++) {
-    /*Compare mask buf and compare result.
-    Swapped mask/data. Old code was buggy.
-    - thohell*/
-    if ((buf[ofs] & ((pat[ofs] & 0xff00) >> 8)) != (pat[ofs] & 0xff))
+  for (DWORD i = 0; plen > 0; i++) {
+    // Compare mask buf and compare result.
+    // Swapped mask/data. Old code was buggy.
+    // - thohell
+    if ((buf[ofs] & HIBYTE(pat[ofs]) /* mask */) != LOBYTE(pat[ofs]) /* value */)
       return FALSE;
     // Move ofs in zigzag direction
     plen--;
@@ -117,22 +113,19 @@ Search for the pattern, returns the pointer to buf+ofset matching
 the pattern or null.
 */
 LPVOID PatternSearch(LPBYTE buf, DWORD blen, LPWORD pat, DWORD plen) {
-  // Offset and End of search
-  DWORD ofs;
-  DWORD end;
   // Buffer length and Pattern length may not be 0
   if ((blen == 0) || (plen == 0))
-    return NULL;
+    return nullptr;
   // Calculate End of search
-  end = blen - plen;
-  // Do the booring loop
-  for (ofs = 0; ofs != end; ofs++) {
+  DWORD end = blen - plen;
+  // Do the booring loop  
+  for (DWORD ofs = 0; ofs != end; ofs++) { // Offset and End of search
     // Return offset to first byte of buf matching width the pattern
     if (PatternEquals(&buf[ofs], pat, plen))
       return &buf[ofs];
   }
-  // Me no find, me return 0, NULL, nil
-  return NULL;
+  // Me no find, me return 0, nullptr, nil
+  return nullptr;
 }
 
 /*
@@ -143,24 +136,15 @@ search.
 - thohell
 */
 VOID MakeSearchPattern(LPCSTR pString, LPWORD pat) {
-  char* tmp = new char[strlen(pString) + 1];
-  strcpy(tmp, pString);
-  for (int i = (strlen(tmp) / 2) - 1; strlen(tmp) > 0; i--) {
-    char* x = nullptr;
-    BYTE value = (BYTE)strtoul(&tmp[i * 2], &x, 0x10);
-    if (strlen(x))
+  size_t len = std::strlen(pString);
+  char tmp[3] = { };
+  for (size_t i = 0; i < len; i++) {
+    std::memcpy(tmp, &pString[i * 2], 2);
+    char* x;
+    BYTE value = (BYTE)std::strtoul(tmp, &x, 16);
+    if (*x == '\0') // success
+      pat[i] = MAKEWORD(value, 0xff /* mask */);
+    else // failure
       pat[i] = 0;
-    else
-      pat[i] = MAKEWORD(value, 0xff);
-    tmp[i * 2] = 0;
   }
-  delete[] tmp;
-}
-
-// Misc. Functions
-void writeToAddress(void* Data, DWORD Address, int Size) {
-  DWORD oldProtect;
-  VirtualProtect((LPVOID)Address, Size, PAGE_READWRITE, &oldProtect);
-  std::memcpy((void*)Address, Data, Size);
-  VirtualProtect((LPVOID)Address, Size, oldProtect, &oldProtect);
 }

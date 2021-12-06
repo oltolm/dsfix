@@ -2,4 +2,4 @@
 
 #include <windows.h>
 
-DWORD GetMemoryAddressFromPattern(LPWSTR szDllName, LPCSTR szSearchPattern, DWORD offset);
+DWORD GetMemoryAddressFromPattern(LPCWSTR szDllName, LPCSTR szSearchPattern, DWORD offset);
