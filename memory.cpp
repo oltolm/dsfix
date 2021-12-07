@@ -6,10 +6,12 @@ Pattern search algorithm and other memory related issues.
 #include <Psapi.h>
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
+#include <vector>
 
-BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen);
-LPVOID PatternSearch(LPBYTE buf, DWORD blen, LPWORD pat, DWORD plen);
-VOID MakeSearchPattern(LPCSTR pString, LPWORD pat, DWORD plen);
+bool PatternEquals(PBYTE buf, const std::vector<WORD>& pat);
+void* PatternSearch(PBYTE buf, DWORD blen, const std::vector<WORD>& pat);
+void MakeSearchPattern(const std::string& str, std::vector<WORD>& pat);
 
 /*
 GetMemoryAddressFromPattern
@@ -31,47 +33,44 @@ the calling function.
 If the address is not found the function returns 0
 - thohell
 */
-DWORD GetMemoryAddressFromPattern(LPCWSTR szDllName, LPCSTR szSearchPattern, DWORD offset) {
-  DWORD lResult = 0;
+DWORD GetMemoryAddressFromPattern(PCWSTR szDllName, const std::string& searchPattern,
+                                  DWORD offset) {
+  DWORD result = 0;
   // Check for actual address
-  if (szSearchPattern[0] == '#') {
-    lResult = std::strtoul(&szSearchPattern[1], nullptr, 16);
-    return lResult += (lResult ? offset : 0);
+  if (searchPattern[0] == '#') {
+    result = std::strtoul(&searchPattern[1], nullptr, 16);
+    return result ? result + offset : 0;
   }
   // Check for ordinal
-  if (szSearchPattern[0] == '!') {
+  if (searchPattern[0] == '!') {
     HMODULE hModule = GetModuleHandleW(szDllName);
     // First let's try to find ordinal by name
     if (hModule) {
-      lResult = (DWORD)GetProcAddress(hModule, &szSearchPattern[1]);
+      result = reinterpret_cast<DWORD>(GetProcAddress(hModule, &searchPattern[1]));
       // No luck, lets try by ordinal number instead
-      if (!lResult) {
-        lResult = (DWORD)GetProcAddress(
-            hModule, (LPCSTR)MAKELONG(std::strtoul(&szSearchPattern[1], nullptr, 10), 0));
+      if (result == 0) {
+        result = reinterpret_cast<DWORD>(GetProcAddress(
+            hModule,
+            reinterpret_cast<PCSTR>(MAKELONG(std::strtoul(&searchPattern[1], nullptr, 10), 0))));
       }
     }
-    return lResult += (lResult ? offset : 0);
+    return result ? result + offset : 0;
   }
   // Parse fingerprint
-  DWORD plen = (strlen(szSearchPattern)) / 2;
-  WORD* pPattern = new WORD[plen];
-  DWORD SearchSize = 0;
-  DWORD SearchAddress = 0;
-  MODULEINFO moduleInfo;
   HMODULE hDllModule = GetModuleHandleW(szDllName);
   if (hDllModule != nullptr) {
+    MODULEINFO moduleInfo;
     if (GetModuleInformation(GetCurrentProcess(), hDllModule, &moduleInfo, sizeof(moduleInfo))) {
-      SearchAddress = (DWORD)moduleInfo.lpBaseOfDll;
-      SearchSize = moduleInfo.SizeOfImage;
-      MakeSearchPattern(szSearchPattern, pPattern, plen);
-      if ((lResult = (DWORD)PatternSearch((BYTE*)SearchAddress, SearchSize, pPattern, plen)))
-        lResult += offset;
-    } else {
-      lResult = 0;
+      DWORD SearchAddress = reinterpret_cast<DWORD>(moduleInfo.lpBaseOfDll);
+      DWORD SearchSize = moduleInfo.SizeOfImage;
+      std::vector<WORD> pattern;
+      pattern.resize(searchPattern.size() / 2);
+      MakeSearchPattern(searchPattern, pattern);
+      result = reinterpret_cast<DWORD>(
+          PatternSearch(reinterpret_cast<BYTE*>(SearchAddress), SearchSize, pattern));
     }
   }
-  delete[] pPattern;
-  return lResult;
+  return result ? result + offset : 0;
 }
 
 /*
@@ -87,9 +86,10 @@ a0, b0, c0, d0, e0 is equal to
 1)	0xffa0, 0xffb0, 0x0000, 0x0000, 0xffe0
 2)	0x0000, 0x0000, 0x0000, 0x0000, 0x0000
 3)	0x8080, 0x3030, 0x0000, 0xffdd, 0xffee
-I think you got the idea of it...BOOL _fastcall PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen)
+I think you got the idea of it...BOOL _fastcall PatternEquals(PBYTE buf, LPWORD pat, DWORD plen)
 */
-BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen) {
+bool PatternEquals(PBYTE buf, const std::vector<WORD>& pat) {
+  auto plen = pat.size();
   // Offset
   DWORD ofs = 0;
   // Loop
@@ -98,7 +98,7 @@ BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen) {
     // Swapped mask/data. Old code was buggy.
     // - thohell
     if ((buf[ofs] & HIBYTE(pat[ofs]) /* mask */) != LOBYTE(pat[ofs]) /* value */)
-      return FALSE;
+      return false;
     // Move ofs in zigzag direction
     plen--;
     if ((i & 1) == 0)
@@ -107,23 +107,23 @@ BOOL PatternEquals(LPBYTE buf, LPWORD pat, DWORD plen) {
       ofs -= plen;
   }
   // Yep, we found
-  return TRUE;
+  return true;
 }
 
 /*
 Search for the pattern, returns the pointer to buf+ofset matching
 the pattern or null.
 */
-LPVOID PatternSearch(LPBYTE buf, DWORD blen, LPWORD pat, DWORD plen) {
+void* PatternSearch(PBYTE buf, DWORD blen, const std::vector<WORD>& pat) {
   // Buffer length and Pattern length may not be 0
-  if ((blen == 0) || (plen == 0))
+  if ((blen == 0) || pat.empty())
     return nullptr;
   // Calculate End of search
-  DWORD end = blen - plen;
-  // Do the booring loop  
+  DWORD end = blen - pat.size();
+  // Do the booring loop
   for (DWORD ofs = 0; ofs != end; ofs++) { // Offset and End of search
     // Return offset to first byte of buf matching width the pattern
-    if (PatternEquals(&buf[ofs], pat, plen))
+    if (PatternEquals(&buf[ofs], pat))
       return &buf[ofs];
   }
   // Me no find, me return 0, nullptr, nil
@@ -137,15 +137,14 @@ Convert a pattern-string into a pattern array for use with pattern
 search.
 - thohell
 */
-VOID MakeSearchPattern(LPCSTR pString, LPWORD pat, DWORD plen) {
-  char tmp[3] = { };
-  for (size_t i = 0; i < plen; i++) {
-    std::memcpy(tmp, &pString[i * 2], 2);
-    char* x;
-    BYTE value = (BYTE)std::strtoul(tmp, &x, 16);
-    if (*x == '\0') // success
+void MakeSearchPattern(const std::string& str, std::vector<WORD>& pat) {
+  for (size_t i = 0; i < pat.size(); i++) {
+    std::string tmp = str.substr(i * 2, 2);
+    try {
+      BYTE value = static_cast<BYTE>(std::stoul(tmp, nullptr, 16));
       pat[i] = MAKEWORD(value, 0xff /* mask */);
-    else // failure
+    } catch (const std::invalid_argument&) {
       pat[i] = 0;
+    }
   }
 }

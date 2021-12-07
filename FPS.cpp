@@ -17,9 +17,9 @@ static LARGE_INTEGER counterAtStart;
 
 // Time-step value address
 // search pattern
-const char* TS_PATTERN = "0080264400009444000058420000C0428988083D0000A044";
+static const std::string TS_PATTERN = "0080264400009444000058420000C0428988083D0000A044";
 // code offset
-const DWORD TS_OFFSET = 0x00000010;
+static const DWORD TS_OFFSET = 0x00000010;
 //
 // 011E4D50 - 00 80 26440000        - add [eax+00004426],al
 // 011E4D56 - 94                    - xchg eax,esp
@@ -34,9 +34,9 @@ static DWORD ADDR_TS = 0x011E4D60;
 
 // Presentation interval address
 // search pattern
-const char* PRESINT_PATTERN = "FF15xxxxxxxx83C408C78648020000020000005EC20800";
+static const std::string PRESINT_PATTERN = "FF15xxxxxxxx83C408C78648020000020000005EC20800";
 // code offset
-const DWORD PRESINT_OFFSET = 0x0000000F;
+static const DWORD PRESINT_OFFSET = 0x0000000F;
 //
 // 00FFA2FF - FF 15 ACFB1501        - call dword ptr [0115FBAC] { ->006E9C00 }
 // 00FFA305 - 83 C4 08              - add esp,08 { 8 }
@@ -47,9 +47,9 @@ static DWORD ADDR_PRESINT = 0x00FFA30E;
 
 // getDrawThreadMsgCommand address in HGCommandDispatcher loop
 // search pattern
-const char* GETCMD_PATTERN = "6A018BCDE8xxxxxxxx8BF08BCEE8xxxxxxxx83F805";
+static const std::string GETCMD_PATTERN = "6A018BCDE8xxxxxxxx8BF08BCEE8xxxxxxxx83F805";
 // code offset
-const DWORD GETCMD_OFFSET = 0x0000000D;
+static const DWORD GETCMD_OFFSET = 0x0000000D;
 //
 // 00BAC4D0 - 6A 01                 - push 01 { 1 }
 // 00BAC4D2 - 8B CD                 - mov ecx,ebp
