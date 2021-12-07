@@ -10,3 +10,4 @@ Release/
 /.vscode/
 /build*/
 out/
+*.aps

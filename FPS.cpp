@@ -6,9 +6,9 @@
 #include "Settings.h"
 #include "log.h"
 #include "memory.h"
+#include "minhook/src/hde/hde32.h"
 #include <MinHook.h>
 #include <windows.h>
-#include "minhook/src/hde/hde32.h"
 
 // Hook Globals
 static double lastRenderTime;
@@ -98,7 +98,7 @@ double getElapsedTime(void) {
 }
 
 // Hook functions
-unsigned int updateFramerate(unsigned int cmd) {
+void updateFramerate(unsigned int cmd) {
   // If rendering was performed, update animation step-time
   if ((cmd == 2) || (cmd == 5)) {
     // FPS regulation based on previous render
@@ -110,20 +110,20 @@ unsigned int updateFramerate(unsigned int cmd) {
     // Update step-time
     updateAnimationStepTime(deltaTime, minFPS, maxFPS);
   }
-  return cmd;
 }
 
 #ifdef _MSC_VER
 __declspec(naked) unsigned int hkGetDrawThreadMsgCommand(unsigned int* cmd) {
   __asm {
-		MOV EAX, [ECX+0Ch]   // Put msgCmd in EAX (Return value)
+		MOV EAX, [ECX+0Ch] // Put msgCmd in EAX (Return value)
 		PUSH EAX
 		CALL updateFramerate // Call updateFramerate(msgCmd)
 		RETN
   }
 #else
-  __attribute__((fastcall)) unsigned int hkGetDrawThreadMsgCommand(unsigned int* cmd) {
-  return updateFramerate(cmd[3]);
+__attribute__((fastcall)) unsigned int hkGetDrawThreadMsgCommand(unsigned int* cmd) {
+  updateFramerate(cmd[3]);
+  return cmd[3];
 #endif
 }
 
@@ -135,7 +135,7 @@ void applyFPSPatch() {
   ADDR_PRESINT = GetMemoryAddressFromPattern(nullptr, PRESINT_PATTERN, PRESINT_OFFSET);
   SDLOG(LogLevel::Info, "found presentation interval address at 0x%X", ADDR_PRESINT);
   DWORD callAddress = GetMemoryAddressFromPattern(nullptr, GETCMD_PATTERN, GETCMD_OFFSET);
-  hde32s hs = { };
+  hde32s hs = {};
   unsigned int callSize = hde32_disasm((void*)callAddress, &hs);
   ADDR_GETCMD = callAddress + callSize + hs.imm.imm32;
   SDLOG(LogLevel::Info, "found getDrawThreadMsgCommand address at 0x%X", ADDR_GETCMD);

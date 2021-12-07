@@ -96,7 +96,8 @@ target_compile_definitions(dsfix
   PRIVATE
   -DTINYFORMAT_ALLOW_WCHAR_STRINGS=1
   -DUNICODE
-  -DWIN32_LEAN_AND_MEAN
+  -D_UNICODE
+#  -DWIN32_LEAN_AND_MEAN
 )
 
 option(RELEASE_VER "build a release version with turned off logging (default is ON)" ON)

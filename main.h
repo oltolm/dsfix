@@ -14,7 +14,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see http://www.gnu.org/licenses/ */
 #pragma once
 
-#include <dinput.h>
+#include <windows.h>
 
 #define VERSION "2.6.0"
 

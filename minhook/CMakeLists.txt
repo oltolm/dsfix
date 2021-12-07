@@ -25,6 +25,9 @@ target_include_directories(minhook INTERFACE include)
 
 target_compile_features(minhook PRIVATE c_std_11)
 
-target_compile_options(minhook PRIVATE -masm=intel)
+if(NOT MSVC)
+    target_compile_options(minhook PRIVATE -masm=intel)
+endif()
+
 
 target_compile_definitions(minhook PRIVATE)
