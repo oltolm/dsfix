@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
+
 class KeyActions {
   static KeyActions instance;
   using IntStrMap = std::map<int, std::string>;

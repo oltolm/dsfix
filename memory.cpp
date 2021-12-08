@@ -148,3 +148,12 @@ void MakeSearchPattern(const std::string& str, std::vector<WORD>& pat) {
     }
   }
 }
+
+void writeToAddress(const void* Data, void* Address, size_t Size) {
+  DWORD oldProtect;
+  if (::VirtualProtect(Address, Size, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+    ::CopyMemory(Address, Data, Size);
+    ::VirtualProtect(Address, Size, oldProtect, &oldProtect);
+    return;
+  }
+}

@@ -69,14 +69,6 @@ static const DWORD GETCMD_OFFSET = 0x0000000D;
 // }
 static DWORD ADDR_GETCMD = 0x00577F40;
 
-void writeToAddress(const void* Data, void* Address, size_t Size) {
-  DWORD oldProtect;
-  if (::VirtualProtect(Address, Size, PAGE_READWRITE, &oldProtect)) {
-    ::CopyMemory(Address, Data, Size);
-    ::VirtualProtect(Address, Size, oldProtect, &oldProtect);
-    return;
-  }
-}
 // Memory
 void updateAnimationStepTime(float stepTime, float minFPS, float maxFPS) {
   float FPS = 1.0f / (stepTime / 1000);
@@ -112,19 +104,9 @@ void updateFramerate(unsigned int cmd) {
   }
 }
 
-#ifdef _MSC_VER
-__declspec(naked) unsigned int hkGetDrawThreadMsgCommand(unsigned int* cmd) {
-  __asm {
-		MOV EAX, [ECX+0Ch] // Put msgCmd in EAX (Return value)
-		PUSH EAX
-		CALL updateFramerate // Call updateFramerate(msgCmd)
-		RETN
-  }
-#else
-__attribute__((fastcall)) unsigned int hkGetDrawThreadMsgCommand(unsigned int* cmd) {
+unsigned int __fastcall hkGetDrawThreadMsgCommand(unsigned int* cmd) {
   updateFramerate(cmd[3]);
   return cmd[3];
-#endif
 }
 
 // Game Patches
@@ -136,7 +118,7 @@ void applyFPSPatch() {
   SDLOG(LogLevel::Info, "found presentation interval address at 0x%X", ADDR_PRESINT);
   DWORD callAddress = GetMemoryAddressFromPattern(nullptr, GETCMD_PATTERN, GETCMD_OFFSET);
   hde32s hs = {};
-  unsigned int callSize = hde32_disasm((void*)callAddress, &hs);
+  unsigned int callSize = hde32_disasm(reinterpret_cast<void*>(callAddress), &hs);
   ADDR_GETCMD = callAddress + callSize + hs.imm.imm32;
   SDLOG(LogLevel::Info, "found getDrawThreadMsgCommand address at 0x%X", ADDR_GETCMD);
   // Binary patches

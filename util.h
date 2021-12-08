@@ -1,8 +1,8 @@
 #pragma once
 #include <Windows.h>
+#include <filesystem>
 #include <string>
 #include <system_error>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -38,8 +38,7 @@ inline DWORD throw_if_zero(DWORD status) {
   return status;
 }
 
-template<class T>
-inline T* throw_if_null(T* ptr) {
+template <class T> inline T* throw_if_null(T* ptr) {
   if (ptr == nullptr) {
     throw std::system_error(::GetLastError(), std::system_category());
   }

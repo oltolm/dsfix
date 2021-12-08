@@ -1,11 +1,7 @@
 #pragma once
-
 #include <comdef.h>
-#include <d3d9.h>
+#include <d3dx9.h>
 #include <ostream>
-
-class ID3DXEffect;
-class ID3DXBuffer;
 
 #ifdef _MSC_VER
 interface DECLSPEC_UUID("F6CEB4B3-4E4C-40dd-B883-8D8DE5EA0CD5") ID3DXEffect;

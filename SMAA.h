@@ -1,4 +1,5 @@
-/*Copyright (C) 2011 Jorge Jimenez (jorge@iryoku.com)
+/*
+Copyright (C) 2011 Jorge Jimenez (jorge@iryoku.com)
 Copyright (C) 2011 Belen Masia (bmasia@unizar.es)
 Copyright (C) 2011 Jose I. Echevarria (joseignacioechevarria@gmail.com)
 Copyright (C) 2011 Fernando Navarro (fernandn@microsoft.com)
@@ -26,17 +27,13 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 The views and conclusions contained in the software and documentation are
 those of the authors and should not be interpreted as representing official
-policies, either expressed or implied, of the copyright holders.*/
+policies, either expressed or implied, of the copyright holders.
+*/
 #ifndef SMAA_H
 #define SMAA_H
 #include "Effect.h"
 #include "main.h"
-#include <d3d9.h>
 #include <d3dx9.h>
-#ifndef _MSC_VER
-#include <dxerr9.h>
-#endif
-#include <dxgi.h>
 
 class SMAA : public Effect {
 public:

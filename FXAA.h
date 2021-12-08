@@ -1,6 +1,6 @@
 #pragma once
 #include "Effect.h"
-#include <d3d9.h>
+
 class FXAA : public Effect {
 public:
   enum Quality { QualityLow, QualityMedium, QualityHigh, QualityUltra };

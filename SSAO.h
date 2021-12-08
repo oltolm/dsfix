@@ -1,9 +1,10 @@
 #pragma once
 #include "Effect.h"
-#include <d3d9.h>
+#include <d3dx9.h>
+
 class SSAO : public Effect {
 public:
-  enum Type { VSSAO, VSSAO2 };
+  enum class Type { VSSAO, VSSAO2 };
   SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, Type type) noexcept;
   virtual ~SSAO() = default;
   void go(IDirect3DTexture9* frame, IDirect3DTexture9* depth, IDirect3DSurface9* dst) noexcept;

@@ -1,5 +1,6 @@
 #pragma once
 #include <d3d9.h>
+
 interface hkIDirect3DQuery9 : public IDirect3DQuery9 {
   hkIDirect3DQuery9(IDirect3DQuery9 * pIDirect3DQuery9);
   virtual ~hkIDirect3DQuery9() = default;

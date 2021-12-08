@@ -1,5 +1,6 @@
 #pragma once
 #include "Effect.h"
+
 class HUD : public Effect {
 public:
   HUD(IDirect3DDevice9* device, int width, int height);

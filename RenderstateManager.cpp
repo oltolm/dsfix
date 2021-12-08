@@ -37,7 +37,7 @@ void RSManager::initResources() noexcept {
       fxaa.reset(new FXAA(d3ddev, rw, rh, (FXAA::Quality)(Settings::get().getAAQuality() - 1)));
     }
   }
-  SSAO::Type ssaoType = Settings::get().getSsaoType() == "VSSAO" ? SSAO::VSSAO : SSAO::VSSAO2;
+  SSAO::Type ssaoType = Settings::get().getSsaoType() == "VSSAO" ? SSAO::Type::VSSAO : SSAO::Type::VSSAO2;
 
   if (Settings::get().getSsaoStrength())
     ssao.reset(new SSAO(d3ddev, rw, rh, Settings::get().getSsaoStrength() - 1, ssaoType));
@@ -78,15 +78,7 @@ HRESULT RSManager::redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRec
   mainRTuses = 0;
   zSurf = nullptr;
   frameTimeManagement();
-  try {
-    return throw_if_fail(
-        d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion));
-  } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "redirectPresent: %s, error code: 0x%x", err.what(), err.code().value());
-    if (err.code().value() == D3DERR_DEVICEREMOVED)
-      removeFPSHook();
-    return err.code().value();
-  }
+  return throw_if_fail(d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion));
 }
 
 D3DPRESENT_PARAMETERS RSManager::adjustPresentationParameters(

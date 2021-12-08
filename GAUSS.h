@@ -1,6 +1,6 @@
 #pragma once
 #include "Effect.h"
-#include <d3d9.h>
+
 class GAUSS : public Effect {
 public:
   GAUSS(IDirect3DDevice9* device, int width, int height) noexcept;

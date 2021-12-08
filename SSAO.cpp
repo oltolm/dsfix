@@ -4,10 +4,10 @@
 #include "main.h"
 #include "tinyformat.h"
 #include "util.h"
+#include <filesystem>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -25,17 +25,17 @@ SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, T
     // Load effect from file
     fs::path srcfile = GetModuleDirectoryPath();
     switch (type) {
-    case VSSAO:
+    case Type::VSSAO:
       srcfile /= L"dsfix\\VSSAO.fx";
       break;
-    case VSSAO2:
+    case Type::VSSAO2:
       srcfile /= L"dsfix\\VSSAO2.fx";
       break;
     }
     SDLOG(LogLevel::Info, "%s load, strength %s", srcfile, strengthMacros[strength].Name);
     ID3DXBufferPtr errors;
-    HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), nullptr, flags,
-                                             nullptr, &effect, &errors);
+    HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), nullptr,
+                                             flags, nullptr, &effect, &errors);
     if (FAILED(hr)) {
       SDLOG(LogLevel::Error, "ERRORS:");
       SDLOG(LogLevel::Error, " %s", errors->GetBufferPointer());

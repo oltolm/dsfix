@@ -69,6 +69,7 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
   } else if (dwReason == DLL_PROCESS_DETACH) {
     SDLOG(LogLevel::Info, "shutting down");
     Settings::get().shutdown();
+    removeFPSHook();
     endDetour();
     MH_Uninitialize();
   }
