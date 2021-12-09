@@ -100,12 +100,6 @@ target_compile_definitions(dsfix
 #  -DWIN32_LEAN_AND_MEAN
 )
 
-option(RELEASE_VER "build a release version with turned off logging (default is ON)" ON)
-
-if(RELEASE_VER)
-  target_compile_definitions(dsfix PRIVATE -DRELEASE_VER)
-endif()
-
 set_target_properties(dsfix
   PROPERTIES
   PREFIX ""

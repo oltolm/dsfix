@@ -3,7 +3,6 @@
 #include "RenderstateManager.h"
 #include "Settings.h"
 #include "d3d9dev.h"
-#include "log.h"
 #include <spdlog/spdlog.h>
 
 HRESULT APIENTRY hkIDirect3D9::QueryInterface(REFIID riid, void** ppvObj) {
