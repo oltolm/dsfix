@@ -1,11 +1,12 @@
 #include "KeyActions.h"
 #include "FPS.h"
 #include "RenderstateManager.h"
+#include "Settings.h"
 #include "WindowManager.h"
-#include "log.h"
 #include "util.h"
 #include <filesystem>
 #include <fstream>
+#include <spdlog/spdlog.h>
 #include <sstream>
 #include <string>
 
@@ -35,11 +36,11 @@ void KeyActions::load() {
 }
 
 void KeyActions::report() {
-  SDLOG(LogLevel::Info, "= Loaded Keybindings:");
+  spdlog::info("= Loaded Keybindings:");
   for (const auto& keyActionPair : keyBindingMap) {
-    SDLOG(LogLevel::Info, " - %p => %s", keyActionPair.first, keyActionPair.second);
+    spdlog::info(" - {:p} => {}", keyActionPair.first, keyActionPair.second);
   }
-  SDLOG(LogLevel::Info, "=============");
+  spdlog::info("=============");
 }
 
 void KeyActions::performAction(const std::string& name) {

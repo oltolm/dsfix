@@ -4,10 +4,10 @@
 #include "FPS.h"
 #include "RenderstateManager.h"
 #include "Settings.h"
-#include "log.h"
 #include "memory.h"
 #include "minhook/src/hde/hde32.h"
 #include <MinHook.h>
+#include <spdlog/spdlog.h>
 #include <windows.h>
 
 // Hook Globals
@@ -111,16 +111,16 @@ unsigned int __fastcall hkGetDrawThreadMsgCommand(unsigned int* cmd) {
 
 // Game Patches
 void applyFPSPatch() {
-  SDLOG(LogLevel::Info, "Starting FPS unlock...");
+  spdlog::info("Starting FPS unlock...");
   ADDR_TS = GetMemoryAddressFromPattern(nullptr, TS_PATTERN, TS_OFFSET);
-  SDLOG(LogLevel::Info, "found time-step address at 0x%X", ADDR_TS);
+  spdlog::info("found time-step address at 0x{:X}", ADDR_TS);
   ADDR_PRESINT = GetMemoryAddressFromPattern(nullptr, PRESINT_PATTERN, PRESINT_OFFSET);
-  SDLOG(LogLevel::Info, "found presentation interval address at 0x%X", ADDR_PRESINT);
+  spdlog::info("found presentation interval address at 0x{:X}", ADDR_PRESINT);
   DWORD callAddress = GetMemoryAddressFromPattern(nullptr, GETCMD_PATTERN, GETCMD_OFFSET);
   hde32s hs = {};
   unsigned int callSize = hde32_disasm(reinterpret_cast<void*>(callAddress), &hs);
   ADDR_GETCMD = callAddress + callSize + hs.imm.imm32;
-  SDLOG(LogLevel::Info, "found getDrawThreadMsgCommand address at 0x%X", ADDR_GETCMD);
+  spdlog::info("found getDrawThreadMsgCommand address at 0x{:X}", ADDR_GETCMD);
   // Binary patches
   // Override D3D Presentation Interval
   const DWORD data = 5; // Set to immediate
@@ -129,13 +129,13 @@ void applyFPSPatch() {
   MH_CreateHook(reinterpret_cast<LPVOID>(ADDR_GETCMD),
                 reinterpret_cast<LPVOID>(hkGetDrawThreadMsgCommand), nullptr);
   MH_EnableHook(reinterpret_cast<LPVOID>(ADDR_GETCMD));
-  SDLOG(LogLevel::Info, "FPS unlocked");
+  spdlog::info("FPS unlocked");
 }
 
 void removeFPSHook() {
   MH_DisableHook(reinterpret_cast<LPVOID>(ADDR_GETCMD));
   MH_RemoveHook(reinterpret_cast<LPVOID>(ADDR_GETCMD));
-  SDLOG(LogLevel::Info, "FPS hook removed");
+  spdlog::info("FPS hook removed");
 }
 
 void initFPSTimer() {

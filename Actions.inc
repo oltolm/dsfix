@@ -24,6 +24,6 @@ ACTION(toggle30FPSLimit, Settings::get().toggle30FPSLimit())
 
 // Development Actions
 
-ACTION(userTrigger, SDLOG(LogLevel::Info, "================================================================= USER TRIGGER ==="))
+ACTION(userTrigger, spdlog::info("================================================================= USER TRIGGER ==="))
 
 ACTION(togglePaused, RSManager::get().togglePaused());

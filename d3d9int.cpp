@@ -4,6 +4,7 @@
 #include "Settings.h"
 #include "d3d9dev.h"
 #include "log.h"
+#include <spdlog/spdlog.h>
 
 HRESULT APIENTRY hkIDirect3D9::QueryInterface(REFIID riid, void** ppvObj) {
   return m_pD3Dint->QueryInterface(riid, ppvObj);
@@ -50,9 +51,9 @@ HRESULT APIENTRY hkIDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
                                             DWORD BehaviorFlags,
                                             D3DPRESENT_PARAMETERS* pPresentationParameters,
                                             IDirect3DDevice9** ppReturnedDeviceInterface) {
-  SDLOG(LogLevel::Info, "CreateDevice ------ Adapter %u", Adapter);
+  spdlog::info("CreateDevice ------ Adapter {}", Adapter);
   if (Settings::get().getD3DAdapterOverride() >= 0) {
-    SDLOG(LogLevel::Info, " - Adapter override to %d", Settings::get().getD3DAdapterOverride());
+    spdlog::info(" - Adapter override to {}", Settings::get().getD3DAdapterOverride());
     Adapter = Settings::get().getD3DAdapterOverride();
   }
   D3DPRESENT_PARAMETERS adjusted;

@@ -1,6 +1,5 @@
 #include "Hud.h"
 #include "Settings.h"
-#include "log.h"
 #include "util.h"
 #include <filesystem>
 
@@ -9,14 +8,14 @@ namespace fs = std::filesystem;
 HUD::HUD(IDirect3DDevice9* device, int width, int height)
     : Effect(device), width(width), height(height) {
   // Load effect from file
-  SDLOG(LogLevel::Info, "Hud Effect load");
+  spdlog::info("Hud Effect load");
   ID3DXBufferPtr errors;
   fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\HUD.fx";
   HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), nullptr, nullptr,
                                            D3DXFX_NOT_CLONEABLE, nullptr, &effect, &errors);
   if (FAILED(hr)) {
-    SDLOG(LogLevel::Error, "ERRORS:");
-    SDLOG(LogLevel::Error, " %s", errors->GetBufferPointer());
+    spdlog::error("ERRORS:");
+    spdlog::error(" {}", errors->GetBufferPointer());
   }
   // get handles
   frameTexHandle = effect->GetParameterByName(nullptr, "frameTex2D");

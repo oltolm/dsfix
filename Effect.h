@@ -1,8 +1,8 @@
 #pragma once
 #include "comptr.h"
-#include "log.h"
 #include "util.h"
 #include <d3dx9.h>
+#include <spdlog/spdlog.h>
 
 // Base class for effects
 class Effect {
@@ -14,8 +14,8 @@ protected:
   Effect(IDirect3DDevice9* device) noexcept : device(device) {
     try {
       throw_if_fail(device->CreateVertexDeclaration(vertexElements, &vertexDeclaration));
-    } catch (const std::system_error &err) {
-      SDLOG(LogLevel::Error, "Effect: %s", err.what());
+    } catch (const std::system_error& err) {
+      spdlog::error("Effect: {}", err.what());
     }
   }
 

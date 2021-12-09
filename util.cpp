@@ -1,7 +1,9 @@
 #include "util.h"
+#include <spdlog/fmt/ostr.h>
 #include <stdexcept>
 #include <system_error>
 
+std::wstring FormatMessageString(DWORD dwMessageId);
 std::string toUtf8(const std::wstring& wideCharStr);
 std::wstring toUnicode(const std::string& multiByteStr);
 
@@ -12,19 +14,9 @@ std::istream& operator>>(std::istream& is, std::wstring& s) {
   return is;
 }
 
-std::ostream& operator<<(std::ostream& os, const std::wstring& s) {
-  os << toUtf8(s);
-  return os;
-}
-
 std::ostream& operator<<(std::ostream& os, const wchar_t* s) {
   os << toUtf8(s);
   return os;
-}
-
-std::wostream& operator<<(std::wostream& wos, const std::string& s) {
-  wos << toUnicode(s);
-  return wos;
 }
 
 std::wstring FormatMessageString(DWORD dwMessageId) {
@@ -97,6 +89,30 @@ std::wstring toUnicode(const std::string& multiByteStr) {
   wideCharStr.resize(cchWideChar);
   cchWideChar = ::MultiByteToWideChar(CP_UTF8, 0, multiByteStr.data(), multiByteStr.size(),
                                       &wideCharStr[0], cchWideChar);
+  throw_if_zero(cchWideChar);
+  return wideCharStr;
+}
+
+std::ostream& operator<<(std::ostream& os, const fs::path& p) { return os << p.wstring(); }
+
+std::string toUtf8(const wchar_t* wideCharStr) {
+  int cbMultiByte =
+      ::WideCharToMultiByte(CP_UTF8, 0, wideCharStr, -1, nullptr, 0, nullptr, nullptr);
+  throw_if_zero(cbMultiByte);
+  std::string multiByteStr;
+  multiByteStr.resize(cbMultiByte - 1); // cbMultiByte includes the null character
+  cbMultiByte = ::WideCharToMultiByte(CP_UTF8, 0, wideCharStr, -1, &multiByteStr[0], cbMultiByte,
+                                      nullptr, nullptr);
+  throw_if_zero(cbMultiByte);
+  return multiByteStr;
+}
+
+std::wstring toUnicode(const char* multiByteStr) {
+  int cchWideChar = ::MultiByteToWideChar(CP_UTF8, 0, multiByteStr, -1, nullptr, 0);
+  throw_if_zero(cchWideChar);
+  std::wstring wideCharStr;
+  wideCharStr.resize(cchWideChar - 1); // cchWideChar includes the null character
+  cchWideChar = ::MultiByteToWideChar(CP_UTF8, 0, multiByteStr, -1, &wideCharStr[0], cchWideChar);
   throw_if_zero(cchWideChar);
   return wideCharStr;
 }

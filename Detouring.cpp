@@ -1,12 +1,11 @@
 #include "Detouring.h"
 #include "TextureManager.h"
 #include "d3d9.h"
-#include "log.h"
 #include "main.h"
-#include "tinyformat.h"
 #include "util.h"
 #include <MinHook.h>
 #include <d3dx9.h>
+#include <spdlog/spdlog.h>
 
 decltype(Direct3DCreate9)* oDirect3DCreate9;
 
@@ -55,7 +54,7 @@ void hookDirect3DCreate9() {
     Direct3DCreate9Handle = hookFunction("Direct3DCreate9", L"d3d9.dll", (void*)&hkDirect3DCreate9,
                                          (void**)&oDirect3DCreate9);
   } catch (const std::runtime_error& exp) {
-    SDLOG(LogLevel::Error, exp.what());
+    spdlog::error("{}", exp.what());
   }
 }
 
@@ -70,7 +69,7 @@ void startDetour() {
                      (void*)&DetouredD3DXCreateTextureFromFileInMemoryEx,
                      (void**)&OrigD3DXCreateTextureFromFileInMemoryEx);
   } catch (const std::runtime_error& exp) {
-    SDLOG(LogLevel::Error, exp.what());
+    spdlog::error("{}", exp.what());
   }
 }
 

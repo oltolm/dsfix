@@ -4,9 +4,10 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "d3d9query.h"
-#include "log.h"
 #include "main.h"
+#include "util.h"
 #include <cstring>
+#include <spdlog/spdlog.h>
 #ifndef _MSC_VER
 #include <dxerr9.h>
 #endif
@@ -481,8 +482,8 @@ HRESULT APIENTRY hkIDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS* pPresentationP
   if (SUCCEEDED(hRet)) {
     RSManager::get().initResources();
   } else {
-    SDLOG(LogLevel::Error, "ERROR: Reset failed: code: %s, description: %s",
-          DXGetErrorString9(hRet), DXGetErrorDescription9(hRet));
+    spdlog::error(L"ERROR: Reset failed: code: {}, description: {}", DXGetErrorString9W(hRet),
+                  DXGetErrorDescription9W(hRet));
   }
   return hRet;
 }

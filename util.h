@@ -1,21 +1,19 @@
 #pragma once
 #include <Windows.h>
 #include <filesystem>
+#include <spdlog/fmt/ostr.h>
 #include <string>
 #include <system_error>
 
 namespace fs = std::filesystem;
 
 fs::path GetModuleFileNamePath(HMODULE hModule);
-fs::path GetModuleDirectory(HMODULE hModule);
 fs::path GetSystemDirectoryPath();
 fs::path GetModuleDirectoryPath(HMODULE hModule = nullptr);
 std::wstring GetLastErrorString();
-std::wstring FormatMessageString(DWORD dwMessageId);
-std::ostream& operator<<(std::ostream& os, const std::wstring& s);
-std::ostream& operator<<(std::ostream& os, const wchar_t* s);
+
 std::istream& operator>>(std::istream& is, std::wstring& s);
-std::wostream& operator<<(std::wostream& wos, const std::string& s);
+std::ostream& operator<<(std::ostream& os, const fs::path& p);
 
 inline HRESULT throw_if_fail(HRESULT hr) {
   if (FAILED(hr)) {

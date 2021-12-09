@@ -1,10 +1,9 @@
 #include "SSAO.h"
 #include "Settings.h"
-#include "log.h"
 #include "main.h"
-#include "tinyformat.h"
 #include "util.h"
 #include <filesystem>
+#include <spdlog/formatter.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -15,7 +14,7 @@ SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, T
     : Effect(device), width(width), height(height) {
   try {
     // Setup pixel size macro
-    std::string pixelSize = tfm::format("float2(1.0 / %d, 1.0 / %d)", width, height);
+    std::string pixelSize = fmt::format("float2(1.0 / {}, 1.0 / {})", width, height);
     D3DXMACRO strengthMacros[] = {
         {"SSAO_STRENGTH_LOW", "1"}, {"SSAO_STRENGTH_MEDIUM", "1"}, {"SSAO_STRENGTH_HIGH", "1"}};
     // Setup the defines for compiling the effect
@@ -32,13 +31,13 @@ SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, T
       srcfile /= L"dsfix\\VSSAO2.fx";
       break;
     }
-    SDLOG(LogLevel::Info, "%s load, strength %s", srcfile, strengthMacros[strength].Name);
+    spdlog::info("{} load, strength {}", srcfile, strengthMacros[strength].Name);
     ID3DXBufferPtr errors;
     HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), nullptr,
                                              flags, nullptr, &effect, &errors);
     if (FAILED(hr)) {
-      SDLOG(LogLevel::Error, "ERRORS:");
-      SDLOG(LogLevel::Error, " %s", errors->GetBufferPointer());
+      spdlog::error("ERRORS:");
+      spdlog::error(" {}", errors->GetBufferPointer());
     }
     // Create buffers
     throw_if_fail(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
@@ -52,7 +51,7 @@ SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, T
     frameTexHandle = effect->GetParameterByName(nullptr, "frameTex2D");
     prevPassTexHandle = effect->GetParameterByName(nullptr, "prevPassTex2D");
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "%s", err.what());
+    spdlog::error("{}", err.what());
   }
 }
 
@@ -69,7 +68,7 @@ void SSAO::go(IDirect3DTexture9* frame, IDirect3DTexture9* depth, IDirect3DSurfa
 
     combinePass(frame, buffer1Tex, dst);
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "%s", err.what());
+    spdlog::error("{}", err.what());
   }
 }
 

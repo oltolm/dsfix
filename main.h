@@ -15,7 +15,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/ */
 #pragma once
 #include <windows.h>
 
-#define VERSION "2.6.0"
+#define VERSION L"2.6.0"
 
 using DirectInput8Create_t = HRESULT(WINAPI*)(HINSTANCE inst_handle, DWORD version,
                                               const IID& r_iid, LPVOID* out_wrapper,

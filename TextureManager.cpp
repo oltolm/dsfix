@@ -1,7 +1,6 @@
-#include <filesystem>
-
 #include "TextureManager.h"
-#include "log.h"
+#include <filesystem>
+#include <spdlog/spdlog.h>
 
 namespace fs = std::filesystem;
 
@@ -17,12 +16,12 @@ void TextureManager::registerKnownTexture(LPCVOID pSrcData, UINT SrcDataSize,
   if (hash == _hash) {                                                                             \
     texture##_name = pTexture;                                                                     \
     ++foundKnownTextures;                                                                          \
-    SDLOG(LogLevel::Info, "TextureManager: recognized known texture %s at %p", #_name, pTexture);  \
+    spdlog::info("TextureManager: recognized known texture {} at {:p}", #_name, (void*)pTexture);  \
   }
 #include "Textures.inc"
 #undef TEXTURE
     if (foundKnownTextures == numKnownTextures) {
-      SDLOG(LogLevel::Info, "TextureManager: all known textures found!");
+      spdlog::info("TextureManager: all known textures found!");
     }
   }
 }

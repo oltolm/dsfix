@@ -1,8 +1,8 @@
 #pragma once
 #include "comptr.h"
-#include "log.h"
 #include <array>
 #include <memory>
+#include <spdlog/spdlog.h>
 
 class SMAA;
 class FXAA;
@@ -79,7 +79,7 @@ public:
   static RSManager& get() { return instance; }
   RSManager() = default;
   void setD3DDevice(IDirect3DDevice9* pD3Ddev) {
-    SDLOG(LogLevel::Debug, "setD3DDevice: device: %p", pD3Ddev);
+    spdlog::debug("setD3DDevice: device: {:p}", static_cast<void*>(pD3Ddev));
     d3ddev = pD3Ddev;
   }
   void initResources() noexcept;

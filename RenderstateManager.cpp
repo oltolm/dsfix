@@ -9,11 +9,10 @@
 #include "Settings.h"
 #include "TextureManager.h"
 #include "WindowManager.h"
-#include "log.h"
-#include "tinyformat.h"
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include <spdlog/spdlog.h>
 #include <string>
 
 RSManager RSManager::instance;
@@ -31,13 +30,14 @@ void RSManager::initResources() noexcept {
   occlusionScale = 1;
   unsigned dofRes = getDOFResolution();
   if (Settings::get().getAAQuality()) {
-    if (Settings::get().getAAType() == "SMAA") {
+    if (Settings::get().getAAType() == L"SMAA") {
       smaa.reset(new SMAA(d3ddev, rw, rh, (SMAA::Preset)(Settings::get().getAAQuality() - 1)));
     } else {
       fxaa.reset(new FXAA(d3ddev, rw, rh, (FXAA::Quality)(Settings::get().getAAQuality() - 1)));
     }
   }
-  SSAO::Type ssaoType = Settings::get().getSsaoType() == "VSSAO" ? SSAO::Type::VSSAO : SSAO::Type::VSSAO2;
+  SSAO::Type ssaoType =
+      Settings::get().getSsaoType() == L"VSSAO" ? SSAO::Type::VSSAO : SSAO::Type::VSSAO2;
 
   if (Settings::get().getSsaoStrength())
     ssao.reset(new SSAO(d3ddev, rw, rh, Settings::get().getSsaoStrength() - 1, ssaoType));
@@ -53,7 +53,7 @@ void RSManager::initResources() noexcept {
                                                     FALSE, &depthStencilSurf, nullptr));
     throw_if_fail(d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock));
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "%s", err.what());
+    spdlog::error("{}", err.what());
   }
 }
 
@@ -196,7 +196,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
           std::time_t time = std::time(nullptr);
           filename << std::put_time(std::localtime(&time), L"screenshot_%Y-%m-%d_%H-%M-%S.jpg");
           std::wstring destfile = Settings::get().getScreenshotDir() + L"\\" + filename.str();
-          SDLOG(LogLevel::Info, "Capturing screenshot - to %s", destfile);
+          spdlog::info(L"Capturing screenshot - to {}", destfile);
           D3DSURFACE_DESC desc;
           throw_if_fail(oldRenderTarget->GetDesc(&desc));
           IDirect3DSurface9Ptr convertedSurface;
@@ -251,7 +251,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
       rddp++;
     return throw_if_fail(d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget));
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "redirectSetRenderTarget: %s", err.what());
+    spdlog::error("redirectSetRenderTarget: {}", err.what());
     return err.code().value();
   }
 }
@@ -334,14 +334,14 @@ HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTextu
     }
     return throw_if_fail(d3ddev->SetTexture(Stage, pTexture));
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "%s", err.what());
+    spdlog::error("{}", err.what());
     return err.code().value();
   }
 }
 
 void RSManager::takeHudlessScreenshot() {
   takeScreenshot = true;
-  SDLOG(LogLevel::Info, "takeScreenshot: %s", takeScreenshot ? "true" : "false");
+  spdlog::info("takeScreenshot: {}", takeScreenshot ? "true" : "false");
 }
 
 HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex,
@@ -399,7 +399,7 @@ HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType
         PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat,
         pVertexStreamZeroData, VertexStreamZeroStride));
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "%s", err.what());
+    spdlog::error("{}", err.what());
     return err.code().value();
   }
 }
@@ -440,7 +440,7 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
       resumeHudRendering();
     return hr;
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "%s", err.what());
+    spdlog::error("{}", err.what());
     return err.code().value();
   }
 }
@@ -509,7 +509,7 @@ HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
       return D3D_OK;
     return throw_if_fail(d3ddev->SetRenderState(State, Value));
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "%s", err.what());
+    spdlog::error("{}", err.what());
     return err.code().value();
   }
 }

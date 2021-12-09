@@ -31,7 +31,6 @@ policies, either expressed or implied, of the copyright holders.*/
 #include "AreaTex.h"
 #include "SearchTex.h"
 #include "Settings.h"
-#include "log.h"
 #include <filesystem>
 #include <sstream>
 #include <vector>
@@ -109,13 +108,13 @@ SMAA::SMAA(IDirect3DDevice9* device, int width, int height, Preset preset,
   flags |= D3DXFX_LARGEADDRESSAWARE;
 #endif
   // Load effect from file
-  SDLOG(LogLevel::Info, "SMAA load");
+  spdlog::info("SMAA load");
   ID3DXBufferPtr errors;
   fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\SMAA.fx";
   hr = D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), nullptr, flags, nullptr,
                                  &effect, &errors);
   if (hr != D3D_OK)
-    SDLOG(LogLevel::Error, "ERRORS:\n %s", errors->GetBufferPointer());
+    spdlog::error("ERRORS:\n {}", errors->GetBufferPointer());
   // If storage for the edges is not specified we will create it.
   if (storage.edgeTex != nullptr && storage.edgeSurface != nullptr) {
     edgeTex = storage.edgeTex;

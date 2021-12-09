@@ -1,11 +1,10 @@
 #include "FXAA.h"
 #include "Settings.h"
-#include "log.h"
 #include "util.h"
-#include <string>
-#include <tinyformat.h>
-#include <vector>
 #include <filesystem>
+#include <spdlog/formatter.h>
+#include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -15,7 +14,7 @@ FXAA::FXAA(IDirect3DDevice9* device, int width, int height, Quality quality) noe
     // Setup the defines for compiling the effect
     std::vector<D3DXMACRO> defines;
     // Setup pixel size macro
-    std::string pixelSize = tfm::format("float2(1.0 / %d, 1.0 / %d)", width, height);
+    std::string pixelSize = fmt::format("float2(1.0 / {}, 1.0 / {})", width, height);
     defines.push_back({"PIXEL_SIZE", pixelSize.c_str()});
     D3DXMACRO qualityMacros[] = {{"FXAA_QUALITY__PRESET", "10"},
                                  {"FXAA_QUALITY__PRESET", "20"},
@@ -24,14 +23,14 @@ FXAA::FXAA(IDirect3DDevice9* device, int width, int height, Quality quality) noe
     defines.push_back(qualityMacros[(int)quality]);
     defines.push_back({nullptr, nullptr});
     // Load effect from file
-    SDLOG(LogLevel::Info, "FXAA load");
+    spdlog::info("FXAA load");
     ID3DXBufferPtr errors;
     fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\FXAA.fx";
     HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines[0], nullptr,
                                              D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3,
                                              nullptr, &effect, &errors);
     if (FAILED(hr))
-      SDLOG(LogLevel::Error, "ERRORS:\n %s", errors->GetBufferPointer());
+      spdlog::error("ERRORS:\n {}", errors->GetBufferPointer());
     // Create buffer
     throw_if_fail(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
                                         D3DPOOL_DEFAULT, &buffer1Tex, nullptr));
@@ -39,7 +38,7 @@ FXAA::FXAA(IDirect3DDevice9* device, int width, int height, Quality quality) noe
     // get handles
     frameTexHandle = effect->GetParameterByName(nullptr, "frameTex2D");
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "%s", err.what());
+    spdlog::error("{}", err.what());
   }
 }
 
@@ -49,7 +48,7 @@ void FXAA::go(IDirect3DTexture9* frame, IDirect3DSurface9* dst) noexcept {
     lumaPass(frame, buffer1Surf);
     fxaaPass(buffer1Tex, dst);
   } catch (const std::system_error& err) {
-    SDLOG(LogLevel::Error, "%s", err.what());
+    spdlog::error("{}", err.what());
   }
 }
 

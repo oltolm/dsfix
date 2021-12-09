@@ -54,6 +54,7 @@ target_link_libraries(dsfix
   minhook
   d3d9
   dxguid
+  spdlog::spdlog
 )
 
 if(NOT MSVC)
@@ -94,7 +95,6 @@ target_compile_options(dsfix
 endif()
 target_compile_definitions(dsfix
   PRIVATE
-  -DTINYFORMAT_ALLOW_WCHAR_STRINGS=1
   -DUNICODE
   -D_UNICODE
 #  -DWIN32_LEAN_AND_MEAN
@@ -130,4 +130,14 @@ install(
 install(
   DIRECTORY "DATA/"
   DESTINATION "."
+)
+
+include(cmake/CPM.cmake)
+CPMAddPackage(
+  NAME spdlog
+  GITHUB_REPOSITORY gabime/spdlog
+  GIT_TAG b803e768f35db0880db215a9a04684999afc7bf9
+  OPTIONS
+  "SPDLOG_WCHAR_SUPPORT ON"
+  "SPDLOG_WCHAR_FILENAMES ON"
 )
