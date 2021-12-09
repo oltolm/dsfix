@@ -42,3 +42,8 @@ template <class T> inline T* throw_if_null(T* ptr) {
   }
   return ptr;
 }
+
+#ifdef _MSC_VER
+#define DXGetErrorString9W(hr) std::to_wstring(hr)
+#define DXGetErrorDescription9W(hr) std::to_wstring(hr)
+#endif

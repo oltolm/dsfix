@@ -51,7 +51,7 @@ SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, T
     frameTexHandle = effect->GetParameterByName(nullptr, "frameTex2D");
     prevPassTexHandle = effect->GetParameterByName(nullptr, "prevPassTex2D");
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
   }
 }
 
@@ -68,7 +68,7 @@ void SSAO::go(IDirect3DTexture9* frame, IDirect3DTexture9* depth, IDirect3DSurfa
 
     combinePass(frame, buffer1Tex, dst);
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
   }
 }
 

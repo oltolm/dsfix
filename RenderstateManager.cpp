@@ -13,7 +13,11 @@
 #include <fstream>
 #include <iomanip>
 #include <spdlog/spdlog.h>
+#include <sstream>
 #include <string>
+#ifndef _MSC_VER
+#include <dxerr9.h>
+#endif
 
 RSManager RSManager::instance;
 namespace {
@@ -53,7 +57,7 @@ void RSManager::initResources() noexcept {
                                                     FALSE, &depthStencilSurf, nullptr));
     throw_if_fail(d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock));
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
   }
 }
 
@@ -78,7 +82,15 @@ HRESULT RSManager::redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRec
   mainRTuses = 0;
   zSurf = nullptr;
   frameTimeManagement();
-  return throw_if_fail(d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion));
+  try {
+    return throw_if_fail(
+        d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion));
+  } catch (const std::system_error& err) {
+    spdlog::error(L"Present: {}", DXGetErrorString9W(err.code().value()));
+    if (err.code().value() == D3DERR_DEVICEREMOVED)
+      removeFPSHook();
+    return err.code().value();
+  }
 }
 
 D3DPRESENT_PARAMETERS RSManager::adjustPresentationParameters(
@@ -251,7 +263,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
       rddp++;
     return throw_if_fail(d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget));
   } catch (const std::system_error& err) {
-    spdlog::error("redirectSetRenderTarget: {}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
     return err.code().value();
   }
 }
@@ -334,7 +346,7 @@ HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTextu
     }
     return throw_if_fail(d3ddev->SetTexture(Stage, pTexture));
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
     return err.code().value();
   }
 }
@@ -399,7 +411,7 @@ HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType
         PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat,
         pVertexStreamZeroData, VertexStreamZeroStride));
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
     return err.code().value();
   }
 }
@@ -440,7 +452,7 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
       resumeHudRendering();
     return hr;
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
     return err.code().value();
   }
 }
@@ -504,12 +516,12 @@ void RSManager::resumeHudRendering() {
 }
 
 HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) noexcept {
+  if (State == D3DRS_COLORWRITEENABLE && !allowStateChanges())
+    return D3D_OK;
   try {
-    if (State == D3DRS_COLORWRITEENABLE && !allowStateChanges())
-      return D3D_OK;
     return throw_if_fail(d3ddev->SetRenderState(State, Value));
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
     return err.code().value();
   }
 }

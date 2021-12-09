@@ -3,6 +3,9 @@
 #include "util.h"
 #include <d3dx9.h>
 #include <spdlog/spdlog.h>
+#ifndef _MSC_VER
+#include <dxerr9.h>
+#endif
 
 // Base class for effects
 class Effect {
@@ -15,7 +18,7 @@ protected:
     try {
       throw_if_fail(device->CreateVertexDeclaration(vertexElements, &vertexDeclaration));
     } catch (const std::system_error& err) {
-      spdlog::error("Effect: {}", err.what());
+      spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
     }
   }
 

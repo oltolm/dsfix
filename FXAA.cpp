@@ -5,6 +5,9 @@
 #include <spdlog/formatter.h>
 #include <string>
 #include <vector>
+#ifndef _MSC_VER
+#include <dxerr9.h>
+#endif
 
 namespace fs = std::filesystem;
 
@@ -38,7 +41,7 @@ FXAA::FXAA(IDirect3DDevice9* device, int width, int height, Quality quality) noe
     // get handles
     frameTexHandle = effect->GetParameterByName(nullptr, "frameTex2D");
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
   }
 }
 
@@ -48,7 +51,7 @@ void FXAA::go(IDirect3DTexture9* frame, IDirect3DSurface9* dst) noexcept {
     lumaPass(frame, buffer1Surf);
     fxaaPass(buffer1Tex, dst);
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
   }
 }
 

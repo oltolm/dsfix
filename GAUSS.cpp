@@ -31,7 +31,7 @@ GAUSS::GAUSS(IDirect3DDevice9* device, int width, int height) noexcept
     // get handles
     frameTexHandle = effect->GetParameterByName(nullptr, "frameTex2D");
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"GAUSS::GAUSS: error: {}", DXGetErrorString9W(err.code().value()));
   }
 }
 
@@ -56,6 +56,6 @@ void GAUSS::go(IDirect3DTexture9* input, IDirect3DSurface9* dst) noexcept {
     throw_if_fail(effect->EndPass());
     throw_if_fail(effect->End());
   } catch (const std::system_error& err) {
-    spdlog::error("{}", err.what());
+    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
   }
 }

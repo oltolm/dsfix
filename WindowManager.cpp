@@ -44,8 +44,8 @@ void WindowManager::toggleBorderlessFullscreen() {
     ::GetMonitorInfo(monitor, &info);
     int monitorWidth = info.rcMonitor.right - info.rcMonitor.left;
     int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
-    ::SetWindowPos(hwnd, nullptr, info.rcMonitor.left, info.rcMonitor.top, monitorWidth, monitorHeight,
-                   SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
+    ::SetWindowPos(hwnd, nullptr, info.rcMonitor.left, info.rcMonitor.top, monitorWidth,
+                   monitorHeight, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
   } else {
     // restore previous window
     ::SetWindowLong(hwnd, GWL_STYLE, prevStyle);
