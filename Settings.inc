@@ -28,14 +28,6 @@ SETTING(bool, CaptureCursor, L"captureCursor", false);
 // Skipping Options
 SETTING(bool, SkipIntro, L"skipIntro", false);
 
-// HUD options
-SETTING(bool, EnableHudMod, L"enableHudMod", false)
-SETTING(bool, EnableMinimalHud, L"enableMinimalHud", true)
-SETTING(float, HudScaleFactor, L"hudScaleFactor", 0.75f)
-SETTING(float, HudTopLeftOpacity, L"hudTopLeftOpacity", 0.8f)
-SETTING(float, HudBottomLeftOpacity, L"hudBottomLeftOpacity", 0.75f)
-SETTING(float, HudBottomRightOpacity, L"hudBottomRightOpacity", 0.5f)
-
 // Screen Options
 SETTING(bool, BorderlessFullscreen, L"borderlessFullscreen", false);
 SETTING(unsigned int, PresentWidth, L"presentWidth", 0);

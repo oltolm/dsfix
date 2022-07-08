@@ -59,9 +59,9 @@ HRESULT APIENTRY hkIDirect3DDevice9::DrawIndexedPrimitiveUP(
     D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount,
     CONST void* pIndexData, D3DFORMAT IndexDataFormat, CONST void* pVertexStreamZeroData,
     UINT VertexStreamZeroStride) {
-  return m_rsManager->redirectDrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices,
-                                                     PrimitiveCount, pIndexData, IndexDataFormat,
-                                                     pVertexStreamZeroData, VertexStreamZeroStride);
+  return m_pD3Ddev->DrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount,
+                                           pIndexData, IndexDataFormat, pVertexStreamZeroData,
+                                           VertexStreamZeroStride);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex,
@@ -73,8 +73,8 @@ HRESULT APIENTRY hkIDirect3DDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveT
                                                      UINT PrimitiveCount,
                                                      CONST void* pVertexStreamZeroData,
                                                      UINT VertexStreamZeroStride) {
-  return m_rsManager->redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData,
-                                              VertexStreamZeroStride);
+  return m_pD3Ddev->DrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData,
+                                    VertexStreamZeroStride);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawRectPatch(UINT Handle, CONST float* pNumSegs,
@@ -593,7 +593,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantI(UINT StartRegister,
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
-  return m_rsManager->redirectSetRenderState(State, Value);
+  return m_pD3Ddev->SetRenderState(State, Value);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type,

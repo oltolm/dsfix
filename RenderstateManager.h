@@ -1,7 +1,6 @@
 #pragma once
 #include "FXAA.h"
 #include "GAUSS.h"
-#include "Hud.h"
 #include "SMAA.h"
 #include "SSAO.h"
 #include "TextureManager.h"
@@ -48,27 +47,6 @@ private:
   bool haveOcclusionScale = false;
   float occlusionScale = 1;
 
-  // HUD begin
-  bool doHud = true;
-  std::unique_ptr<HUD> hud;
-  bool hideHud = false;
-  bool onHudRT = false;
-  bool pausedHudRT = false;
-  bool hudStarted = false;
-  // HudDoneDetectionProgress
-  // sequence: 5xHudHealthbar, 2-3xCategoryIconsSoulCount, followed by any other
-  // texture signals end of normal Hud drawing
-  // TODO: handle cursed
-  unsigned int hddp = 0;
-
-  Microsoft::WRL::ComPtr<IDirect3DSurface9> prevRenderTarget;
-
-  bool allowStateChanges() { return !onHudRT; }
-  void finishHudRendering();
-  void resumeHudRendering();
-  void pauseHudRendering();
-  // HUD end
-
   unsigned int isDof(unsigned int width, unsigned int height);
   void measureOcclusionScale();
   void frameTimeManagement();
@@ -80,7 +58,6 @@ public:
   void setupAA();
   void setupSSAO();
   void setupDoF();
-  void setupHUD();
 
   void onReset(D3DPRESENT_PARAMETERS* pPresentationParameters);
   void setViewport(const D3DVIEWPORT9& vp) { viewport = vp; }
@@ -97,19 +74,8 @@ public:
   HRESULT redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) noexcept;
   HRESULT redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride,
                           CONST RGNDATA* pDirtyRegion) noexcept;
-  HRESULT redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex,
-                                         UINT NumVertices, UINT PrimitiveCount,
-                                         CONST void* pIndexData, D3DFORMAT IndexDataFormat,
-                                         CONST void* pVertexStreamZeroData,
-                                         UINT VertexStreamZeroStride) noexcept;
-  HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount,
-                                  CONST void* pVertexStreamZeroData,
-                                  UINT VertexStreamZeroStride) noexcept;
   float getOcclusionScale() const { return occlusionScale; }
   // Render state store/restore
   void storeRenderState();
   void restoreRenderState();
-  // HUD begin
-  HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value);
-  // HUD end
 };

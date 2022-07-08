@@ -47,7 +47,6 @@ add_library(dsfix
   FPS.cpp
   FXAA.cpp
   GAUSS.cpp
-  Hud.cpp
   main.cpp
   memory.cpp
   RenderstateManager.cpp

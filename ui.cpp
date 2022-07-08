@@ -310,47 +310,6 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
       ImGui::EndTabItem();
     }
 
-    if (ImGui::BeginTabItem("HUD options")) {
-      ImGui::BeginChild("Scrolling");
-
-      ImGui::Indent();
-
-      bool enableHudMode = Settings::get().getEnableHudMod();
-      if (ImGui::Checkbox("Enable HUD modifications", &enableHudMode)) {
-        Settings::get().setEnableHudMod(enableHudMode);
-        rsManager->setupHUD();
-      }
-
-      bool enableMinimalHud = Settings::get().getEnableMinimalHud();
-      if (ImGui::Checkbox("Enable minimal HUD", &enableMinimalHud))
-        Settings::get().setEnableMinimalHud(enableMinimalHud);
-      ImGui::TextWrapped("Remove the weapon icons from the HUD (you can see which weapons you have "
-                         "equipped from your character model).");
-
-      float hudScaleFactor = Settings::get().getHudScaleFactor();
-      if (ImGui::DragFloat("HUD scale factor", &hudScaleFactor, 0.01f, 0.0f, 1.0f, "%.2f"))
-        Settings::get().setHudScaleFactor(hudScaleFactor);
-
-      float hudTopLeftOpacity = Settings::get().getHudTopLeftOpacity();
-      if (ImGui::DragFloat("HUD top left opacity", &hudTopLeftOpacity, 0.01f, 0.0f, 1.0f, "%.2f"))
-        Settings::get().setHudTopLeftOpacity(hudTopLeftOpacity);
-
-      float hudBottomLeftOpacity = Settings::get().getHudBottomLeftOpacity();
-      if (ImGui::DragFloat("HUD bottom left opacity", &hudBottomLeftOpacity, 0.01f, 0.0f, 1.0f,
-                           "%.2f"))
-        Settings::get().setHudBottomLeftOpacity(hudBottomLeftOpacity);
-
-      float hudBottomRightOpacity = Settings::get().getHudBottomRightOpacity();
-      if (ImGui::DragFloat("HUD bottom right opacity", &hudBottomRightOpacity, 0.01f, 0.0f, 1.0f,
-                           "%.2f"))
-        Settings::get().setHudBottomRightOpacity(hudBottomRightOpacity);
-
-      ImGui::Unindent();
-
-      ImGui::EndChild();
-      ImGui::EndTabItem();
-    }
-
     if (ImGui::BeginTabItem("Window & Mouse Cursor Options")) {
       ImGui::BeginChild("Scrolling");
 

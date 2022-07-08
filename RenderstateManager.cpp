@@ -65,15 +65,6 @@ void RSManager::setupDoF() {
     gauss = nullptr;
 }
 
-void RSManager::setupHUD() {
-  unsigned int rw = Settings::get().getRenderWidth();
-  unsigned int rh = Settings::get().getRenderHeight();
-  if (Settings::get().getEnableHudMod())
-    hud.reset(new HUD(d3ddev.Get(), rw, rh));
-  else
-    hud = nullptr;
-}
-
 RSManager::RSManager(IDirect3DDevice9* pDevice) {
   d3ddev = pDevice;
   this->onReset(nullptr);
@@ -85,10 +76,6 @@ void RSManager::onReset(D3DPRESENT_PARAMETERS* pPresentationParameters) {
   this->setupAA();
   this->setupSSAO();
   this->setupDoF();
-
-  // HUD begin
-  setupHUD();
-  // HUD end
 
   try {
     unsigned int rw = Settings::get().getRenderWidth();
@@ -113,17 +100,11 @@ RSManager::~RSManager() {
   fxaa = nullptr;
   ssao = nullptr;
   gauss = nullptr;
-  // HUD begin
-  hud = nullptr;
-  // HUD end
 }
 
 HRESULT RSManager::redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRect,
                                    HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) noexcept {
 
-  // HUD begin
-  hudStarted = false;
-  // HUD end
   nrts = 0;
   doft = {0};
   mainRT = nullptr;
@@ -222,41 +203,6 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
         }
       }
     }
-    if (rddp >= 4) { // we just finished rendering the frame (pre-HUD)
-      WRL::ComPtr<IDirect3DSurface9> oldRenderTarget;
-      ThrowIfFailed(d3ddev->GetRenderTarget(0, &oldRenderTarget));
-      WRL::ComPtr<IDirect3DTexture9> tex;
-      ThrowIfFailed(oldRenderTarget->GetContainer(IID_PPV_ARGS(&tex)));
-      // final renderbuffer has to be from texture, just making sure here
-      if (tex) {
-        // check size just to make even more sure
-        D3DSURFACE_DESC desc;
-        ThrowIfFailed(oldRenderTarget->GetDesc(&desc));
-        if (desc.Width == Settings::get().getRenderWidth() &&
-            desc.Height == Settings::get().getRenderHeight()) {
-          // HUD stuff
-          if (hud && doHud && rddp == 9) {
-            hddp = 0;
-            onHudRT = true;
-            ThrowIfFailed(d3ddev->SetRenderTarget(0, rgbaBuffer1Surf.Get()));
-            ThrowIfFailed(
-                d3ddev->Clear(0, nullptr, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 0), 0.0f, 0));
-            prevRenderTarget = pRenderTarget;
-            ThrowIfFailed(d3ddev->SetRenderState(
-                D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN |
-                                            D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA));
-            ThrowIfFailed(d3ddev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_ADD));
-            ThrowIfFailed(d3ddev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE));
-            ThrowIfFailed(d3ddev->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_CURRENT));
-            return S_OK;
-          }
-        }
-      }
-    }
-    // HUD begin
-    if (onHudRT)
-      finishHudRendering();
-    // HUD end
     if (rddp < 4 || rddp > 8)
       rddp = 0;
     else
@@ -334,9 +280,6 @@ HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTextu
   try {
     if (pTexture == nullptr)
       return ThrowIfFailed(d3ddev->SetTexture(Stage, pTexture));
-    if (!hudStarted && TextureManager::get().isTextureHudHealthbar(pTexture)) {
-      hudStarted = true;
-    }
     if ((rddp == 0 && Stage == 0) || (rddp == 1 && Stage == 1) || (rddp == 2 && Stage == 2) ||
         (rddp == 3 && Stage == 3)) {
       ++rddp;
@@ -344,107 +287,6 @@ HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTextu
       rddp = 0;
     }
     return ThrowIfFailed(d3ddev->SetTexture(Stage, pTexture));
-  } catch (const std::system_error& err) {
-    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
-    return err.code().value();
-  }
-}
-
-HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex,
-                                                  UINT NumVertices, UINT PrimitiveCount,
-                                                  CONST void* pIndexData, D3DFORMAT IndexDataFormat,
-                                                  CONST void* pVertexStreamZeroData,
-                                                  UINT VertexStreamZeroStride) noexcept {
-  auto& tm = TextureManager::get();
-  if (hudStarted && hideHud) {
-    return D3D_OK;
-  }
-  try {
-    bool isTargetIndicator = false;
-    if (pausedHudRT) {
-      WRL::ComPtr<IDirect3DBaseTexture9> t;
-      ThrowIfFailed(d3ddev->GetTexture(0, &t));
-      // check for target indicator
-      if (tm.isTextureHudHealthbar(t.Get())) {
-        const INT16* vertices = static_cast<const INT16*>(pVertexStreamZeroData);
-        if (vertices[3] > -2000) {
-          resumeHudRendering();
-        }
-      } else {
-        resumeHudRendering();
-      }
-    }
-    if (onHudRT) {
-      WRL::ComPtr<IDirect3DBaseTexture9> t;
-      ThrowIfFailed(d3ddev->GetTexture(0, &t));
-      if ((hddp < 5 && tm.isTextureHudHealthbar(t.Get())) ||
-          (hddp >= 5 && hddp < 7 && tm.isTextureCategoryIconsHumanityCount(t.Get())) ||
-          (hddp >= 7 && !tm.isTextureCategoryIconsHumanityCount(t.Get()))) {
-        hddp++;
-      }
-      // check for target indicator
-      if (tm.isTextureHudHealthbar(t.Get())) {
-        const INT16* vertices = static_cast<const INT16*>(pVertexStreamZeroData);
-        if (vertices[3] < -2000) {
-          isTargetIndicator = true;
-          pauseHudRendering();
-        }
-      }
-      if (hddp == 8) {
-        finishHudRendering();
-      } else if (!isTargetIndicator) {
-        // d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE,
-        //                        D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN |
-        //                            D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
-        // d3ddev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_ADD);
-        // d3ddev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-        // d3ddev->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
-      }
-    }
-    return ThrowIfFailed(d3ddev->DrawIndexedPrimitiveUP(
-        PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat,
-        pVertexStreamZeroData, VertexStreamZeroStride));
-  } catch (const std::system_error& err) {
-    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
-    return err.code().value();
-  }
-}
-
-HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount,
-                                           CONST void* pVertexStreamZeroData,
-                                           UINT VertexStreamZeroStride) noexcept {
-  auto& tm = TextureManager::get();
-  try {
-    if (hudStarted && hideHud) {
-      WRL::ComPtr<IDirect3DBaseTexture9> t;
-      ThrowIfFailed(d3ddev->GetTexture(0, &t));
-      bool hide = tm.isTextureText(t.Get()) || tm.isTextureButtonsEffects(t.Get()) ||
-                  tm.isTextureHudEffectIcons(t.Get());
-      if (hide)
-        return D3D_OK;
-    }
-    if (pausedHudRT) {
-      WRL::ComPtr<IDirect3DBaseTexture9> t;
-      ThrowIfFailed(d3ddev->GetTexture(0, &t));
-      bool isText = tm.isTextureText(t.Get());
-      if (isText && PrimitiveCount >= 12)
-        resumeHudRendering();
-    }
-    bool subbed = false;
-    if (onHudRT) {
-      WRL::ComPtr<IDirect3DBaseTexture9> t;
-      ThrowIfFailed(d3ddev->GetTexture(0, &t));
-      bool isSub = tm.isTextureText00(t.Get());
-      if (isSub) {
-        pauseHudRendering();
-        subbed = true;
-      }
-    }
-    HRESULT hr = ThrowIfFailed(d3ddev->DrawPrimitiveUP(
-        PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride));
-    if (subbed)
-      resumeHudRendering();
-    return hr;
   } catch (const std::system_error& err) {
     spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
     return err.code().value();
@@ -476,49 +318,6 @@ void RSManager::restoreRenderState() {
   ThrowIfFailed(
       d3ddev->SetDepthStencilSurface(prevDepthStencilSurf.Get())); // also restore nullptr!
   ThrowIfFailed(prevStateBlock->Apply());
-}
-
-void RSManager::finishHudRendering() {
-  ThrowIfFailed(d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED |
-                                                                   D3DCOLORWRITEENABLE_GREEN |
-                                                                   D3DCOLORWRITEENABLE_BLUE));
-  ThrowIfFailed(d3ddev->SetRenderTarget(0, prevRenderTarget.Get()));
-  onHudRT = false;
-  // draw HUD to screen
-  storeRenderState();
-  hud->go(rgbaBuffer1Tex.Get(), prevRenderTarget.Get());
-  restoreRenderState();
-}
-
-void RSManager::pauseHudRendering() {
-  ThrowIfFailed(d3ddev->SetRenderTarget(0, prevRenderTarget.Get()));
-  ThrowIfFailed(d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED |
-                                                                   D3DCOLORWRITEENABLE_GREEN |
-                                                                   D3DCOLORWRITEENABLE_BLUE));
-  ThrowIfFailed(d3ddev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_BLENDTEXTUREALPHA));
-  onHudRT = false;
-  pausedHudRT = true;
-}
-
-void RSManager::resumeHudRendering() {
-  ThrowIfFailed(d3ddev->SetRenderTarget(0, rgbaBuffer1Surf.Get()));
-  ThrowIfFailed(d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE,
-                                       D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN |
-                                           D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA));
-  ThrowIfFailed(d3ddev->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1));
-  onHudRT = true;
-  pausedHudRT = false;
-}
-
-HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
-  if (State == D3DRS_COLORWRITEENABLE && !allowStateChanges())
-    return D3D_OK;
-  try {
-    return ThrowIfFailed(d3ddev->SetRenderState(State, Value));
-  } catch (const std::system_error& err) {
-    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
-    return err.code().value();
-  }
 }
 
 void RSManager::frameTimeManagement() {
