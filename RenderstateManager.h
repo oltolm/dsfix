@@ -3,7 +3,6 @@
 #include "GAUSS.h"
 #include "SMAA.h"
 #include "SSAO.h"
-#include "TextureManager.h"
 #include <array>
 #include <memory>
 #include <spdlog/spdlog.h>

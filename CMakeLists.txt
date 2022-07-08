@@ -53,7 +53,6 @@ add_library(dsfix
   Settings.cpp
   SMAA.cpp
   SSAO.cpp
-  TextureManager.cpp
   ui.cpp
   util.cpp
   WindowManager.cpp
