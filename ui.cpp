@@ -10,7 +10,11 @@
 #include <array>
 #include <ctime>
 
-extern bool paused;
+#include "myfont.cpp"
+
+extern bool g_paused;
+
+Ui Ui::instance;
 
 std::string modeToString(const D3DDISPLAYMODE& mode);
 
@@ -19,13 +23,13 @@ static WNDPROC oWndProc = nullptr;
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam,
                                                              LPARAM lParam);
 
-static bool open = false;
+bool g_open = false;
 
 LRESULT CALLBACK hkWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
   if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam) > 0)
     return 1L;
   auto& io = ImGui::GetIO();
-  paused = open;
+  g_paused = g_open && Settings::get().getPauseGame();
   if ((io.WantCaptureMouse && uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST) ||
       (io.WantCaptureKeyboard && uMsg >= WM_KEYFIRST && uMsg <= WM_KEYLAST)) {
     return 1L;
@@ -33,51 +37,50 @@ LRESULT CALLBACK hkWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
   return ::CallWindowProcW(oWndProc, hwnd, uMsg, wParam, lParam);
 }
 
-static time_t start;
+static time_t s_start;
 
-Ui::Ui(IDirect3D9* api, IDirect3DDevice9* device) : m_api(api), m_device(device) {}
+void Ui::onEndScene() {
+  static bool s_init = false;
 
-void Ui::onEndScene(RSManager* rsManager) {
-
-  static bool init = false;
-
-  if (!init) {
+  if (!s_init) {
     D3DDEVICE_CREATION_PARAMETERS params;
-    m_device->GetCreationParameters(&params);
+    m_pDevice->GetCreationParameters(&params);
 
     oWndProc = (WNDPROC)::SetWindowLongPtr(params.hFocusWindow, GWLP_WNDPROC, (LONG)hkWindowProc);
 
     ImGui::CreateContext();
     ImGui_ImplWin32_Init(params.hFocusWindow);
-    ImGui_ImplDX9_Init(m_device.Get());
+    ImGui_ImplDX9_Init(m_pDevice.Get());
+    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(MyFont_compressed_data, MyFont_compressed_size, 24);
 
-    start = std::time(nullptr);
+    s_start = std::time(nullptr);
 
-    init = true;
+    s_init = true;
   }
 
   if (GetAsyncKeyState(VK_F1) & 0x01)
-    open = !open;
+    g_open = !g_open;
 
   ImGui_ImplDX9_NewFrame();
   ImGui_ImplWin32_NewFrame();
   ImGui::NewFrame();
-  ImGui::GetIO().MouseDrawCursor = open;
-  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+  auto& io = ImGui::GetIO();
+  io.MouseDrawCursor = g_open;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-  static ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize;
+  static ImGuiWindowFlags s_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize;
 
-  double elapsed = difftime(std::time(nullptr), start);
+  double elapsed = std::difftime(std::time(nullptr), s_start);
   if (elapsed < 10) {
-    if (ImGui::Begin("Popup", nullptr, flags)) {
+    if (ImGui::Begin("Popup", nullptr, s_flags)) {
       ImGui::Text("Press F1 to open the DSFix options. Closing in %us.", (unsigned)(10 - elapsed));
     }
     ImGui::End();
   }
 
-  if (open) {
-    showWindow(&open, rsManager);
+  if (g_open) {
+    showWindow(&g_open);
     // ImGui::ShowDemoWindow(&open);
   }
 
@@ -86,7 +89,7 @@ void Ui::onEndScene(RSManager* rsManager) {
   ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
+void Ui::showWindow(bool* pOpen) {
   if (!ImGui::Begin("dsfix", pOpen)) {
     ImGui::End();
     return;
@@ -107,12 +110,14 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
         if (adapter < 0)
           adapter = D3DADAPTER_DEFAULT;
         D3DDISPLAYMODE currentMode = {};
-        if (FAILED(m_api->GetAdapterDisplayMode(adapter, &currentMode))) {
+        WRL::ComPtr<IDirect3D9> pD3D9;
+        m_pDevice->GetDirect3D(&pD3D9);
+        if (FAILED(pD3D9->GetAdapterDisplayMode(adapter, &currentMode))) {
           ImGui::End();
           return;
         }
 
-        UINT modeCount = m_api->GetAdapterModeCount(adapter, currentMode.Format);
+        UINT modeCount = pD3D9->GetAdapterModeCount(adapter, currentMode.Format);
 
         static ImGuiComboFlags flags = 0;
         auto width = Settings::get().getRenderWidth();
@@ -122,7 +127,7 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
         if (ImGui::BeginCombo("Display Resolution", preview_value.c_str(), flags)) {
           for (UINT i = 0; i < modeCount; ++i) {
             D3DDISPLAYMODE mode = {};
-            if (SUCCEEDED(m_api->EnumAdapterModes(adapter, currentMode.Format, i, &mode))) {
+            if (SUCCEEDED(pD3D9->EnumAdapterModes(adapter, currentMode.Format, i, &mode))) {
               if (currentMode.RefreshRate != mode.RefreshRate)
                 continue;
               std::string label = modeToString(mode);
@@ -153,7 +158,7 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
                                             "high", "ultra (worst performance, best IQ)"};
         if (ImGui::Combo("AA Quality", &aAQuality, items.data(), items.size())) {
           Settings::get().setAAQuality(aAQuality);
-          rsManager->setupAA();
+          RSManager::get().setupAA();
         }
       }
 
@@ -166,7 +171,7 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
             bool selected = item == item_current;
             if (ImGui::Selectable(item.c_str(), &selected)) {
               Settings::get().setAAType(item);
-              rsManager->setupAA();
+              RSManager::get().setupAA();
             }
             if (selected)
               ImGui::SetItemDefaultFocus();
@@ -186,7 +191,7 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
         std::array<const char*, 4> items = {"off", "low", "medium", "high"};
         if (ImGui::Combo("SSAO Strength", &ssaoStrength, items.data(), items.size())) {
           Settings::get().setSsaoStrength(ssaoStrength);
-          rsManager->setupSSAO();
+          RSManager::get().setupSSAO();
         }
 
         ImGui::TextWrapped("(all 3 settings have the same performance impact!)");
@@ -200,7 +205,7 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
           for (const auto& item : items) {
             bool selected = item == ssaoType;
             if (ImGui::Selectable(item.c_str(), &selected)) {
-              rsManager->setupSSAO();
+              RSManager::get().setupSSAO();
               Settings::get().setSsaoType(item);
             }
             if (selected)
@@ -210,6 +215,8 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
         }
 
         ImGui::TextWrapped("Determine the type of AO used");
+        ImGui::Bullet();
+        ImGui::Text(R"("HBAO" = Horizon-Based Ambient Occlusion)");
         ImGui::Bullet();
         ImGui::TextWrapped(R"("VSSAO" = Volumetric SSAO (default, only option pre-1.9))");
         ImGui::Bullet();
@@ -228,7 +235,7 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
         int dofOverrideResolution = Settings::get().getDOFOverrideResolution();
         if (ImGui::SliderInt("DoF resolution override", &dofOverrideResolution, 0, 2160)) {
           Settings::get().setDOFOverrideResolution(dofOverrideResolution);
-          rsManager->setupDoF();
+          RSManager::get().setupDoF();
         }
 
         ImGui::TextWrapped("Depth of Field resolution override, possible values:");
@@ -248,7 +255,7 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
         int dofBlurAmount = Settings::get().getDOFBlurAmount();
         if (ImGui::SliderInt("DoF additional blur", &dofBlurAmount, 0, 4)) {
           Settings::get().setDOFBlurAmount(dofBlurAmount);
-          rsManager->setupDoF();
+          RSManager::get().setupDoF();
         }
 
         ImGui::TextWrapped("Depth of field additional blur allows you to use high DoF resolutions "
@@ -314,18 +321,22 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
       bool borderlessFullscreen = Settings::get().getBorderlessFullscreen();
       if (ImGui::Checkbox("Borderless Fullscreen", &borderlessFullscreen)) {
         Settings::get().setBorderlessFullscreen(borderlessFullscreen);
-        WindowManager::get().toggleBorderlessFullscreen(borderlessFullscreen);
+        WindowManager::get().toggleBorderlessFullscreen();
       }
       ImGui::TextWrapped(
           "Make sure to select windowed mode in the game settings for this to work!");
 
       bool disableCursor = Settings::get().getDisableCursor();
-      if (ImGui::Checkbox("Disable cursor at startup", &disableCursor))
+      if (ImGui::Checkbox("Disable cursor at startup", &disableCursor)) {
         Settings::get().setDisableCursor(disableCursor);
+        WindowManager::get().toggleCursorCapture();
+      }
 
       bool captureCursor = Settings::get().getCaptureCursor();
-      if (ImGui::Checkbox("Capture cursor", &captureCursor))
+      if (ImGui::Checkbox("Capture cursor", &captureCursor)) {
         Settings::get().setCaptureCursor(captureCursor);
+        WindowManager::get().toggleCursorCapture();
+      }
       ImGui::TextWrapped("(this also works if the cursor is not visible)");
 
       ImGui::Unindent();
@@ -342,6 +353,10 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
       bool skipIntro = Settings::get().getSkipIntro();
       if (ImGui::Checkbox("Skip the intro logos", &skipIntro))
         Settings::get().setSkipIntro(skipIntro);
+
+      bool pauseGame = Settings::get().getPauseGame();
+      if (ImGui::Checkbox("Pause game when DSFix dialog is open", &pauseGame))
+        Settings::get().setPauseGame(pauseGame);
 
       ImGui::Unindent();
 

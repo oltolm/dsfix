@@ -8,10 +8,13 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/spdlog.h>
 #include <windows.h>
+#include "dinput.h"
+#include "ui.h"
+#include "RenderstateManager.h"
+#include "d3d9int.h"
+#include "d3d9dev.h"
 
 namespace fs = std::filesystem;
-
-DirectInput8Create_t oDirectInput8Create;
 
 void loadOriginalDinput8dll() {
   fs::path dinput8Filename = GetSystemDirectoryPath() / L"dinput8.dll";
@@ -19,9 +22,9 @@ void loadOriginalDinput8dll() {
   if (!hMod) {
     spdlog::debug(L"Could not load original dinput8.dll");
     spdlog::debug(L"ABORTING.");
-    exit(1);
+    std::exit(1);
   }
-  oDirectInput8Create = (DirectInput8Create_t)::GetProcAddress(hMod, "DirectInput8Create");
+  oDirectInput8Create = (decltype(DirectInput8Create)*)::GetProcAddress(hMod, "DirectInput8Create");
 }
 
 void onDllProcessAttach() {
@@ -45,14 +48,19 @@ void onDllProcessDetach() {
   endDetour();
 }
 
-void onDirect3D9Create() {
-  static bool initialized = false;
-  if (initialized)
+// here the dependency injection (DI) happens
+void onD3DCreateDevice() {
+  static bool s_initialized = false;
+  if (s_initialized)
     return;
+
+  RSManager::get().setD3DDevice(g_pD3DDevice->getDevice());
+  Ui::get().setD3DDevice(g_pD3DDevice.Get());
+
   initFPSTimer();
   if (Settings::get().getUnlockFPS())
     applyFPSPatch();
-  initialized = true;
+  s_initialized = true;
   spdlog::debug("onDirect3D9Create finished");
 }
 
@@ -63,6 +71,7 @@ DWORD WINAPI ThreadProc(LPVOID lpThreadParameter) {
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
   if (dwReason == DLL_PROCESS_ATTACH) {
+    ::DisableThreadLibraryCalls(hDll);
     ::CreateThread(nullptr, 0, ThreadProc, nullptr, 0, nullptr);
     return TRUE;
   } else if (dwReason == DLL_PROCESS_DETACH) {

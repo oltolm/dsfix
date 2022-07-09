@@ -148,6 +148,7 @@ SMAA::SMAA(IDirect3DDevice9* device, int width, int height, Preset preset,
   blendWeightCalculationHandle = effect->GetTechniqueByName("BlendWeightCalculation");
   neighborhoodBlendingHandle = effect->GetTechniqueByName("NeighborhoodBlending");
 }
+
 void SMAA::go(IDirect3DTexture9* edges, IDirect3DTexture9* src, IDirect3DSurface9* dst,
               Input input) {
   HRESULT hr;
@@ -158,6 +159,7 @@ void SMAA::go(IDirect3DTexture9* edges, IDirect3DTexture9* src, IDirect3DSurface
   blendingWeightsCalculationPass();
   neighborhoodBlendingPass(src, dst);
 }
+
 void SMAA::loadAreaTex() {
   HRESULT hr;
   V(device->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8L8,
@@ -169,6 +171,7 @@ void SMAA::loadAreaTex() {
                AREATEX_PITCH);
   V(areaTex->UnlockRect(0));
 }
+
 void SMAA::loadSearchTex() {
   HRESULT hr;
   V(device->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_L8,
@@ -180,6 +183,7 @@ void SMAA::loadSearchTex() {
                SEARCHTEX_PITCH);
   V(searchTex->UnlockRect(0));
 }
+
 void SMAA::edgesDetectionPass(IDirect3DTexture9* edges, Input input) {
   // D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 1st pass");
   HRESULT hr;
@@ -215,6 +219,7 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9* edges, Input input) {
   V(effect->End());
   // D3DPERF_EndEvent();
 }
+
 void SMAA::blendingWeightsCalculationPass() {
   // D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 2nd pass");
   HRESULT hr;
@@ -235,6 +240,7 @@ void SMAA::blendingWeightsCalculationPass() {
   V(effect->End());
   // D3DPERF_EndEvent();
 }
+
 void SMAA::neighborhoodBlendingPass(IDirect3DTexture9* src, IDirect3DSurface9* dst) {
   // D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 3rd pass");
   HRESULT hr;

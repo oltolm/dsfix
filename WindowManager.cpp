@@ -1,9 +1,10 @@
 #include "WindowManager.h"
+#include "Settings.h"
 
 WindowManager WindowManager::instance;
 
-void WindowManager::applyCursorCapture() {
-  if (captureCursor) {
+void WindowManager::toggleCursorCapture() {
+  if (Settings::get().getCaptureCursor()) {
     RECT clientrect;
     HWND hwnd = ::GetActiveWindow();
     ::GetClientRect(hwnd, &clientrect);
@@ -15,21 +16,16 @@ void WindowManager::applyCursorCapture() {
   }
 }
 
-void WindowManager::toggleCursorCapture() { captureCursor = !captureCursor; }
+void WindowManager::toggleCursorVisibility() { ::ShowCursor(!Settings::get().getDisableCursor()); }
 
-void WindowManager::toggleCursorVisibility() {
-  cursorVisible = !cursorVisible;
-  ::ShowCursor(cursorVisible);
-}
-
-void WindowManager::toggleBorderlessFullscreen(bool enable) {
+void WindowManager::toggleBorderlessFullscreen() {
   HWND hwnd = ::GetActiveWindow();
-  if (enable) {
+  if (Settings::get().getBorderlessFullscreen()) {
     // set styles
-    LONG lStyle = prevStyle = ::GetWindowLongW(hwnd, GWL_STYLE);
+    LONG lStyle = ::GetWindowLongW(hwnd, GWL_STYLE);
     lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
     ::SetWindowLongW(hwnd, GWL_STYLE, lStyle);
-    LONG lExStyle = prevExStyle = ::GetWindowLong(hwnd, GWL_EXSTYLE);
+    LONG lExStyle = ::GetWindowLong(hwnd, GWL_EXSTYLE);
     lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
     ::SetWindowLongW(hwnd, GWL_EXSTYLE, lExStyle);
     // adjust size & position
@@ -41,9 +37,13 @@ void WindowManager::toggleBorderlessFullscreen(bool enable) {
     int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
     ::SetWindowPos(hwnd, nullptr, info.rcMonitor.left, info.rcMonitor.top, monitorWidth,
                    monitorHeight, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
-  } else if (prevStyle != 0) {
+  } else {
     // restore previous window
-    ::SetWindowLongW(hwnd, GWL_STYLE, prevStyle);
-    ::SetWindowLongW(hwnd, GWL_EXSTYLE, prevExStyle);
+    LONG lStyle = ::GetWindowLongW(hwnd, GWL_STYLE);
+    LONG lExStyle = ::GetWindowLong(hwnd, GWL_EXSTYLE);
+    lStyle |= (WS_DLGFRAME | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU);
+    lExStyle |= WS_EX_WINDOWEDGE;
+    ::SetWindowLongW(hwnd, GWL_STYLE, lStyle);
+    ::SetWindowLongW(hwnd, GWL_EXSTYLE, lExStyle);
   }
 }

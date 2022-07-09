@@ -1,26 +1,23 @@
 #include "d3d9dev.h"
+#include "d3d9query.h"
 #include "RenderstateManager.h"
 #include "Settings.h"
+#include "ui.h"
 #include "WindowManager.h"
-#include "d3d9query.h"
-#include "main.h"
 #include <spdlog/spdlog.h>
 #ifndef _MSC_VER
 #include <dxerr9.h>
 #endif
 
-hkIDirect3DDevice9::hkIDirect3DDevice9(IDirect3DDevice9* pIDirect3DDevice9, IDirect3D9* pIDirect3D9)
-    : m_pD3Ddev(pIDirect3DDevice9), m_pD3Dint(pIDirect3D9) {
-  m_rsManager.reset(new RSManager(m_pD3Ddev.Get()));
-  m_ui.reset(new Ui(pIDirect3D9, pIDirect3DDevice9));
-  onDirect3D9Create();
-}
+hkIDirect3DDevice9::hkIDirect3DDevice9(IDirect3DDevice9* pIDirect3DDevice9, IDirect3D9* pD3D9)
+    : m_pD3Ddev(pIDirect3DDevice9), m_pD3D9(pD3D9) {}
 
 HRESULT APIENTRY hkIDirect3DDevice9::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect,
                                              HWND hDestWindowOverride,
                                              CONST RGNDATA* pDirtyRegion) {
-  WindowManager::get().applyCursorCapture();
-  return m_rsManager->redirectPresent(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+  WindowManager::get().toggleCursorCapture();
+  return RSManager::get().redirectPresent(pSourceRect, pDestRect, hDestWindowOverride,
+                                          pDirtyRegion);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShaderConstantF(UINT StartRegister,
@@ -34,7 +31,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetRenderTarget(DWORD RenderTargetIndex,
   if (RenderTargetIndex != 0)
     return D3D_OK; // rendertargets > 0 are not actually used by the game - this
                    // makes the log shorter
-  return m_rsManager->redirectSetRenderTarget(RenderTargetIndex, pRenderTarget);
+  return RSManager::get().redirectSetRenderTarget(RenderTargetIndex, pRenderTarget);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShader(IDirect3DVertexShader9* pvShader) {
@@ -43,7 +40,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShader(IDirect3DVertexShader9* pvS
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetViewport(CONST D3DVIEWPORT9* pViewport) {
   Settings::get().init();
-  m_rsManager->setViewport(*pViewport);
+  RSManager::get().setViewport(*pViewport);
   return m_pD3Ddev->SetViewport(pViewport);
 }
 
@@ -94,7 +91,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::GetBackBuffer(UINT iSwapChain, UINT iBackBu
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::EndScene() {
-  m_ui->onEndScene(m_rsManager.get());
+  Ui::get().onEndScene();
   return m_pD3Ddev->EndScene();
 }
 
@@ -301,7 +298,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::GetDeviceCaps(D3DCAPS9* pCaps) {
 HRESULT APIENTRY hkIDirect3DDevice9::GetDirect3D(IDirect3D9** ppD3D9) {
   HRESULT hRet = m_pD3Ddev->GetDirect3D(ppD3D9);
   if (SUCCEEDED(hRet))
-    *ppD3D9 = m_pD3Dint.Get();
+    *ppD3D9 = m_pD3D9.Get();
   return hRet;
 }
 
@@ -337,6 +334,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::GetMaterial(D3DMATERIAL9* pMaterial) {
 }
 
 float APIENTRY hkIDirect3DDevice9::GetNPatchMode() { return m_pD3Ddev->GetNPatchMode(); }
+
 unsigned int APIENTRY hkIDirect3DDevice9::GetNumberOfSwapChains() {
   return m_pD3Ddev->GetNumberOfSwapChains();
 }
@@ -478,8 +476,8 @@ ULONG APIENTRY hkIDirect3DDevice9::Release() { return m_pD3Ddev->Release(); }
 HRESULT APIENTRY hkIDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS* pPresentationParameters) {
   HRESULT hRet = m_pD3Ddev->Reset(pPresentationParameters);
   if (SUCCEEDED(hRet)) {
-    m_ui->onReset();
-    m_rsManager->onReset(pPresentationParameters);
+    Ui::get().onReset();
+    RSManager::get().onReset();
   } else {
     spdlog::error(L"ERROR: Reset failed: code: {}, description: {}", DXGetErrorString9W(hRet),
                   DXGetErrorDescription9W(hRet));
@@ -613,7 +611,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetScissorRect(CONST RECT* pRect) {
   // SetScissorRect RECT[1024/   0/2048/1024]
   // SetScissorRect RECT[   0/1024/1024/2048]
   // SetScissorRect RECT[1024/1024/2048/2048]
-  if (m_rsManager->isViewport(*pRect) ||
+  if (RSManager::get().isViewport(*pRect) ||
       (pRect->left == 0 && pRect->top == 0 && pRect->right == 1024 && pRect->bottom == 1024) ||
       (pRect->left == 1024 && pRect->top == 0 && pRect->right == 2048 && pRect->bottom == 1024) ||
       (pRect->left == 0 && pRect->top == 1024 && pRect->right == 1024 && pRect->bottom == 2048) ||
@@ -639,7 +637,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSourceFreq(UINT StreamNumber, UINT
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) {
-  return m_rsManager->redirectSetTexture(Stage, pTexture);
+  return RSManager::get().redirectSetTexture(Stage, pTexture);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetTextureStageState(DWORD Stage,

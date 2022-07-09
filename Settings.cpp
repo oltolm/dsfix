@@ -54,12 +54,9 @@ void Settings::report() {
 
 void Settings::init() {
   if (!initialized) {
-    if (getDisableCursor())
-      WindowManager::get().toggleCursorVisibility();
-    if (getCaptureCursor())
-      WindowManager::get().toggleCursorCapture();
-    if (getBorderlessFullscreen())
-      WindowManager::get().toggleBorderlessFullscreen(true);
+    WindowManager::get().toggleCursorVisibility();
+    WindowManager::get().toggleCursorCapture();
+    WindowManager::get().toggleBorderlessFullscreen();
     initialized = true;
   }
 }

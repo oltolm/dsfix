@@ -48,13 +48,17 @@ public:
                     Microsoft::WRL::ComPtr<IDirect3DSurface9> blendSurface = nullptr)
         : edgeTex(edgeTex), edgeSurface(edgeSurface), blendTex(blendTex),
           blendSurface(blendSurface) {}
+
     Microsoft::WRL::ComPtr<IDirect3DTexture9> edgeTex;
     Microsoft::WRL::ComPtr<IDirect3DSurface9> edgeSurface;
     Microsoft::WRL::ComPtr<IDirect3DTexture9> blendTex;
     Microsoft::WRL::ComPtr<IDirect3DSurface9> blendSurface;
   };
+
   enum Preset { PRESET_LOW, PRESET_MEDIUM, PRESET_HIGH, PRESET_ULTRA, PRESET_CUSTOM };
+
   enum Input { INPUT_LUMA, INPUT_COLOR, INPUT_DEPTH };
+
   /*If you have one or two spare render targets of the same size as the
    *backbuffer, you may want to pass them in the 'storage' parameter.
    *You may pass one or the two, depending on what you have available.
@@ -79,11 +83,15 @@ public:
    *from this function (the render target, the input layout, the
    *depth-stencil and blend states...)*/
   void go(IDirect3DTexture9* edges, IDirect3DTexture9* src, IDirect3DSurface9* dst, Input input);
+
   // Maximum length to search for patterns. Each step is two pixels wide.
   int getMaxSearchSteps() const { return maxSearchSteps; }
+
   void setMaxSearchSteps(int maxSearchSteps) { this->maxSearchSteps = maxSearchSteps; }
+
   // Threshold for the edge detection.
   float getThreshold() const { return threshold; }
+
   void setThreshold(float threshold) { this->threshold = threshold; }
 
 private:

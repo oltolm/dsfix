@@ -15,9 +15,8 @@ std::wstring GetLastErrorString();
 std::istream& operator>>(std::istream& is, std::wstring& s);
 
 inline HRESULT ThrowIfFailed(HRESULT hr) {
-  if (FAILED(hr)) {
+  if (FAILED(hr))
     throw std::system_error(hr, std::system_category());
-  }
   return hr;
 }
 

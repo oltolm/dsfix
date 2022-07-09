@@ -28,7 +28,7 @@ HRESULT APIENTRY hkIDirect3DQuery9::GetData(void* pData, DWORD dwSize, DWORD dwG
   auto result = m_pD3Dquery->GetData(pData, dwSize, dwGetDataFlags);
   if (SUCCEEDED(result)) {
     auto pixelsDrawn = static_cast<DWORD*>(pData);
-    *pixelsDrawn = static_cast<DWORD>(*pixelsDrawn / m_device->getOcclusionScale());
+    *pixelsDrawn = static_cast<DWORD>(*pixelsDrawn / RSManager().get().getOcclusionScale());
   }
   return result;
 }

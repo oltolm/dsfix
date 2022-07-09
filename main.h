@@ -16,8 +16,4 @@ along with this program.  If not, see http://www.gnu.org/licenses/ */
 #include "version.h"
 #include <windows.h>
 
-using DirectInput8Create_t = HRESULT(WINAPI*)(HINSTANCE inst_handle, DWORD version,
-                                              const IID& r_iid, LPVOID* out_wrapper,
-                                              LPUNKNOWN p_unk);
-extern DirectInput8Create_t oDirectInput8Create;
-void onDirect3D9Create();
+void onD3DCreateDevice();

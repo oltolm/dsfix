@@ -35,3 +35,4 @@ SETTING(unsigned int, PresentHeight, "presentHeight", 0);
 SETTING(bool, EnableVsync, "enableVsync", false);
 SETTING(unsigned int, FullscreenHz, "fullscreenHz", 60);
 SETTING(int, D3DAdapterOverride, "d3dAdapterOverride", -1);
+SETTING(bool, PauseGame, "pauseGame", false);

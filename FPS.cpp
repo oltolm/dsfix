@@ -2,7 +2,6 @@
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 // Dark Souls FPS fix by Clement Barnier (Nwks)
 #include "FPS.h"
-#include "RenderstateManager.h"
 #include "Settings.h"
 #include "memory.h"
 #include "minhook/src/hde/hde32.h"
@@ -10,7 +9,7 @@
 #include <spdlog/spdlog.h>
 #include <windows.h>
 
-bool paused = false;
+bool g_paused = false;
 
 // Hook Globals
 static double lastRenderTime;
@@ -79,7 +78,7 @@ void updateAnimationStepTime(float stepTime, float minFPS, float maxFPS) {
   else if (FPS > maxFPS)
     FPS = maxFPS;
   float cappedStep = 1 / FPS;
-	if (paused)
+  if (g_paused)
     cappedStep = 0.000000000000000001f;
   writeToAddress(&cappedStep, ADDR_TS, sizeof(cappedStep));
 }
@@ -148,6 +147,7 @@ void initFPSTimer() {
   ::QueryPerformanceFrequency(&timerFreq);
   ::QueryPerformanceCounter(&counterAtStart);
 }
+
 #pragma GCC diagnostic pop
 
 void ApplyDS1Patches() {

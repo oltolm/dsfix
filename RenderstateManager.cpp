@@ -11,7 +11,6 @@
 #include <dxerr9.h>
 #endif
 #include <wrl.h>
-
 using namespace Microsoft;
 
 namespace {
@@ -21,17 +20,19 @@ unsigned int getDOFResolution() {
 }
 } // namespace
 
+RSManager RSManager::instance;
+
 void RSManager::setupAA() {
   unsigned int rw = Settings::get().getRenderWidth();
   unsigned int rh = Settings::get().getRenderHeight();
   if (Settings::get().getAAQuality()) {
     if (Settings::get().getAAType() == "SMAA") {
       smaa.reset(
-          new SMAA(d3ddev.Get(), rw, rh, (SMAA::Preset)(Settings::get().getAAQuality() - 1)));
+          new SMAA(m_pDevice.Get(), rw, rh, (SMAA::Preset)(Settings::get().getAAQuality() - 1)));
       fxaa = nullptr;
     } else {
       fxaa.reset(
-          new FXAA(d3ddev.Get(), rw, rh, (FXAA::Quality)(Settings::get().getAAQuality() - 1)));
+          new FXAA(m_pDevice.Get(), rw, rh, (FXAA::Quality)(Settings::get().getAAQuality() - 1)));
       smaa = nullptr;
     }
   } else {
@@ -51,7 +52,7 @@ void RSManager::setupSSAO() {
   if (Settings::get().getSsaoStrength()) {
     unsigned int rw = Settings::get().getRenderWidth();
     unsigned int rh = Settings::get().getRenderHeight();
-    ssao.reset(new SSAO(d3ddev.Get(), rw, rh, Settings::get().getSsaoStrength() - 1, ssaoType));
+    ssao.reset(new SSAO(m_pDevice.Get(), rw, rh, Settings::get().getSsaoStrength() - 1, ssaoType));
   } else {
     ssao = nullptr;
   }
@@ -60,51 +61,33 @@ void RSManager::setupSSAO() {
 void RSManager::setupDoF() {
   unsigned int dofRes = getDOFResolution();
   if (Settings::get().getDOFBlurAmount())
-    gauss.reset(new GAUSS(d3ddev.Get(), dofRes * 16 / 9, dofRes));
+    gauss.reset(new GAUSS(m_pDevice.Get(), dofRes * 16 / 9, dofRes));
   else
     gauss = nullptr;
 }
 
-RSManager::RSManager(IDirect3DDevice9* pDevice) {
-  d3ddev = pDevice;
-  this->onReset(nullptr);
-}
-
-void RSManager::onReset(D3DPRESENT_PARAMETERS* pPresentationParameters) {
+void RSManager::onReset() {
   haveOcclusionScale = false;
   occlusionScale = 1;
   this->setupAA();
   this->setupSSAO();
   this->setupDoF();
-
   try {
     unsigned int rw = Settings::get().getRenderWidth();
     unsigned int rh = Settings::get().getRenderHeight();
-    ThrowIfFailed(d3ddev->CreateTexture(rw, rh, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
-                                        D3DPOOL_DEFAULT, &rgbaBuffer1Tex, nullptr));
+    ThrowIfFailed(m_pDevice->CreateTexture(rw, rh, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
+                                           D3DPOOL_DEFAULT, &rgbaBuffer1Tex, nullptr));
     ThrowIfFailed(rgbaBuffer1Tex->GetSurfaceLevel(0, &rgbaBuffer1Surf));
-    ThrowIfFailed(d3ddev->CreateDepthStencilSurface(rw, rh, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0,
-                                                    FALSE, &depthStencilSurf, nullptr));
-    ThrowIfFailed(d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock));
+    ThrowIfFailed(m_pDevice->CreateDepthStencilSurface(rw, rh, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0,
+                                                       FALSE, &depthStencilSurf, nullptr));
+    ThrowIfFailed(m_pDevice->CreateStateBlock(D3DSBT_ALL, &prevStateBlock));
   } catch (const std::system_error& err) {
     spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
   }
 }
 
-RSManager::~RSManager() {
-  rgbaBuffer1Surf = nullptr;
-  rgbaBuffer1Tex = nullptr;
-  depthStencilSurf = nullptr;
-  prevStateBlock = nullptr;
-  smaa = nullptr;
-  fxaa = nullptr;
-  ssao = nullptr;
-  gauss = nullptr;
-}
-
 HRESULT RSManager::redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRect,
                                    HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion) noexcept {
-
   nrts = 0;
   doft = {0};
   mainRT = nullptr;
@@ -113,7 +96,7 @@ HRESULT RSManager::redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRec
   frameTimeManagement();
   try {
     return ThrowIfFailed(
-        d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion));
+        m_pDevice->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion));
   } catch (const std::system_error& err) {
     spdlog::error(L"Present: {}", DXGetErrorString9W(err.code().value()));
     if (err.code().value() == D3DERR_DEVICEREMOVED)
@@ -143,7 +126,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
     // we are switching away from the initial 3D-rendered image, do AA and SSAO
     if (mainRTuses == 2 && mainRT && zSurf && ((ssao && doSsao) || (doAA && (smaa || fxaa)))) {
       WRL::ComPtr<IDirect3DSurface9> oldRenderTarget;
-      ThrowIfFailed(d3ddev->GetRenderTarget(0, &oldRenderTarget));
+      ThrowIfFailed(m_pDevice->GetRenderTarget(0, &oldRenderTarget));
       if (oldRenderTarget == mainRT) {
         WRL::ComPtr<IDirect3DTexture9> tex;
         ThrowIfFailed(oldRenderTarget->GetContainer(IID_PPV_ARGS(&tex)));
@@ -157,9 +140,9 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
             WRL::ComPtr<IDirect3DTexture9> zTex;
             ThrowIfFailed(zSurf->GetContainer(IID_PPV_ARGS(&zTex)));
             storeRenderState();
-            ThrowIfFailed(d3ddev->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE));
-            ThrowIfFailed(d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
-            ThrowIfFailed(d3ddev->SetRenderState(
+            ThrowIfFailed(m_pDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE));
+            ThrowIfFailed(m_pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW));
+            ThrowIfFailed(m_pDevice->SetRenderState(
                 D3DRS_COLORWRITEENABLE,
                 D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE));
             // perform AA processing
@@ -168,14 +151,14 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
                 smaa->go(tex.Get(), tex.Get(), rgbaBuffer1Surf.Get(), SMAA::INPUT_COLOR);
               else
                 fxaa->go(tex.Get(), rgbaBuffer1Surf.Get());
-              ThrowIfFailed(d3ddev->StretchRect(rgbaBuffer1Surf.Get(), nullptr,
-                                                oldRenderTarget.Get(), nullptr, D3DTEXF_NONE));
+              ThrowIfFailed(m_pDevice->StretchRect(rgbaBuffer1Surf.Get(), nullptr,
+                                                   oldRenderTarget.Get(), nullptr, D3DTEXF_NONE));
             }
             // perform SSAO
             if (ssao && doSsao) {
               ssao->go(tex.Get(), zTex.Get(), rgbaBuffer1Surf.Get());
-              ThrowIfFailed(d3ddev->StretchRect(rgbaBuffer1Surf.Get(), nullptr,
-                                                oldRenderTarget.Get(), nullptr, D3DTEXF_NONE));
+              ThrowIfFailed(m_pDevice->StretchRect(rgbaBuffer1Surf.Get(), nullptr,
+                                                   oldRenderTarget.Get(), nullptr, D3DTEXF_NONE));
             }
             restoreRenderState();
           }
@@ -185,7 +168,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
     // DoF blur stuff
     if (gauss && doDofGauss) {
       WRL::ComPtr<IDirect3DSurface9> oldRenderTarget;
-      ThrowIfFailed(d3ddev->GetRenderTarget(0, &oldRenderTarget));
+      ThrowIfFailed(m_pDevice->GetRenderTarget(0, &oldRenderTarget));
       D3DSURFACE_DESC desc;
       ThrowIfFailed(oldRenderTarget->GetDesc(&desc));
       unsigned int dofIndex = isDof(desc.Width, desc.Height);
@@ -207,7 +190,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
       rddp = 0;
     else
       rddp++;
-    return ThrowIfFailed(d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget));
+    return ThrowIfFailed(m_pDevice->SetRenderTarget(RenderTargetIndex, pRenderTarget));
   } catch (const std::system_error& err) {
     spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
     return err.code().value();
@@ -248,45 +231,46 @@ void RSManager::measureOcclusionScale() {
       {width, height, 0.5},
       {-width, height, 0.5},
   };
-  ThrowIfFailed(d3ddev->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 1, 0));
-  ThrowIfFailed(d3ddev->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE));
-  ThrowIfFailed(d3ddev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL));
-  ThrowIfFailed(d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
-  ThrowIfFailed(d3ddev->CreateVertexDeclaration(vertexElements, &vertexDeclaration));
-  ThrowIfFailed(d3ddev->SetVertexDeclaration(vertexDeclaration.Get()));
+  ThrowIfFailed(m_pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 1, 0));
+  ThrowIfFailed(m_pDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE));
+  ThrowIfFailed(m_pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL));
+  ThrowIfFailed(m_pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE));
+  ThrowIfFailed(m_pDevice->CreateVertexDeclaration(vertexElements, &vertexDeclaration));
+  ThrowIfFailed(m_pDevice->SetVertexDeclaration(vertexDeclaration.Get()));
   ThrowIfFailed(::D3DXAssembleShader(vertexShaderSource, sizeof(vertexShaderSource), nullptr,
                                      nullptr, 0, &vertexShaderBuffer, &errorBuffer));
-  ThrowIfFailed(d3ddev->CreateVertexShader(
+  ThrowIfFailed(m_pDevice->CreateVertexShader(
       static_cast<DWORD*>(vertexShaderBuffer->GetBufferPointer()), &vertexShader));
-  ThrowIfFailed(d3ddev->SetVertexShader(vertexShader.Get()));
+  ThrowIfFailed(m_pDevice->SetVertexShader(vertexShader.Get()));
   ThrowIfFailed(::D3DXAssembleShader(pixelShaderSource, sizeof(pixelShaderSource), nullptr, nullptr,
                                      0, &pixelShaderBuffer, &errorBuffer));
-  ThrowIfFailed(d3ddev->CreatePixelShader(
+  ThrowIfFailed(m_pDevice->CreatePixelShader(
       static_cast<DWORD*>(pixelShaderBuffer->GetBufferPointer()), &pixelShader));
-  ThrowIfFailed(d3ddev->SetPixelShader(pixelShader.Get()));
-  ThrowIfFailed(d3ddev->CreateQuery(D3DQUERYTYPE_OCCLUSION, &query));
-  ThrowIfFailed(d3ddev->BeginScene());
+  ThrowIfFailed(m_pDevice->SetPixelShader(pixelShader.Get()));
+  ThrowIfFailed(m_pDevice->CreateQuery(D3DQUERYTYPE_OCCLUSION, &query));
+  ThrowIfFailed(m_pDevice->BeginScene());
   ThrowIfFailed(query->Issue(D3DISSUE_BEGIN));
-  ThrowIfFailed(d3ddev->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertexData, sizeof(vertexData[0])));
+  ThrowIfFailed(
+      m_pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertexData, sizeof(vertexData[0])));
   ThrowIfFailed(query->Issue(D3DISSUE_END));
   while ((hr = query->GetData(&pixelsVisible, sizeof(pixelsVisible), D3DGETDATA_FLUSH)) == S_FALSE)
     ;
   ThrowIfFailed(hr);
   occlusionScale = pixelsVisible == 0 ? 1 : pixelsVisible / 576.0;
-  ThrowIfFailed(d3ddev->EndScene());
+  ThrowIfFailed(m_pDevice->EndScene());
 }
 
 HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) noexcept {
   try {
     if (pTexture == nullptr)
-      return ThrowIfFailed(d3ddev->SetTexture(Stage, pTexture));
+      return ThrowIfFailed(m_pDevice->SetTexture(Stage, pTexture));
     if ((rddp == 0 && Stage == 0) || (rddp == 1 && Stage == 1) || (rddp == 2 && Stage == 2) ||
         (rddp == 3 && Stage == 3)) {
       ++rddp;
     } else {
       rddp = 0;
     }
-    return ThrowIfFailed(d3ddev->SetTexture(Stage, pTexture));
+    return ThrowIfFailed(m_pDevice->SetTexture(Stage, pTexture));
   } catch (const std::system_error& err) {
     spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
     return err.code().value();
@@ -305,18 +289,18 @@ unsigned int RSManager::isDof(unsigned width, unsigned height) {
 
 void RSManager::storeRenderState() {
   ThrowIfFailed(prevStateBlock->Capture());
-  ThrowIfFailed(d3ddev->GetVertexDeclaration(&prevVDecl));
-  auto hr = d3ddev->GetDepthStencilSurface(&prevDepthStencilSurf);
+  ThrowIfFailed(m_pDevice->GetVertexDeclaration(&prevVDecl));
+  auto hr = m_pDevice->GetDepthStencilSurface(&prevDepthStencilSurf);
   if (hr != D3DERR_NOTFOUND)
     ThrowIfFailed(hr);
-  ThrowIfFailed(d3ddev->SetDepthStencilSurface(depthStencilSurf.Get()));
+  ThrowIfFailed(m_pDevice->SetDepthStencilSurface(depthStencilSurf.Get()));
 }
 
 void RSManager::restoreRenderState() {
   if (prevVDecl)
-    ThrowIfFailed(d3ddev->SetVertexDeclaration(prevVDecl.Get()));
+    ThrowIfFailed(m_pDevice->SetVertexDeclaration(prevVDecl.Get()));
   ThrowIfFailed(
-      d3ddev->SetDepthStencilSurface(prevDepthStencilSurf.Get())); // also restore nullptr!
+      m_pDevice->SetDepthStencilSurface(prevDepthStencilSurf.Get())); // also restore nullptr!
   ThrowIfFailed(prevStateBlock->Apply());
 }
 

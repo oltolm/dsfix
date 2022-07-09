@@ -9,14 +9,14 @@ namespace {
 // game first
 // launches anyway, so only create hkIDirect3D9s twice to work around that
 // crash.
-int hkDirect3DCreate9CallCount = 0;
+int s_hkDirect3DCreate9CallCount = 0;
 } // namespace
 
 IDirect3D9* APIENTRY hkDirect3DCreate9(UINT SDKVersion) {
   IDirect3D9* d3dint = oDirect3DCreate9(SDKVersion);
-  if (d3dint != nullptr && hkDirect3DCreate9CallCount < 2) {
+  if (d3dint != nullptr && s_hkDirect3DCreate9CallCount < 2) {
     d3dint = new hkIDirect3D9(d3dint);
-    ++hkDirect3DCreate9CallCount;
+    ++s_hkDirect3DCreate9CallCount;
   }
   return d3dint;
 }

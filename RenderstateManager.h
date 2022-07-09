@@ -11,7 +11,7 @@
 class RSManager {
 private:
   D3DVIEWPORT9 viewport;
-  Microsoft::WRL::ComPtr<IDirect3DDevice9> d3ddev;
+  Microsoft::WRL::ComPtr<IDirect3DDevice9> m_pDevice;
   double lastPresentTime = 0;
   bool doAA = false;
   std::unique_ptr<SMAA> smaa;
@@ -45,35 +45,47 @@ private:
   Microsoft::WRL::ComPtr<IDirect3DStateBlock9> prevStateBlock;
   bool haveOcclusionScale = false;
   float occlusionScale = 1;
-
   unsigned int isDof(unsigned int width, unsigned int height);
   void measureOcclusionScale();
   void frameTimeManagement();
+  static RSManager instance;
 
 public:
-  ~RSManager();
-  RSManager(IDirect3DDevice9* pD3Ddev);
+  ~RSManager() = default;
+  RSManager() = default;
+
+  static RSManager& get() { return instance; }
+
+  // DI
+  void setD3DDevice(IDirect3DDevice9* pDevice) { m_pDevice = pDevice; }
 
   void setupAA();
   void setupSSAO();
   void setupDoF();
+  void onReset();
 
-  void onReset(D3DPRESENT_PARAMETERS* pPresentationParameters);
   void setViewport(const D3DVIEWPORT9& vp) { viewport = vp; }
+
   bool isViewport(const RECT& r) {
     return (r.left == static_cast<LONG>(viewport.X)) && (r.top == static_cast<LONG>(viewport.Y)) &&
            (r.bottom == static_cast<LONG>(viewport.Height)) &&
            (r.right == static_cast<LONG>(viewport.Width));
   }
+
   void toggleSsao() { doSsao = !doSsao; }
+
   void toggleAA() { doAA = !doAA; }
+
   void toggleDofGauss() { doDofGauss = !doDofGauss; }
+
   HRESULT redirectSetRenderTarget(DWORD RenderTargetIndex,
                                   IDirect3DSurface9* pRenderTarget) noexcept;
   HRESULT redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) noexcept;
   HRESULT redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride,
                           CONST RGNDATA* pDirtyRegion) noexcept;
+
   float getOcclusionScale() const { return occlusionScale; }
+
   // Render state store/restore
   void storeRenderState();
   void restoreRenderState();
