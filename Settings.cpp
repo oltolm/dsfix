@@ -8,10 +8,6 @@
 #include <string>
 #include <Windows.h>
 
-std::ostream& operator<<(std::ostream& os, const std::wstring& s);
-
-std::ostream& operator<<(std::ostream& os, const wchar_t* s);
-
 namespace fs = std::filesystem;
 
 Settings Settings::instance;
@@ -24,7 +20,7 @@ void Settings::load() {
     if (line.empty() || line[0] == '#')
       continue;
     std::istringstream iss(line);
-    std::wstring propertyName;
+    std::string propertyName;
     iss >> propertyName;
 #define SETTING(_type, _var, _propertyName, _defaultval)                                           \
   if (propertyName == _propertyName) {                                                             \
@@ -50,7 +46,7 @@ void Settings::save() {
 void Settings::report() {
   spdlog::info("= Settings read:");
 #define SETTING(_type, _var, _propertyName, _defaultval)                                           \
-  spdlog::info(L" - {} : {}", _propertyName, _var);
+  spdlog::info(" - {} : {}", _propertyName, _var);
 #include "Settings.inc"
 #undef SETTING
   spdlog::info("_____________");

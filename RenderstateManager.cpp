@@ -25,7 +25,7 @@ void RSManager::setupAA() {
   unsigned int rw = Settings::get().getRenderWidth();
   unsigned int rh = Settings::get().getRenderHeight();
   if (Settings::get().getAAQuality()) {
-    if (Settings::get().getAAType() == L"SMAA") {
+    if (Settings::get().getAAType() == "SMAA") {
       smaa.reset(
           new SMAA(d3ddev.Get(), rw, rh, (SMAA::Preset)(Settings::get().getAAQuality() - 1)));
       fxaa = nullptr;
@@ -42,9 +42,9 @@ void RSManager::setupAA() {
 
 void RSManager::setupSSAO() {
   SSAO::Type ssaoType;
-  if (Settings::get().getSsaoType() == L"VSSAO")
+  if (Settings::get().getSsaoType() == "VSSAO")
     ssaoType = SSAO::Type::VSSAO;
-  else if (Settings::get().getSsaoType() == L"VSSAO2")
+  else if (Settings::get().getSsaoType() == "VSSAO2")
     ssaoType = SSAO::Type::VSSAO2;
   else
     ssaoType = SSAO::Type::HBAO;

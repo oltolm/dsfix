@@ -12,10 +12,6 @@
 
 extern bool paused;
 
-std::string toUtf8(const std::wstring& wideCharStr);
-std::wstring toUnicode(const char* multiByteStr);
-std::wstring toUnicode(const std::string& mbStr);
-
 std::string modeToString(const D3DDISPLAYMODE& mode);
 
 static WNDPROC oWndProc = nullptr;
@@ -153,9 +149,9 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
 
       {
         int aAQuality = Settings::get().getAAQuality();
-        const char* items[] = {"off (best performance, worst IQ)", "low", "medium", "high",
-                               "ultra (worst performance, best IQ)"};
-        if (ImGui::Combo("AA Quality", &aAQuality, items, std::size(items))) {
+        std::array<const char*, 5> items = {"off (best performance, worst IQ)", "low", "medium",
+                                            "high", "ultra (worst performance, best IQ)"};
+        if (ImGui::Combo("AA Quality", &aAQuality, items.data(), items.size())) {
           Settings::get().setAAQuality(aAQuality);
           rsManager->setupAA();
         }
@@ -163,12 +159,12 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
 
       {
         static ImGuiComboFlags flags = 0;
-        std::wstring item_current = Settings::get().getAAType();
-        const std::array<std::wstring, 2> items = {L"FXAA", L"SMAA"};
-        if (ImGui::BeginCombo("AA Type", toUtf8(item_current).c_str(), flags)) {
+        std::string item_current = Settings::get().getAAType();
+        const std::array<std::string, 2> items = {"FXAA", "SMAA"};
+        if (ImGui::BeginCombo("AA Type", item_current.c_str(), flags)) {
           for (const auto& item : items) {
             bool selected = item == item_current;
-            if (ImGui::Selectable(toUtf8(item).c_str(), &selected)) {
+            if (ImGui::Selectable(item.c_str(), &selected)) {
               Settings::get().setAAType(item);
               rsManager->setupAA();
             }
@@ -198,14 +194,14 @@ void Ui::showWindow(bool* pOpen, RSManager* rsManager) {
 
       {
         std::array<std::string, 3> items = {"HBAO", "VSSAO", "VSSAO2"};
-        auto ssaoType = toUtf8(Settings::get().getSsaoType());
+        auto ssaoType = Settings::get().getSsaoType();
 
         if (ImGui::BeginCombo("SSAO Type", ssaoType.c_str())) {
           for (const auto& item : items) {
             bool selected = item == ssaoType;
             if (ImGui::Selectable(item.c_str(), &selected)) {
               rsManager->setupSSAO();
-              Settings::get().setSsaoType(toUnicode(item));
+              Settings::get().setSsaoType(item);
             }
             if (selected)
               ImGui::SetItemDefaultFocus();
