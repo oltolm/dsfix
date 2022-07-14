@@ -6,16 +6,12 @@ class RSManager;
 
 class Ui {
   Microsoft::WRL::ComPtr<IDirect3DDevice9> m_pDevice;
+  RSManager* m_pRSManager;
   void showWindow(bool* pOpen);
 
-  static Ui instance;
-
 public:
-  Ui() = default;
-
-  static Ui& get() { return instance; }
-
-  void setD3DDevice(IDirect3DDevice9* pDevice) { m_pDevice = pDevice; }
+  Ui(IDirect3DDevice9* pDevice, RSManager* pRSManager);
+  void setRSManager(RSManager* p_RSManager);
 
   void onEndScene();
   void onReset();

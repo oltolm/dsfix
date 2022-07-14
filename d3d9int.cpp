@@ -8,7 +8,7 @@
 
 using namespace Microsoft;
 
-class hkIDirect3DDevice9;
+struct hkIDirect3DDevice9;
 
 WRL::ComPtr<hkIDirect3DDevice9> g_pD3DDevice;
 

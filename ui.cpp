@@ -12,9 +12,9 @@
 
 #include "myfont.cpp"
 
-extern bool g_paused;
+static void HelpMarker(const char* desc);
 
-Ui Ui::instance;
+extern bool g_paused;
 
 std::string modeToString(const D3DDISPLAYMODE& mode);
 
@@ -39,6 +39,9 @@ LRESULT CALLBACK hkWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 static time_t s_start;
 
+Ui::Ui(IDirect3DDevice9* pDevice, RSManager* pRSManager)
+    : m_pDevice(pDevice), m_pRSManager(pRSManager){};
+
 void Ui::onEndScene() {
   static bool s_init = false;
 
@@ -51,7 +54,8 @@ void Ui::onEndScene() {
     ImGui::CreateContext();
     ImGui_ImplWin32_Init(params.hFocusWindow);
     ImGui_ImplDX9_Init(m_pDevice.Get());
-    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(MyFont_compressed_data, MyFont_compressed_size, 24);
+    ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(MyFont_compressed_data,
+                                                         MyFont_compressed_size, 24);
 
     s_start = std::time(nullptr);
 
@@ -88,6 +92,11 @@ void Ui::onEndScene() {
   ImGui::Render();
   ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 }
+
+struct LanguageInfo {
+  std::string label;
+  std::string id;
+};
 
 void Ui::showWindow(bool* pOpen) {
   if (!ImGui::Begin("dsfix", pOpen)) {
@@ -142,7 +151,8 @@ void Ui::showWindow(bool* pOpen) {
           }
           ImGui::EndCombo();
         }
-        ImGui::TextWrapped(
+        ImGui::SameLine();
+        HelpMarker(
             "Internal rendering resolution of the game. Higher values will decrease performance.");
       }
 
@@ -158,7 +168,7 @@ void Ui::showWindow(bool* pOpen) {
                                             "high", "ultra (worst performance, best IQ)"};
         if (ImGui::Combo("AA Quality", &aAQuality, items.data(), items.size())) {
           Settings::get().setAAQuality(aAQuality);
-          RSManager::get().setupAA();
+          m_pRSManager->setupAA();
         }
       }
 
@@ -171,7 +181,7 @@ void Ui::showWindow(bool* pOpen) {
             bool selected = item == item_current;
             if (ImGui::Selectable(item.c_str(), &selected)) {
               Settings::get().setAAType(item);
-              RSManager::get().setupAA();
+              m_pRSManager->setupAA();
             }
             if (selected)
               ImGui::SetItemDefaultFocus();
@@ -191,10 +201,11 @@ void Ui::showWindow(bool* pOpen) {
         std::array<const char*, 4> items = {"off", "low", "medium", "high"};
         if (ImGui::Combo("SSAO Strength", &ssaoStrength, items.data(), items.size())) {
           Settings::get().setSsaoStrength(ssaoStrength);
-          RSManager::get().setupSSAO();
+          m_pRSManager->setupSSAO();
         }
 
-        ImGui::TextWrapped("(all 3 settings have the same performance impact!)");
+        ImGui::SameLine();
+        HelpMarker("All 3 settings have the same performance impact!");
       }
 
       {
@@ -205,7 +216,7 @@ void Ui::showWindow(bool* pOpen) {
           for (const auto& item : items) {
             bool selected = item == ssaoType;
             if (ImGui::Selectable(item.c_str(), &selected)) {
-              RSManager::get().setupSSAO();
+              m_pRSManager->setupSSAO();
               Settings::get().setSsaoType(item);
             }
             if (selected)
@@ -214,15 +225,24 @@ void Ui::showWindow(bool* pOpen) {
           ImGui::EndCombo();
         }
 
-        ImGui::TextWrapped("Determine the type of AO used");
-        ImGui::Bullet();
-        ImGui::Text(R"("HBAO" = Horizon-Based Ambient Occlusion)");
-        ImGui::Bullet();
-        ImGui::TextWrapped(R"("VSSAO" = Volumetric SSAO (default, only option pre-1.9))");
-        ImGui::Bullet();
-        ImGui::TextWrapped(R"("VSSAO2" = Volumetric SSAO with more samples (tweaked by Asmodean))");
-        ImGui::TextWrapped(
-            "VSSAO2 is generally more accurate, but also requires more performance.");
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered()) {
+          ImGui::BeginTooltip();
+          ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+          ImGui::TextWrapped("Determine the type of AO used");
+          ImGui::Bullet();
+          ImGui::Text(R"("HBAO" = Horizon-Based Ambient Occlusion)");
+          ImGui::Bullet();
+          ImGui::TextWrapped(R"("VSSAO" = Volumetric SSAO (default, only option pre-1.9))");
+          ImGui::Bullet();
+          ImGui::TextWrapped(
+              R"("VSSAO2" = Volumetric SSAO with more samples (tweaked by Asmodean))");
+          ImGui::TextWrapped(
+              "VSSAO2 is generally more accurate, but also requires more performance.");
+          ImGui::PopTextWrapPos();
+          ImGui::EndTooltip();
+        }
       }
 
       ImGui::Unindent();
@@ -235,16 +255,25 @@ void Ui::showWindow(bool* pOpen) {
         int dofOverrideResolution = Settings::get().getDOFOverrideResolution();
         if (ImGui::SliderInt("DoF resolution override", &dofOverrideResolution, 0, 2160)) {
           Settings::get().setDOFOverrideResolution(dofOverrideResolution);
-          RSManager::get().setupDoF();
+          m_pRSManager->setupDoF();
         }
 
-        ImGui::TextWrapped("Depth of Field resolution override, possible values:");
-        ImGui::BulletText("0 = no change from default (DoF pyramid starts at 512x360)");
-        ImGui::BulletText("540 = DoF pyramid starts at 960x540");
-        ImGui::BulletText("810 = DoF pyramid starts at 1440x810");
-        ImGui::BulletText("1080 = DoF pyramid starts at 1920x1080");
-        ImGui::BulletText("2160 = DoF pyramid starts at 3840x2160");
-        ImGui::TextWrapped("higher values will decrease performance.");
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered()) {
+          ImGui::BeginTooltip();
+          ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+          ImGui::TextWrapped("Depth of Field resolution override, possible values:");
+          ImGui::BulletText("0 = no change from default (DoF pyramid starts at 512x360)");
+          ImGui::BulletText("540 = DoF pyramid starts at 960x540");
+          ImGui::BulletText("810 = DoF pyramid starts at 1440x810");
+          ImGui::BulletText("1080 = DoF pyramid starts at 1920x1080");
+          ImGui::BulletText("2160 = DoF pyramid starts at 3840x2160");
+          ImGui::TextWrapped("higher values will decrease performance.");
+          ImGui::PopTextWrapPos();
+          ImGui::EndTooltip();
+        }
+
         if ((unsigned int)dofOverrideResolution == Settings::get().getRenderHeight())
           ImGui::TextColored(
               ImVec4(1, 1, 0, 1),
@@ -255,15 +284,24 @@ void Ui::showWindow(bool* pOpen) {
         int dofBlurAmount = Settings::get().getDOFBlurAmount();
         if (ImGui::SliderInt("DoF additional blur", &dofBlurAmount, 0, 4)) {
           Settings::get().setDOFBlurAmount(dofBlurAmount);
-          RSManager::get().setupDoF();
+          m_pRSManager->setupDoF();
         }
 
-        ImGui::TextWrapped("Depth of field additional blur allows you to use high DoF resolutions "
-                           "and still get the originally intended effect. Suggested values:");
-        ImGui::BulletText("0 (off) at default DoF resolution");
-        ImGui::BulletText("0 (off) or 1 at 540 DoF resolution");
-        ImGui::BulletText("1 or 2 above that");
-        ImGui::BulletText("3 or 4 at 2160 DoF resolution (if you're running a 680+)");
+        ImGui::SameLine();
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered()) {
+          ImGui::BeginTooltip();
+          ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+          ImGui::TextWrapped(
+              "Depth of field additional blur allows you to use high DoF resolutions "
+              "and still get the originally intended effect. Suggested values:");
+          ImGui::BulletText("0 (off) at default DoF resolution");
+          ImGui::BulletText("0 (off) or 1 at 540 DoF resolution");
+          ImGui::BulletText("1 or 2 above that");
+          ImGui::BulletText("3 or 4 at 2160 DoF resolution (if you're running a 680+)");
+          ImGui::PopTextWrapPos();
+          ImGui::EndTooltip();
+        }
       }
 
       ImGui::Unindent();
@@ -277,15 +315,24 @@ void Ui::showWindow(bool* pOpen) {
         if (ImGui::Checkbox("Enable variable framerate", &unlockFPS))
           Settings::get().setUnlockFPS(unlockFPS);
 
-        ImGui::TextWrapped("NOTE:");
-        ImGui::Bullet();
-        ImGui::TextWrapped("There may be unintended side-effects in terms of gameplay.");
-        ImGui::Bullet();
-        ImGui::TextWrapped(
-            "You need a very powerful system (especially CPU) in order to maintain 60 FPS.");
-        ImGui::Bullet();
-        ImGui::TextWrapped(
-            "In some instances, collision detection may fail. Avoid sliding down ladders.");
+        ImGui::SameLine();
+
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered()) {
+          ImGui::BeginTooltip();
+          ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+          ImGui::TextWrapped("NOTE:");
+          ImGui::Bullet();
+          ImGui::TextWrapped("There may be unintended side-effects in terms of gameplay.");
+          ImGui::Bullet();
+          ImGui::TextWrapped(
+              "You need a very powerful system (especially CPU) in order to maintain 60 FPS.");
+          ImGui::Bullet();
+          ImGui::TextWrapped(
+              "In some instances, collision detection may fail. Avoid sliding down ladders.");
+          ImGui::PopTextWrapPos();
+          ImGui::EndTooltip();
+        }
       }
 
       {
@@ -293,7 +340,8 @@ void Ui::showWindow(bool* pOpen) {
         if (ImGui::SliderInt("FPS limit", &FPSlimit, 30, 60, "%d FPS"))
           Settings::get().setFPSLimit(FPSlimit);
 
-        ImGui::TextWrapped("FPS limit, only used with unlocked framerate.");
+        ImGui::SameLine();
+        HelpMarker("FPS limit, only used with unlocked framerate.");
       }
 
       ImGui::Unindent();
@@ -323,8 +371,8 @@ void Ui::showWindow(bool* pOpen) {
         Settings::get().setBorderlessFullscreen(borderlessFullscreen);
         WindowManager::get().toggleBorderlessFullscreen();
       }
-      ImGui::TextWrapped(
-          "Make sure to select windowed mode in the game settings for this to work!");
+      ImGui::SameLine();
+      HelpMarker("Make sure to select windowed mode in the game settings for this to work!");
 
       bool disableCursor = Settings::get().getDisableCursor();
       if (ImGui::Checkbox("Disable cursor at startup", &disableCursor)) {
@@ -337,7 +385,8 @@ void Ui::showWindow(bool* pOpen) {
         Settings::get().setCaptureCursor(captureCursor);
         WindowManager::get().toggleCursorCapture();
       }
-      ImGui::TextWrapped("(this also works if the cursor is not visible)");
+      ImGui::SameLine();
+      HelpMarker("This also works if the cursor is not visible.");
 
       ImGui::Unindent();
 
@@ -357,6 +406,39 @@ void Ui::showWindow(bool* pOpen) {
       bool pauseGame = Settings::get().getPauseGame();
       if (ImGui::Checkbox("Pause game when DSFix dialog is open", &pauseGame))
         Settings::get().setPauseGame(pauseGame);
+
+      // en-GB = English, fr = French, it = Italian, de = German, es = Spanish
+      // ko = Korean, zh-tw = Chinese, pl = Polish, ru = Russian
+
+      static std::array<LanguageInfo, 10> languages = {{{"None", "none"},
+                                                        {"English", "en-GB"},
+                                                        {"French", "fr"},
+                                                        {"Italian", "it"},
+                                                        {"German", "de"},
+                                                        {"Spanish", "es"},
+                                                        {"Korean", "ko"},
+                                                        {"Chinese", "zh-tw"},
+                                                        {"Polish", "pl"},
+                                                        {"Russian", "ru"}}};
+      const auto& overrideLanguage = Settings::get().getOverrideLanguage();
+      auto it = std::find_if(
+          languages.begin(), languages.end(),
+          [&overrideLanguage](const LanguageInfo& lang) { return lang.id == overrideLanguage; });
+      std::string preview_value = it != languages.end() ? it->label : "None";
+
+      if (ImGui::BeginCombo("override the in-game language", preview_value.c_str())) {
+        for (const auto& lang : languages) {
+          bool selected = lang.id == overrideLanguage;
+          if (ImGui::Selectable(lang.label.c_str(), &selected)) {
+            Settings::get().setOverrideLanguage(lang.id);
+          }
+          if (selected)
+            ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+      }
+      ImGui::SameLine();
+      HelpMarker("Requires restart.");
 
       ImGui::Unindent();
 
@@ -379,4 +461,20 @@ std::string modeToString(const D3DDISPLAYMODE& mode) {
 void Ui::onReset() {
   ImGui_ImplDX9_InvalidateDeviceObjects();
   ImGui_ImplDX9_CreateDeviceObjects();
+}
+
+void Ui::setRSManager(RSManager* p_RSManager) { m_pRSManager = p_RSManager; }
+
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+// In your own code you may want to display an actual icon if you are using a merged icon fonts (see
+// docs/FONTS.md)
+static void HelpMarker(const char* desc) {
+  ImGui::TextDisabled("(?)");
+  if (ImGui::IsItemHovered()) {
+    ImGui::BeginTooltip();
+    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+    ImGui::TextUnformatted(desc);
+    ImGui::PopTextWrapPos();
+    ImGui::EndTooltip();
+  }
 }

@@ -10,10 +10,10 @@
 
 class RSManager {
 private:
-  D3DVIEWPORT9 viewport;
+  D3DVIEWPORT9 viewport = {};
   Microsoft::WRL::ComPtr<IDirect3DDevice9> m_pDevice;
   double lastPresentTime = 0;
-  bool doAA = false;
+  bool doAA = true;
   std::unique_ptr<SMAA> smaa;
   std::unique_ptr<FXAA> fxaa;
   bool doSsao = true;
@@ -36,7 +36,7 @@ private:
   unsigned int nrts = 0;
   // Count the number of times the 2 upper DoF rendertargets were set in doft[1]
   // & doft[2]
-  std::array<unsigned int, 3> doft;
+  std::array<unsigned int, 3> doft = {};
   // main rendertarget for this frame
   Microsoft::WRL::ComPtr<IDirect3DSurface9> mainRT;
   unsigned int mainRTuses = 0;
@@ -48,16 +48,10 @@ private:
   unsigned int isDof(unsigned int width, unsigned int height);
   void measureOcclusionScale();
   void frameTimeManagement();
-  static RSManager instance;
 
 public:
   ~RSManager() = default;
-  RSManager() = default;
-
-  static RSManager& get() { return instance; }
-
-  // DI
-  void setD3DDevice(IDirect3DDevice9* pDevice) { m_pDevice = pDevice; }
+  RSManager(IDirect3DDevice9* pDevice);
 
   void setupAA();
   void setupSSAO();

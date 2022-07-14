@@ -130,3 +130,21 @@ std::wstring toUnicode(const char* multiByteStr) {
     throw std::system_error(::GetLastError(), std::system_category());
   return wideCharStr;
 }
+
+#ifdef __clang__
+void operator delete[](void* p) noexcept {
+  free(p);
+}
+
+void operator delete(void* p) noexcept {
+  std::free(p);
+}
+
+void* operator new(size_t count) {
+  return std::malloc(count);
+}
+
+void* operator new[](size_t count) {
+  return std::malloc(count);
+}
+#endif

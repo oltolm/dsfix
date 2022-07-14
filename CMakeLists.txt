@@ -1,4 +1,5 @@
-# cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+# cmake --preset <clang|gcc>
+# cmake --build --preset <clang|gcc>
 #
 # ninja
 # ninja install
@@ -105,13 +106,21 @@ target_compile_options(dsfix
   -msse2
   -msse
   -Wall
-  -Werror
+  # -Werror
   -Wno-array-bounds
-  -Wextra
+  # -Wextra
   -Wno-cast-function-type
   -Wno-unused-parameter
   -Wno-unused-but-set-variable
 )
+endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+message(STATUS "CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
+  target_compile_options(dsfix
+    PRIVATE
+    -Wno-microsoft-exception-spec
+    -Wno-missing-exception-spec
+  )
 endif()
 target_compile_definitions(dsfix
   PRIVATE
@@ -127,13 +136,15 @@ set_target_properties(dsfix
 )
 
 if(MSVC)
-  find_path(d3dx9_include_dir "d3dx9.h"
-    REQUIRED
-    PATH_SUFFIXES "dxsdk-d3dx"
-  )
-  target_include_directories(dsfix PRIVATE ${d3dx9_include_dir})
-  find_library(d3dx9_library "d3dx9.lib" REQUIRED)
-  target_link_libraries(dsfix PRIVATE ${d3dx9_library})
+  # find_path(d3dx9_include_dir "d3dx9.h"
+  #   REQUIRED
+  #   PATH_SUFFIXES "dxsdk-d3dx"
+  # )
+  # target_include_directories(dsfix PRIVATE ${d3dx9_include_dir})
+  # find_library(d3dx9_library "d3dx9.lib" REQUIRED)
+  # target_link_libraries(dsfix PRIVATE ${d3dx9_library})
+  target_include_directories(dsfix PRIVATE "$ENV{d3dx_path}\\include")
+  target_link_libraries(dsfix PRIVATE "$ENV{d3dx_path}\\release\\lib\\x86\\d3dx9.lib")
 endif()
 
 install(

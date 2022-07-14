@@ -1,0 +1,32 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "gcc",
+            "generator": "Ninja",
+            "binaryDir": "build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "clang",
+            "generator": "Ninja",
+            "binaryDir": "build-clang",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_CXX_FLAGS": "-stdlib=libc++",
+                "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=lld",
+                "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld"
+            }
+        },
+        {
+            "name": "msvc",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "build-msvc",
+            "architecture": "win32"
+        }
+    ]
+}

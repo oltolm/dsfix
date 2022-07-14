@@ -20,7 +20,7 @@ unsigned int getDOFResolution() {
 }
 } // namespace
 
-RSManager RSManager::instance;
+RSManager::RSManager(IDirect3DDevice9* pDevice) : m_pDevice(pDevice) { onReset(); }
 
 void RSManager::setupAA() {
   unsigned int rw = Settings::get().getRenderWidth();
@@ -35,7 +35,9 @@ void RSManager::setupAA() {
           new FXAA(m_pDevice.Get(), rw, rh, (FXAA::Quality)(Settings::get().getAAQuality() - 1)));
       smaa = nullptr;
     }
+    doAA = true;
   } else {
+    doAA = false;
     fxaa = nullptr;
     smaa = nullptr;
   }
@@ -53,17 +55,22 @@ void RSManager::setupSSAO() {
     unsigned int rw = Settings::get().getRenderWidth();
     unsigned int rh = Settings::get().getRenderHeight();
     ssao.reset(new SSAO(m_pDevice.Get(), rw, rh, Settings::get().getSsaoStrength() - 1, ssaoType));
+    doSsao = true;
   } else {
     ssao = nullptr;
+    doSsao = false;
   }
 }
 
 void RSManager::setupDoF() {
   unsigned int dofRes = getDOFResolution();
-  if (Settings::get().getDOFBlurAmount())
+  if (Settings::get().getDOFBlurAmount()) {
     gauss.reset(new GAUSS(m_pDevice.Get(), dofRes * 16 / 9, dofRes));
-  else
+    doDofGauss = true;
+  } else {
     gauss = nullptr;
+    doDofGauss = false;
+  }
 }
 
 void RSManager::onReset() {

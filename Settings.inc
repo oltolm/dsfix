@@ -25,6 +25,9 @@ SETTING(unsigned int, LogLevel, "logLevel", 0);
 SETTING(bool, DisableCursor, "disableCursor", false);
 SETTING(bool, CaptureCursor, "captureCursor", false);
 
+// Language Options
+SETTING(std::string, OverrideLanguage, "overrideLanguage", "");
+
 // Skipping Options
 SETTING(bool, SkipIntro, "skipIntro", false);
 

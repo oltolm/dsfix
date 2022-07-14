@@ -3,11 +3,16 @@
 #include <wrl.h>
 #include "d3d9int.h"
 
+class RSManager;
+class Ui;
+
 interface hkIDirect3DDevice9 : public IDirect3DDevice9 {
 private:
   // callback interface
   Microsoft::WRL::ComPtr<IDirect3DDevice9> m_pD3Ddev;
   Microsoft::WRL::ComPtr<IDirect3D9> m_pD3D9;
+  RSManager* m_pRSManager;
+  Ui* m_pUi;
 
 public:
   // original interface
@@ -199,10 +204,12 @@ public:
   (UINT Handle, CONST float* pNumSegs, CONST D3DTRIPATCH_INFO* pTriPatchInfo);
   STDMETHOD(DeletePatch)(UINT Handle);
   STDMETHOD(CreateQuery)(D3DQUERYTYPE Type, IDirect3DQuery9** ppQuery);
-
+  
   hkIDirect3DDevice9(IDirect3DDevice9* pIDirect3DDevice9, IDirect3D9* pD3D9);
-
-  IDirect3DDevice9* getDevice() { return m_pD3Ddev.Get(); };
+  IDirect3DDevice9* getDevice();
+  void setRSManager(RSManager* pRSManager);
+  float getOcclusionScale();
+  void setUi(Ui* pUi);
 
   virtual ~hkIDirect3DDevice9() = default;
 };
