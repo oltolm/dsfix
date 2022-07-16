@@ -216,8 +216,8 @@ void Ui::showWindow(bool* pOpen) {
           for (const auto& item : items) {
             bool selected = item == ssaoType;
             if (ImGui::Selectable(item.c_str(), &selected)) {
-              m_pRSManager->setupSSAO();
               Settings::get().setSsaoType(item);
+              m_pRSManager->setupSSAO();
             }
             if (selected)
               ImGui::SetItemDefaultFocus();
