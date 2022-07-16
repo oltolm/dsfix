@@ -636,7 +636,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSourceFreq(UINT StreamNumber, UINT
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) {
-  return m_pRSManager->redirectSetTexture(Stage, pTexture);
+  return m_pD3Ddev->SetTexture(Stage, pTexture);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetTextureStageState(DWORD Stage,

@@ -193,10 +193,6 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
         }
       }
     }
-    if (rddp < 4 || rddp > 8)
-      rddp = 0;
-    else
-      rddp++;
     return ThrowIfFailed(m_pDevice->SetRenderTarget(RenderTargetIndex, pRenderTarget));
   } catch (const std::system_error& err) {
     spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
@@ -265,23 +261,6 @@ void RSManager::measureOcclusionScale() {
   ThrowIfFailed(hr);
   occlusionScale = pixelsVisible == 0 ? 1 : pixelsVisible / 576.0;
   ThrowIfFailed(m_pDevice->EndScene());
-}
-
-HRESULT RSManager::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) noexcept {
-  try {
-    if (pTexture == nullptr)
-      return ThrowIfFailed(m_pDevice->SetTexture(Stage, pTexture));
-    if ((rddp == 0 && Stage == 0) || (rddp == 1 && Stage == 1) || (rddp == 2 && Stage == 2) ||
-        (rddp == 3 && Stage == 3)) {
-      ++rddp;
-    } else {
-      rddp = 0;
-    }
-    return ThrowIfFailed(m_pDevice->SetTexture(Stage, pTexture));
-  } catch (const std::system_error& err) {
-    spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
-    return err.code().value();
-  }
 }
 
 unsigned int RSManager::isDof(unsigned width, unsigned height) {

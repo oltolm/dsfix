@@ -24,12 +24,6 @@ private:
   Microsoft::WRL::ComPtr<IDirect3DSurface9> rgbaBuffer1Surf;
   Microsoft::WRL::ComPtr<IDirect3DSurface9> depthStencilSurf;
   Microsoft::WRL::ComPtr<IDirect3DSurface9> zSurf;
-  // RenderDoneDetectionProgress
-  // basically, when the game switches rendertargets after setting texture 0 to 3
-  // in order, but no others, we assume we just finished rendering the hud-less
-  // image. This variable keeps track of the number of "correct" texture
-  // settings.
-  unsigned int rddp = 0;
   // NumRenderTargetSwitches
   // we use the number of switches between rendertargets to figure out where we are
   // in the pipeline. Yeah, it's flaky
@@ -74,7 +68,6 @@ public:
 
   HRESULT redirectSetRenderTarget(DWORD RenderTargetIndex,
                                   IDirect3DSurface9* pRenderTarget) noexcept;
-  HRESULT redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) noexcept;
   HRESULT redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride,
                           CONST RGNDATA* pDirtyRegion) noexcept;
 
