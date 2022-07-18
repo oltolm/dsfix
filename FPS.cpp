@@ -95,7 +95,7 @@ void updateFramerate(unsigned int cmd) {
   // If rendering was performed, update animation step-time
   if ((cmd == 2) || (cmd == 5)) {
     // FPS regulation based on previous render
-    double maxFPS = Settings::get().getCurrentFPSLimit();
+    double maxFPS = Settings::get().getFPSLimit();
     double minFPS = 10.0f;
     double currentTime = getElapsedTime();
     double deltaTime = currentTime - lastRenderTime;

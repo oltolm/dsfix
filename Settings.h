@@ -3,8 +3,7 @@
 
 class Settings {
   static Settings instance;
-  bool initialized = false, langOverridden = false;
-  unsigned int curFPSlimit = 0;
+  bool initialized = false;
 #define SETTING(_type, _var, _inistring, _defaultval)                                              \
 private:                                                                                           \
   _type _var = _defaultval;                                                                        \
@@ -23,7 +22,4 @@ public:
   void init();
   void shutdown();
   Settings() = default;
-  unsigned int getCurrentFPSLimit();
-  void setCurrentFPSLimit(unsigned int limit);
-  void toggle30FPSLimit();
 };

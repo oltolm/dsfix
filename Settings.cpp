@@ -30,7 +30,6 @@ void Settings::load() {
 #include "Settings.inc"
 #undef SETTING
   }
-  curFPSlimit = getFPSLimit();
 }
 
 void Settings::save() {
@@ -66,9 +65,3 @@ void Settings::shutdown() {
     initialized = false;
   }
 }
-
-unsigned int Settings::getCurrentFPSLimit() { return curFPSlimit; }
-
-void Settings::setCurrentFPSLimit(unsigned limit) { curFPSlimit = limit; }
-
-void Settings::toggle30FPSLimit() { curFPSlimit = (curFPSlimit == 30) ? getFPSLimit() : 30; }

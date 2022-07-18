@@ -41,7 +41,7 @@ HRESULT WINAPI hkIDirectInput8::CreateDevice(REFGUID rguid,
                                              LPDIRECTINPUTDEVICE8* lpDirectInputDevice,
                                              LPUNKNOWN pUnkOuter) {
   HRESULT res = m_pDinput->CreateDevice(rguid, lpDirectInputDevice, pUnkOuter);
-  if ((rguid != GUID_SysMouse && rguid != GUID_SysKeyboard) || FAILED(res))
+  if (FAILED(res))
     return res;
 
   IDirectInputDevice8* pDevice = new hkIDirectInputDevice8(*lpDirectInputDevice);

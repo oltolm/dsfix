@@ -294,7 +294,7 @@ void RSManager::frameTimeManagement() {
   double renderTime = getElapsedTime() - lastPresentTime;
   // implement FPS cap
   if (Settings::get().getUnlockFPS()) {
-    double desiredRenderTime = (1000.0 / Settings::get().getCurrentFPSLimit()) - 0.1;
+    double desiredRenderTime = (1000.0 / Settings::get().getFPSLimit()) - 0.1;
     while (renderTime < desiredRenderTime) {
       ::SwitchToThread();
       renderTime = getElapsedTime() - lastPresentTime;
