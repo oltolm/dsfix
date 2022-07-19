@@ -330,6 +330,8 @@ void Ui::showWindow(bool* pOpen) {
           ImGui::Bullet();
           ImGui::TextWrapped(
               "In some instances, collision detection may fail. Avoid sliding down ladders.");
+          ImGui::Bullet();
+          ImGui::TextWrapped("Requires restart.");
           ImGui::PopTextWrapPos();
           ImGui::EndTooltip();
         }
