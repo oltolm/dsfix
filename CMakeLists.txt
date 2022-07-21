@@ -8,7 +8,7 @@
 # cpack --config CPackSourceConfig.cmake
 
 cmake_minimum_required(VERSION 3.15)
-project(dsfix VERSION 2.6.3 LANGUAGES CXX)
+project(dsfix VERSION 2.6.4 LANGUAGES CXX)
 
 if(NOT MSVC)
   find_program(CCACHE ccache)
