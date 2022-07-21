@@ -35,9 +35,7 @@ void RSManager::setupAA() {
           new FXAA(m_pDevice.Get(), rw, rh, (FXAA::Quality)(Settings::get().getAAQuality() - 1)));
       smaa = nullptr;
     }
-    doAA = true;
   } else {
-    doAA = false;
     fxaa = nullptr;
     smaa = nullptr;
   }
@@ -55,10 +53,8 @@ void RSManager::setupSSAO() {
     unsigned int rw = Settings::get().getRenderWidth();
     unsigned int rh = Settings::get().getRenderHeight();
     ssao.reset(new SSAO(m_pDevice.Get(), rw, rh, Settings::get().getSsaoStrength() - 1, ssaoType));
-    doSsao = true;
   } else {
     ssao = nullptr;
-    doSsao = false;
   }
 }
 
@@ -66,10 +62,8 @@ void RSManager::setupDoF() {
   unsigned int dofRes = getDOFResolution();
   if (Settings::get().getDOFBlurAmount()) {
     gauss.reset(new GAUSS(m_pDevice.Get(), dofRes * 16 / 9, dofRes));
-    doDofGauss = true;
   } else {
     gauss = nullptr;
-    doDofGauss = false;
   }
 }
 
@@ -131,7 +125,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
       ++mainRTuses;
     }
     // we are switching away from the initial 3D-rendered image, do AA and SSAO
-    if (mainRTuses == 2 && mainRT && zSurf && ((ssao && doSsao) || (doAA && (smaa || fxaa)))) {
+    if (mainRTuses == 2 && mainRT && zSurf && (ssao || smaa || fxaa)) {
       WRL::ComPtr<IDirect3DSurface9> oldRenderTarget;
       ThrowIfFailed(m_pDevice->GetRenderTarget(0, &oldRenderTarget));
       if (oldRenderTarget == mainRT) {
@@ -153,7 +147,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
                 D3DRS_COLORWRITEENABLE,
                 D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE));
             // perform AA processing
-            if (doAA && (smaa || fxaa)) {
+            if (smaa || fxaa) {
               if (smaa)
                 smaa->go(tex.Get(), tex.Get(), rgbaBuffer1Surf.Get(), SMAA::INPUT_COLOR);
               else
@@ -162,7 +156,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
                                                    oldRenderTarget.Get(), nullptr, D3DTEXF_NONE));
             }
             // perform SSAO
-            if (ssao && doSsao) {
+            if (ssao) {
               ssao->go(tex.Get(), zTex.Get(), rgbaBuffer1Surf.Get());
               ThrowIfFailed(m_pDevice->StretchRect(rgbaBuffer1Surf.Get(), nullptr,
                                                    oldRenderTarget.Get(), nullptr, D3DTEXF_NONE));
@@ -173,7 +167,7 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
       }
     }
     // DoF blur stuff
-    if (gauss && doDofGauss) {
+    if (gauss) {
       WRL::ComPtr<IDirect3DSurface9> oldRenderTarget;
       ThrowIfFailed(m_pDevice->GetRenderTarget(0, &oldRenderTarget));
       D3DSURFACE_DESC desc;

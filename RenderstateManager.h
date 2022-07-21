@@ -13,12 +13,9 @@ private:
   D3DVIEWPORT9 viewport = {};
   Microsoft::WRL::ComPtr<IDirect3DDevice9> m_pDevice;
   double lastPresentTime = 0;
-  bool doAA = true;
   std::unique_ptr<SMAA> smaa;
   std::unique_ptr<FXAA> fxaa;
-  bool doSsao = true;
   std::unique_ptr<SSAO> ssao;
-  bool doDofGauss = true;
   std::unique_ptr<GAUSS> gauss;
   Microsoft::WRL::ComPtr<IDirect3DTexture9> rgbaBuffer1Tex;
   Microsoft::WRL::ComPtr<IDirect3DSurface9> rgbaBuffer1Surf;
@@ -59,12 +56,6 @@ public:
            (r.bottom == static_cast<LONG>(viewport.Height)) &&
            (r.right == static_cast<LONG>(viewport.Width));
   }
-
-  void toggleSsao() { doSsao = !doSsao; }
-
-  void toggleAA() { doAA = !doAA; }
-
-  void toggleDofGauss() { doDofGauss = !doDofGauss; }
 
   HRESULT redirectSetRenderTarget(DWORD RenderTargetIndex,
                                   IDirect3DSurface9* pRenderTarget) noexcept;
