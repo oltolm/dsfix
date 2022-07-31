@@ -44,6 +44,7 @@ add_library(dsfix
   dinput.cpp
   dinput8.def
   dsfix.rc
+  Effect.cpp
   FPS.cpp
   FXAA.cpp
   GAUSS.cpp

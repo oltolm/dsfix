@@ -11,3 +11,4 @@ Release/
 /build*/
 out/
 *.aps
+/imgui.ini
