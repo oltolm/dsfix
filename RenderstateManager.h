@@ -1,7 +1,7 @@
 #pragma once
 #include "FXAA.h"
 #include "GAUSS.h"
-#include "SMAA.h"
+#include "SMAA/SMAA.h"
 #include "SSAO.h"
 #include <array>
 #include <memory>

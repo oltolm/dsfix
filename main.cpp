@@ -16,6 +16,8 @@
 
 namespace fs = std::filesystem;
 
+HMODULE g_hDll;
+
 void loadOriginalDinput8dll() {
   fs::path dinput8Filename = GetSystemDirectoryPath() / L"dinput8.dll";
   HMODULE hMod = ::LoadLibraryW(dinput8Filename.c_str());
@@ -73,6 +75,7 @@ DWORD WINAPI ThreadProc(LPVOID lpThreadParameter) {
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
   if (dwReason == DLL_PROCESS_ATTACH) {
+    g_hDll = hDll;
     ::DisableThreadLibraryCalls(hDll);
     ::CreateThread(nullptr, 0, ThreadProc, nullptr, 0, nullptr);
     return TRUE;

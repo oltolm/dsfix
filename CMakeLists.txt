@@ -44,7 +44,6 @@ add_library(dsfix
   dinput.cpp
   dinput8.def
   dsfix.rc
-  Effect.cpp
   FPS.cpp
   FXAA.cpp
   GAUSS.cpp
@@ -52,7 +51,7 @@ add_library(dsfix
   memory.cpp
   RenderstateManager.cpp
   Settings.cpp
-  SMAA.cpp
+  SMAA/SMAA.cpp
   SSAO.cpp
   ui.cpp
   util.cpp

@@ -12,15 +12,8 @@ class Effect {
 protected:
   Microsoft::WRL::ComPtr<IDirect3DDevice9> device;
   Microsoft::WRL::ComPtr<IDirect3DVertexDeclaration9> vertexDeclaration;
-  static const D3DVERTEXELEMENT9 vertexElements[3];
 
-  Effect(IDirect3DDevice9* device) noexcept : device(device) {
-    try {
-      ThrowIfFailed(device->CreateVertexDeclaration(vertexElements, &vertexDeclaration));
-    } catch (const std::system_error& err) {
-      spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
-    }
-  }
+  Effect(IDirect3DDevice9* device) noexcept : device(device) {}
 
   virtual ~Effect() = default;
 

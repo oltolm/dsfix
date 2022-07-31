@@ -29,3 +29,9 @@ FILESUBTYPE VFT2_UNKNOWN
 		VALUE "Translation", 0x0409, 1252
 	}
 }
+
+SMAA.fx RCDATA "SMAA\\SMAA.fx"
+SMAA.hlsl RCDATA "SMAA\\SMAA.hlsl"
+
+// AreaTexDX9.dds RCDATA "SMAA\\AreaTexDX9.dds"
+// SearchTex.dds RCDATA "SMAA\\SearchTex.dds"
