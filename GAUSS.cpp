@@ -9,6 +9,8 @@ using namespace Microsoft;
 
 namespace fs = std::filesystem;
 
+extern HMODULE g_hDll;
+
 GAUSS::GAUSS(IDirect3DDevice9* device, int width, int height) noexcept
     : Effect(device), width(width), height(height) {
   try {
@@ -20,9 +22,9 @@ GAUSS::GAUSS(IDirect3DDevice9* device, int width, int height) noexcept
     // Load effect from file
     spdlog::info("Gauss load");
     WRL::ComPtr<ID3DXBuffer> errors;
-    fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\GAUSS.fx";
-    HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), nullptr,
-                                             D3DXFX_NOT_CLONEABLE, nullptr, &effect, &errors);
+    HRESULT hr =
+        ::D3DXCreateEffectFromResourceW(device, g_hDll, L"GAUSS.fx", &defines.front(), nullptr,
+                                        D3DXFX_NOT_CLONEABLE, nullptr, &effect, &errors);
     if (FAILED(hr)) {
       spdlog::error("ERRORS:");
       spdlog::error(" {}", errors->GetBufferPointer());

@@ -8,6 +8,8 @@
 
 namespace fs = std::filesystem;
 
+extern HMODULE g_hDll;
+
 SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, Type type) noexcept
     : Effect(device), width(width), height(height) {
   try {
@@ -20,22 +22,20 @@ SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, T
         {{"PIXEL_SIZE", pixelSize.c_str()}, strengthMacros[strength], {nullptr, nullptr}}};
     DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
     // Load effect from file
-    fs::path srcfile = GetModuleDirectoryPath();
-    switch (type) {
-    case Type::HBAO:
-      srcfile /= L"dsfix\\HBAO.fx";
-      break;
-    case Type::VSSAO:
-      srcfile /= L"dsfix\\VSSAO.fx";
-      break;
-    case Type::VSSAO2:
-      srcfile /= L"dsfix\\VSSAO2.fx";
-      break;
-    }
-    spdlog::info("{} load, strength {}", srcfile, strengthMacros[strength].Name);
+    const wchar_t* srcfile = [type]() {
+      switch (type) {
+      case Type::HBAO:
+        return L"HBAO.fx";
+      case Type::VSSAO:
+        return L"VSSAO.fx";
+      case Type::VSSAO2:
+        return L"VSSAO2.fx";
+      }
+    }();
+    // spdlog::info("{} load, strength {}", srcfile, strengthMacros[strength].Name);
     WRL::ComPtr<ID3DXBuffer> errors;
-    HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines.front(), nullptr,
-                                             flags, nullptr, &effect, &errors);
+    HRESULT hr = ::D3DXCreateEffectFromResourceW(device, g_hDll, srcfile, &defines.front(), nullptr,
+                                                 flags, nullptr, &effect, &errors);
     if (FAILED(hr)) {
       spdlog::error("ERRORS:");
       spdlog::error(" {}", errors->GetBufferPointer());
