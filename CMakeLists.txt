@@ -154,6 +154,8 @@ install(
 install(
   DIRECTORY "DATA/"
   DESTINATION "."
+  PATTERN "DATA/dsfix/*" EXCLUDE
+  PATTERN "DATA/dsfix" EXCLUDE
 )
 
 include(cmake/CPM.cmake)
