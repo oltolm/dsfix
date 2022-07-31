@@ -32,6 +32,8 @@ FILESUBTYPE VFT2_UNKNOWN
 
 SMAA.fx RCDATA "SMAA\\SMAA.fx"
 SMAA.hlsl RCDATA "SMAA\\SMAA.hlsl"
+AreaTexDX9.dds RCDATA "SMAA\\AreaTexDX9.dds"
+SearchTex.dds RCDATA "SMAA\\SearchTex.dds"
 
 FXAA.fx RCDATA "DATA\\dsfix\\FXAA.fx"
 FXAA.hlsl RCDATA "DATA\\dsfix\\FXAA.hlsl"
@@ -40,6 +42,3 @@ HBAO.fx RCDATA "DATA\\dsfix\\HBAO.fx"
 HUD.fx RCDATA "DATA\\dsfix\\HUD.fx"
 VSSAO.fx RCDATA "DATA\\dsfix\\VSSAO.fx"
 VSSAO2.fx RCDATA "DATA\\dsfix\\VSSAO2.fx"
-
-// AreaTexDX9.dds RCDATA "SMAA\\AreaTexDX9.dds"
-// SearchTex.dds RCDATA "SMAA\\SearchTex.dds"

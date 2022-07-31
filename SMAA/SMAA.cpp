@@ -29,8 +29,8 @@
 
 #include <sstream>
 #include <vector>
-#include "AreaTex.h"
-#include "SearchTex.h"
+// #include "AreaTex.h"
+// #include "SearchTex.h"
 #include "SMAA.h"
 #include "../D3D10IncludeResource.h"
 using namespace std;
@@ -38,7 +38,7 @@ using namespace std;
 
 // This define is for using the precomputed textures DDS files instead of the
 // headers:
-// #define SMAA_USE_DDS_PRECOMPUTED_TEXTURES 1
+#define SMAA_USE_DDS_PRECOMPUTED_TEXTURES 1
 
 extern HMODULE g_hDll;
 
@@ -210,8 +210,8 @@ void SMAA::loadAreaTex() {
     #if SMAA_USE_DDS_PRECOMPUTED_TEXTURES
     HRESULT hr;
     D3DXIMAGE_INFO info;
-    V(D3DXGetImageInfoFromResourceW(GetModuleHandleW(nullptr), L"AreaTexDX9.dds", &info));
-    V(D3DXCreateTextureFromResourceExW(device.Get(), GetModuleHandleW(nullptr), L"AreaTexDX9.dds", info.Width, info.Height, 1, 0, D3DFMT_A8L8, D3DPOOL_DEFAULT, D3DX_FILTER_NONE, D3DX_FILTER_NONE, 0, &info, nullptr, &areaTex));
+    V(D3DXGetImageInfoFromResourceW(g_hDll, L"AreaTexDX9.dds", &info));
+    V(D3DXCreateTextureFromResourceExW(device.Get(), g_hDll, L"AreaTexDX9.dds", info.Width, info.Height, 1, 0, D3DFMT_A8L8, D3DPOOL_DEFAULT, D3DX_FILTER_NONE, D3DX_FILTER_NONE, 0, &info, nullptr, &areaTex));
     #else
     HRESULT hr;
     V(device->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8L8, D3DPOOL_DEFAULT, &areaTex, nullptr));
@@ -228,8 +228,8 @@ void SMAA::loadSearchTex() {
     #if SMAA_USE_DDS_PRECOMPUTED_TEXTURES
     HRESULT hr;
     D3DXIMAGE_INFO info;
-    V(D3DXGetImageInfoFromResourceW(GetModuleHandleW(nullptr), L"SearchTex.dds", &info));
-    V(D3DXCreateTextureFromResourceExW(device.Get(), GetModuleHandleW(nullptr), L"SearchTex.dds", info.Width, info.Height, 1, 0, D3DFMT_L8, D3DPOOL_DEFAULT, D3DX_FILTER_NONE, D3DX_FILTER_NONE, 0, &info, nullptr, &searchTex));
+    V(D3DXGetImageInfoFromResourceW(g_hDll, L"SearchTex.dds", &info));
+    V(D3DXCreateTextureFromResourceExW(device.Get(), g_hDll, L"SearchTex.dds", info.Width, info.Height, 1, 0, D3DFMT_L8, D3DPOOL_DEFAULT, D3DX_FILTER_NONE, D3DX_FILTER_NONE, 0, &info, nullptr, &searchTex));
     #else
     HRESULT hr;
     V(device->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_L8, D3DPOOL_DEFAULT, &searchTex, nullptr));
