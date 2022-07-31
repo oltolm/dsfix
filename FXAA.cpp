@@ -34,11 +34,9 @@ FXAA::FXAA(IDirect3DDevice9* device, int width, int height, Quality quality) noe
     spdlog::info("FXAA load");
     WRL::ComPtr<ID3DXBuffer> errors;
     D3D10IncludeResource include;
-    HRESULT hr = ::D3DXCreateEffectFromResourceW(
+    ThrowIfFailed(::D3DXCreateEffectFromResourceW(
         device, g_hDll, L"FXAA.fx", &defines[0], &include,
-        D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3, nullptr, &effect, &errors);
-    if (FAILED(hr))
-      spdlog::error("ERRORS:\n {}", errors->GetBufferPointer());
+        D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3, nullptr, &effect, &errors));
     // Create buffer
     ThrowIfFailed(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
                                         D3DPOOL_DEFAULT, &buffer1Tex, nullptr));

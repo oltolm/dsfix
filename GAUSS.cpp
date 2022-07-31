@@ -22,13 +22,9 @@ GAUSS::GAUSS(IDirect3DDevice9* device, int width, int height) noexcept
     // Load effect from file
     spdlog::info("Gauss load");
     WRL::ComPtr<ID3DXBuffer> errors;
-    HRESULT hr =
-        ::D3DXCreateEffectFromResourceW(device, g_hDll, L"GAUSS.fx", &defines.front(), nullptr,
-                                        D3DXFX_NOT_CLONEABLE, nullptr, &effect, &errors);
-    if (FAILED(hr)) {
-      spdlog::error("ERRORS:");
-      spdlog::error(" {}", errors->GetBufferPointer());
-    }
+    ThrowIfFailed(::D3DXCreateEffectFromResourceW(device, g_hDll, L"GAUSS.fx", &defines.front(),
+                                                  nullptr, D3DXFX_NOT_CLONEABLE, nullptr, &effect,
+                                                  &errors));
     // Create buffers
     ThrowIfFailed(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,
                                         D3DPOOL_DEFAULT, &buffer1Tex, nullptr));

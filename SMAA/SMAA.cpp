@@ -117,13 +117,6 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
     D3D10IncludeResource includeResource;
     Microsoft::WRL::ComPtr<ID3DXBuffer> compilation_errors;
     V(D3DXCreateEffectFromResourceW(device, g_hDll, L"SMAA.fx", &defines.front(), &includeResource, flags, nullptr, &effect, &compilation_errors));
-    if (FAILED(hr)) {
-        std::string compilationErrors;
-        if (compilation_errors)
-            compilationErrors = std::string((char*)compilation_errors->GetBufferPointer(), compilation_errors->GetBufferSize());
-        spdlog::error("Failed loading \"SMAA.fx\": error code: 0x{:x}, {}", (DWORD)hr, compilationErrors);
-        return;
-    }
 
     // Vertex declaration for rendering the typical fullscreen quad later on.
     const D3DVERTEXELEMENT9 vertexElements[3] = {
