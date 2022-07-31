@@ -1,5 +1,5 @@
 #pragma once
-#include "Effect.h"
+#include "../Effect.h"
 #include <wrl.h>
 
 class FXAA : public Effect {

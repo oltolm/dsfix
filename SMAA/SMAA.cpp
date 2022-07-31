@@ -32,6 +32,7 @@
 #include "AreaTex.h"
 #include "SearchTex.h"
 #include "SMAA.h"
+#include "../D3D10IncludeResource.h"
 using namespace std;
 
 
@@ -67,27 +68,6 @@ extern HMODULE g_hDll;
 // #ifndef SAFE_RELEASE
 // #define SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = nullptr; } }
 // #endif
-#pragma endregion
-
-#pragma region This stuff is for loading headers from resources
-class D3D10IncludeResource : public ID3DXInclude {
-    public:
-        STDMETHOD(Open)(THIS_ D3DXINCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVOID *ppData, UINT *pBytes)  {
-            wstringstream s;
-            s << pFileName;
-            HRSRC src = FindResourceW(g_hDll, s.str().c_str(), RT_RCDATA);
-            HGLOBAL res = LoadResource(g_hDll, src);
-
-            *pBytes = SizeofResource(g_hDll, src);
-            *ppData = (LPCVOID) LockResource(res);
-
-            return S_OK;
-        }
-
-        STDMETHOD(Close)(THIS_ LPCVOID)  {
-            return S_OK;
-        }
-};
 #pragma endregion
 
 

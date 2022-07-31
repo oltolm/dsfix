@@ -1,6 +1,6 @@
 #include "FXAA.h"
-#include "Settings.h"
-#include "util.h"
+#include "../Settings.h"
+#include "../util.h"
 #include <array>
 #include <filesystem>
 #include <spdlog/formatter.h>
@@ -8,10 +8,13 @@
 #ifndef _MSC_VER
 #include <dxerr9.h>
 #endif
+#include "../D3D10IncludeResource.h"
 
 #include <wrl.h>
 
 using namespace Microsoft;
+
+extern HMODULE g_hDll;
 
 namespace fs = std::filesystem;
 
@@ -30,10 +33,10 @@ FXAA::FXAA(IDirect3DDevice9* device, int width, int height, Quality quality) noe
     // Load effect from file
     spdlog::info("FXAA load");
     WRL::ComPtr<ID3DXBuffer> errors;
-    fs::path srcfile = GetModuleDirectoryPath() / L"dsfix\\FXAA.fx";
-    HRESULT hr = ::D3DXCreateEffectFromFileW(device, srcfile.c_str(), &defines[0], nullptr,
-                                             D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3,
-                                             nullptr, &effect, &errors);
+    D3D10IncludeResource include;
+    HRESULT hr = ::D3DXCreateEffectFromResourceW(
+        device, g_hDll, L"FXAA.fx", &defines[0], &include,
+        D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3, nullptr, &effect, &errors);
     if (FAILED(hr))
       spdlog::error("ERRORS:\n {}", errors->GetBufferPointer());
     // Create buffer

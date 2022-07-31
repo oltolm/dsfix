@@ -7,7 +7,7 @@ texture2D frameTex2D;
 #define FXAA_QUALITY__PRESET 26
 #endif
 
-#include "FXAA.h"
+#include "FXAA.hlsl"
 
 sampler frameSampler = sampler_state
 {
