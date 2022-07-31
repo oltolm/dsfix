@@ -33,12 +33,15 @@ SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, T
       }
     }();
     // spdlog::info("{} load, strength {}", srcfile, strengthMacros[strength].Name);
+    spdlog::info(L"{} load", srcfile);
     WRL::ComPtr<ID3DXBuffer> errors;
     HRESULT hr = ::D3DXCreateEffectFromResourceW(device, g_hDll, srcfile, &defines.front(), nullptr,
                                                  flags, nullptr, &effect, &errors);
     if (FAILED(hr)) {
-      spdlog::error("ERRORS:");
-      spdlog::error(" {}", errors->GetBufferPointer());
+      spdlog::error("loading SSAO failed");
+      if (errors != nullptr)
+        spdlog::error(" {}", errors->GetBufferPointer());
+      return;
     }
     // Create buffers
     ThrowIfFailed(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8,

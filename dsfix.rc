@@ -39,7 +39,7 @@ GAUSS.fx RCDATA "DATA\\dsfix\\GAUSS.fx"
 HBAO.fx RCDATA "DATA\\dsfix\\HBAO.fx"
 HUD.fx RCDATA "DATA\\dsfix\\HUD.fx"
 VSSAO.fx RCDATA "DATA\\dsfix\\VSSAO.fx"
-VSSAO.fx RCDATA "DATA\\dsfix\\VSSAO2.fx"
+VSSAO2.fx RCDATA "DATA\\dsfix\\VSSAO2.fx"
 
 // AreaTexDX9.dds RCDATA "SMAA\\AreaTexDX9.dds"
 // SearchTex.dds RCDATA "SMAA\\SearchTex.dds"
