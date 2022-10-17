@@ -2,11 +2,8 @@
 #include "Settings.h"
 #include "util.h"
 #include <array>
-#include <filesystem>
 #include <spdlog/formatter.h>
 #include <string>
-
-namespace fs = std::filesystem;
 
 extern HMODULE g_hDll;
 
@@ -24,6 +21,7 @@ SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, T
     // Load effect from file
     const wchar_t* srcfile = [type]() {
       switch (type) {
+      default:
       case Type::HBAO:
         return L"HBAO.fx";
       case Type::VSSAO:

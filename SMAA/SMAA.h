@@ -141,11 +141,9 @@ class SMAA {
 
         Microsoft::WRL::ComPtr<IDirect3DTexture9> edgeTex;
         Microsoft::WRL::ComPtr<IDirect3DSurface9> edgeSurface;
-        bool releaseEdgeResources;
 
         Microsoft::WRL::ComPtr<IDirect3DTexture9> blendTex;
         Microsoft::WRL::ComPtr<IDirect3DSurface9> blendSurface;
-        bool releaseBlendResources;
 
         Microsoft::WRL::ComPtr<IDirect3DTexture9> areaTex;
         Microsoft::WRL::ComPtr<IDirect3DTexture9> searchTex;

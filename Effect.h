@@ -15,11 +15,9 @@ protected:
   static const D3DVERTEXELEMENT9 vertexElements[3];
 
   Effect(IDirect3DDevice9* device) noexcept : device(device) {
-    try {
-      ThrowIfFailed(device->CreateVertexDeclaration(vertexElements, &vertexDeclaration));
-    } catch (const std::system_error& err) {
-      spdlog::error(L"{}", DXGetErrorString9W(err.code().value()));
-    }
+    HRESULT hr;
+    if (FAILED((hr = device->CreateVertexDeclaration(vertexElements, &vertexDeclaration))))
+      spdlog::error(L"{}", DXGetErrorString9W(hr));
   }
 
   virtual ~Effect() = default;

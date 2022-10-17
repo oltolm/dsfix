@@ -2,21 +2,17 @@
 #include "../Settings.h"
 #include "../util.h"
 #include <array>
-#include <filesystem>
 #include <spdlog/formatter.h>
 #include <string>
 #ifndef _MSC_VER
 #include <dxerr9.h>
 #endif
 #include "../D3D10IncludeResource.h"
-
 #include <wrl.h>
 
 using namespace Microsoft;
 
 extern HMODULE g_hDll;
-
-namespace fs = std::filesystem;
 
 FXAA::FXAA(IDirect3DDevice9* device, int width, int height, Quality quality) noexcept
     : Effect(device), width(width), height(height) {

@@ -1,13 +1,10 @@
 #include "GAUSS.h"
 #include "util.h"
 #include <array>
-#include <filesystem>
 #include <string>
 #include <wrl.h>
 
 using namespace Microsoft;
-
-namespace fs = std::filesystem;
 
 extern HMODULE g_hDll;
 

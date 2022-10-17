@@ -33,7 +33,6 @@
 // #include "SearchTex.h"
 #include "SMAA.h"
 #include "../D3D10IncludeResource.h"
-using namespace std;
 
 
 // This define is for using the precomputed textures DDS files instead of the
@@ -58,16 +57,6 @@ extern HMODULE g_hDll;
 #define V_RETURN(x) { hr = (x); if( FAILED(hr) ) { return hr; } }
 #endif
 #endif
-
-// #ifndef SAFE_DELETE
-// #define SAFE_DELETE(p) { if (p) { delete (p); (p) = nullptr; } }
-// #endif
-// #ifndef SAFE_DELETE_ARRAY
-// #define SAFE_DELETE_ARRAY(p) { if (p) { delete[] (p); (p) = nullptr; } }
-// #endif
-// #ifndef SAFE_RELEASE
-// #define SAFE_RELEASE(p) { if (p) { (p)->Release(); (p) = nullptr; } }
-// #endif
 #pragma endregion
 
 
@@ -81,12 +70,12 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
     HRESULT hr;
 
     // Setup the defines for compiling the effect.
-    vector<D3DXMACRO> defines;
-    stringstream s;
+    std::vector<D3DXMACRO> defines;
+    std::stringstream s;
 
     // Setup pixel size macro
     s << "float4(1.0 / " << width << ", 1.0 / " << height << ", " << width << ", " << height << ")";
-    string pixelSizeText = s.str();
+    std::string pixelSizeText = s.str();
     D3DXMACRO renderTargetMetricsMacro = { "SMAA_RT_METRICS", pixelSizeText.c_str() };
     defines.push_back(renderTargetMetricsMacro);
 
@@ -130,22 +119,18 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
     if (storage.edgeTex != nullptr && storage.edgeSurface != nullptr) {
         edgeTex = storage.edgeTex.Get();
         edgeSurface = storage.edgeSurface.Get();
-        releaseEdgeResources = false;
     } else {
         V(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &edgeTex, nullptr));
         V(edgeTex->GetSurfaceLevel(0, &edgeSurface));
-        releaseEdgeResources = true;
     }
 
     // Same for blending weights.
     if (storage.blendTex != nullptr && storage.blendSurface != nullptr) {
         blendTex = storage.blendTex.Get();
         blendSurface = storage.blendSurface.Get();
-        releaseBlendResources = false;
     } else {
         V(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &blendTex, nullptr));
         V(blendTex->GetSurfaceLevel(0, &blendSurface));
-        releaseBlendResources = true;
     }
 
     // Load the precomputed textures.
@@ -153,16 +138,16 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
     loadSearchTex();
 
     // Create some handles for techniques and variables.
-    thresholdHandle = effect->GetParameterByName(NULL, "threshld");
-    maxSearchStepsHandle = effect->GetParameterByName(NULL, "maxSearchSteps");
-    maxSearchStepsDiagHandle = effect->GetParameterByName(NULL, "maxSearchStepsDiag");
-    cornerRoundingHandle = effect->GetParameterByName(NULL, "cornerRounding");
-    areaTexHandle = effect->GetParameterByName(NULL, "areaTex2D");
-    searchTexHandle = effect->GetParameterByName(NULL, "searchTex2D");
-    colorTexHandle = effect->GetParameterByName(NULL, "colorTex2D");
-    depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
-    edgesTexHandle = effect->GetParameterByName(NULL, "edgesTex2D");
-    blendTexHandle = effect->GetParameterByName(NULL, "blendTex2D");
+    thresholdHandle = effect->GetParameterByName(nullptr, "threshld");
+    maxSearchStepsHandle = effect->GetParameterByName(nullptr, "maxSearchSteps");
+    maxSearchStepsDiagHandle = effect->GetParameterByName(nullptr, "maxSearchStepsDiag");
+    cornerRoundingHandle = effect->GetParameterByName(nullptr, "cornerRounding");
+    areaTexHandle = effect->GetParameterByName(nullptr, "areaTex2D");
+    searchTexHandle = effect->GetParameterByName(nullptr, "searchTex2D");
+    colorTexHandle = effect->GetParameterByName(nullptr, "colorTex2D");
+    depthTexHandle = effect->GetParameterByName(nullptr, "depthTex2D");
+    edgesTexHandle = effect->GetParameterByName(nullptr, "edgesTex2D");
+    blendTexHandle = effect->GetParameterByName(nullptr, "blendTex2D");
     lumaEdgeDetectionHandle = effect->GetTechniqueByName("LumaEdgeDetection");
     colorEdgeDetectionHandle = effect->GetTechniqueByName("ColorEdgeDetection");
     depthEdgeDetectionHandle = effect->GetTechniqueByName("DepthEdgeDetection");
@@ -172,21 +157,6 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
 
 
 SMAA::~SMAA() {
-    // SAFE_RELEASE(effect);
-    // SAFE_RELEASE(vertexDeclaration);
-
-    // if (releaseEdgeResources) { // We will be releasing these things *only* if we created them.
-    //     SAFE_RELEASE(edgeTex);
-    //     SAFE_RELEASE(edgeSurface);
-    // }
-
-    // if (releaseBlendResources) { // Same applies over here.
-    //     SAFE_RELEASE(blendTex);
-    //     SAFE_RELEASE(blendSurface);
-    // }
-
-    // SAFE_RELEASE(areaTex);
-    // SAFE_RELEASE(searchTex);
 }
 
 
@@ -271,7 +241,7 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
             V(effect->SetTechnique(depthEdgeDetectionHandle));
             break;
         default:
-            throw logic_error("unexpected error");
+            throw std::logic_error("unexpected error");
     }
 
     // Do it!

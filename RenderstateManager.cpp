@@ -95,15 +95,7 @@ HRESULT RSManager::redirectPresent(CONST RECT* pSourceRect, CONST RECT* pDestRec
   mainRTuses = 0;
   zSurf = nullptr;
   frameTimeManagement();
-  try {
-    return ThrowIfFailed(
-        m_pDevice->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion));
-  } catch (const std::system_error& err) {
-    spdlog::error(L"Present: {}", DXGetErrorString9W(err.code().value()));
-    if (err.code().value() == D3DERR_DEVICEREMOVED)
-      removeFPSHook();
-    return err.code().value();
-  }
+  return m_pDevice->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 }
 
 HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex,
