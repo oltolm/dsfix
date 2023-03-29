@@ -12,3 +12,5 @@ Release/
 out/
 *.aps
 /imgui.ini
+.cache/
+compile_commands.json
