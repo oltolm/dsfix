@@ -9,7 +9,7 @@ class Ui;
 interface hkIDirect3DDevice9 : public IDirect3DDevice9 {
 private:
   // callback interface
-  Microsoft::WRL::ComPtr<IDirect3DDevice9> m_pD3Ddev;
+  Microsoft::WRL::ComPtr<IDirect3DDevice9> m_pDevice;
   Microsoft::WRL::ComPtr<IDirect3D9> m_pD3D9;
   RSManager* m_pRSManager;
   Ui* m_pUi;
@@ -205,7 +205,7 @@ public:
   STDMETHOD(DeletePatch)(UINT Handle);
   STDMETHOD(CreateQuery)(D3DQUERYTYPE Type, IDirect3DQuery9** ppQuery);
   
-  hkIDirect3DDevice9(IDirect3DDevice9* pIDirect3DDevice9, IDirect3D9* pD3D9);
+  hkIDirect3DDevice9(IDirect3DDevice9* pDevice, IDirect3D9* pD3D9);
   IDirect3DDevice9* getDevice();
   void setRSManager(RSManager* pRSManager);
   float getOcclusionScale();

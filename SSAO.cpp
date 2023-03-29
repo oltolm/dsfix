@@ -7,7 +7,7 @@
 
 extern HMODULE g_hDll;
 
-SSAO::SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, Type type) noexcept
+SSAO::SSAO(IDirect3DDevice9* device, unsigned int width, unsigned int height, unsigned strength, Type type) noexcept
     : Effect(device), width(width), height(height) {
   try {
     // Setup pixel size macro

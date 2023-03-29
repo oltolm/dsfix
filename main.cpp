@@ -56,10 +56,10 @@ void onD3DCreateDevice() {
   if (s_initialized)
     return;
 
-  RSManager* pRSManager = new RSManager(g_pD3DDevice->getDevice());
-  g_pD3DDevice->setRSManager(pRSManager);
-  Ui* pUi = new Ui(g_pD3DDevice.Get(), pRSManager);
-  g_pD3DDevice->setUi(pUi);
+  RSManager* pRSManager = new RSManager(g_pDevice->getDevice());
+  g_pDevice->setRSManager(pRSManager);
+  Ui* pUi = new Ui(g_pDevice.Get(), pRSManager);
+  g_pDevice->setUi(pUi);
 
   initFPSTimer();
   if (Settings::get().getUnlockFPS())

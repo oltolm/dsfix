@@ -10,7 +10,7 @@ using namespace Microsoft;
 
 struct hkIDirect3DDevice9;
 
-WRL::ComPtr<hkIDirect3DDevice9> g_pD3DDevice;
+WRL::ComPtr<hkIDirect3DDevice9> g_pDevice;
 
 HRESULT APIENTRY hkIDirect3D9::QueryInterface(REFIID riid, void** ppvObj) {
   return m_pD3D9->QueryInterface(riid, ppvObj);
@@ -64,8 +64,8 @@ HRESULT APIENTRY hkIDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
   HRESULT hRet = m_pD3D9->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags,
                                        pPresentationParameters, ppReturnedDeviceInterface);
   if (SUCCEEDED(hRet)) {
-    g_pD3DDevice = new hkIDirect3DDevice9(*ppReturnedDeviceInterface, this);
-    *ppReturnedDeviceInterface = g_pD3DDevice.Get();
+    g_pDevice = new hkIDirect3DDevice9(*ppReturnedDeviceInterface, this);
+    *ppReturnedDeviceInterface = g_pDevice.Get();
     onD3DCreateDevice();
   }
   return hRet;

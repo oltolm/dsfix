@@ -78,7 +78,7 @@ void Ui::onEndScene() {
   double elapsed = std::difftime(std::time(nullptr), s_start);
   if (elapsed < 10) {
     if (ImGui::Begin("Popup", nullptr, s_flags)) {
-      ImGui::Text("Press F1 to open the DSFix options. Closing in %us.", (unsigned)(10 - elapsed));
+      ImGui::Text("Press F1 to open the DSFix options. Closing in %.0fs.", 10 - elapsed);
     }
     ImGui::End();
   }

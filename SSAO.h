@@ -8,7 +8,7 @@ using namespace Microsoft;
 class SSAO : public Effect {
 public:
   enum class Type { HBAO, VSSAO, VSSAO2 };
-  SSAO(IDirect3DDevice9* device, int width, int height, unsigned strength, Type type) noexcept;
+  SSAO(IDirect3DDevice9* device, unsigned int width, unsigned int height, unsigned strength, Type type) noexcept;
   virtual ~SSAO() = default;
   void go(IDirect3DTexture9* frame, IDirect3DTexture9* depth, IDirect3DSurface9* dst) noexcept;
 

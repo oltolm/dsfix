@@ -4,7 +4,7 @@
 
 struct hkIDirect3DDevice9;
 
-extern Microsoft::WRL::ComPtr<hkIDirect3DDevice9> g_pD3DDevice;
+extern Microsoft::WRL::ComPtr<hkIDirect3DDevice9> g_pDevice;
 
 interface hkIDirect3D9 : public IDirect3D9 {
 private:

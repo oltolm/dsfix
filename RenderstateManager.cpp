@@ -25,14 +25,13 @@ RSManager::RSManager(IDirect3DDevice9* pDevice) : m_pDevice(pDevice) { onReset()
 void RSManager::setupAA() {
   unsigned int rw = Settings::get().getRenderWidth();
   unsigned int rh = Settings::get().getRenderHeight();
-  if (Settings::get().getAAQuality()) {
+  auto aAQuality = Settings::get().getAAQuality();
+  if (aAQuality != 0) {
     if (Settings::get().getAAType() == "SMAA") {
-      smaa.reset(
-          new SMAA(m_pDevice.Get(), rw, rh, (SMAA::Preset)(Settings::get().getAAQuality() - 1)));
+      smaa.reset(new SMAA(m_pDevice.Get(), rw, rh, static_cast<SMAA::Preset>(aAQuality - 1)));
       fxaa = nullptr;
     } else {
-      fxaa.reset(
-          new FXAA(m_pDevice.Get(), rw, rh, (FXAA::Quality)(Settings::get().getAAQuality() - 1)));
+      fxaa.reset(new FXAA(m_pDevice.Get(), rw, rh, static_cast<FXAA::Quality>(aAQuality - 1)));
       smaa = nullptr;
     }
   } else {
@@ -210,7 +209,6 @@ void RSManager::measureOcclusionScale() {
   WRL::ComPtr<IDirect3DPixelShader9> pixelShader;
   WRL::ComPtr<IDirect3DQuery9> query;
   DWORD pixelsVisible = 0;
-  HRESULT hr;
   haveOcclusionScale = true;
   float width = 24.0 / 1024;
   float height = 24.0 / 720;
@@ -242,6 +240,7 @@ void RSManager::measureOcclusionScale() {
   ThrowIfFailed(
       m_pDevice->DrawPrimitiveUP(D3DPT_TRIANGLEFAN, 2, vertexData, sizeof(vertexData[0])));
   ThrowIfFailed(query->Issue(D3DISSUE_END));
+  HRESULT hr;
   while ((hr = query->GetData(&pixelsVisible, sizeof(pixelsVisible), D3DGETDATA_FLUSH)) == S_FALSE)
     ;
   ThrowIfFailed(hr);
