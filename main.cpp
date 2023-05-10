@@ -38,7 +38,7 @@ void onDllProcessAttach() {
   loadOriginalDinput8dll();
   startDetour();
   spdlog::set_level(static_cast<spdlog::level::level_enum>(Settings::get().getLogLevel()));
-  spdlog::info(L"===== start DSfix {} = fn: {}", DXVK_VERSION, GetModuleFileNamePath(nullptr));
+  spdlog::info("===== start DSfix {} = fn: {}", DXVK_VERSION, GetModuleFileNamePath(nullptr).string());
   if (Settings::get().getSkipIntro())
     ApplyDS1Patches();
 }

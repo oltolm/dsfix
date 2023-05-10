@@ -1,7 +1,3 @@
-# cmake --preset <clang|gcc> cmake --build --preset <clang|gcc>
-#
-# ninja ninja install ninja clean cpack cpack --config CPackSourceConfig.cmake
-
 cmake_minimum_required(VERSION 3.15)
 project(
   dsfix
@@ -104,9 +100,10 @@ target_compile_definitions(dsfix PRIVATE -DUNICODE -D_UNICODE)
 set_target_properties(dsfix PROPERTIES PREFIX "" OUTPUT_NAME "dinput8")
 
 if(MSVC)
-  # find_path(d3dx9_include_dir "d3dx9.h" REQUIRED PATH_SUFFIXES "dxsdk-d3dx" )
-  # target_include_directories(dsfix PRIVATE ${d3dx9_include_dir}) find_library(d3dx9_library
-  # "d3dx9.lib" REQUIRED) target_link_libraries(dsfix PRIVATE ${d3dx9_library})
+  # find_path(d3dx9_include_dir "d3dx9.h" REQUIRED PATH_SUFFIXES "dxsdk-d3dx")
+  # target_include_directories(dsfix PRIVATE ${d3dx9_include_dir})
+  # find_library(d3dx9_library "d3dx9.lib" REQUIRED)
+  # target_link_libraries(dsfix PRIVATE ${d3dx9_library})
   target_include_directories(dsfix PRIVATE "$ENV{d3dx_path}\\include")
   target_link_libraries(dsfix PRIVATE "$ENV{d3dx_path}\\release\\lib\\x86\\d3dx9.lib")
 endif()
@@ -127,9 +124,8 @@ cpmaddpackage(
   GITHUB_REPOSITORY
   gabime/spdlog
   VERSION
-  1.10.0
+  1.11.0
   OPTIONS
   "SPDLOG_WCHAR_SUPPORT ON"
   "SPDLOG_WCHAR_FILENAMES ON"
-  "SPDLOG_WCHAR_TO_UTF8_SUPPORT ON"
 )
