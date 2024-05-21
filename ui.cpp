@@ -5,10 +5,12 @@
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_dx9.h"
 #include "imgui/backends/imgui_impl_win32.h"
-#include <cstring>
-#include <sstream>
+
+#include <algorithm>
 #include <array>
+#include <cstring>
 #include <ctime>
+#include <sstream>
 
 #include "myfont.cpp"
 

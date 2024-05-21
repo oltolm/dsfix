@@ -1,6 +1,5 @@
 #include "util.h"
 #include <spdlog/fmt/ostr.h>
-#include <stdexcept>
 #include <system_error>
 
 std::wstring FormatMessageString(DWORD dwMessageId);

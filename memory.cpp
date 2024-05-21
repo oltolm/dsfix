@@ -3,6 +3,7 @@ Pattern search algorithm and other memory related issues.
 - thohell@home.se
 */
 #include "memory.h"
+
 #include <Psapi.h>
 #include <stdexcept>
 #include <vector>

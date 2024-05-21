@@ -5,12 +5,13 @@
 #include "SMAA/SMAA.h"
 #include "SSAO.h"
 #include "Settings.h"
-#include "WindowManager.h"
+
 #include <spdlog/spdlog.h>
 #ifndef _MSC_VER
 #include <dxerr9.h>
 #endif
-#include <wrl.h>
+#include <wrl/client.h>
+
 using namespace Microsoft;
 
 namespace {

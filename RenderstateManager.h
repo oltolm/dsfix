@@ -3,9 +3,10 @@
 #include "GAUSS.h"
 #include "SMAA/SMAA.h"
 #include "SSAO.h"
+
 #include <array>
 #include <memory>
-#include <wrl.h>
+#include <wrl/client.h>
 
 class RSManager {
 private:

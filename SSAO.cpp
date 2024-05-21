@@ -1,6 +1,6 @@
 #include "SSAO.h"
-#include "Settings.h"
 #include "util.h"
+
 #include <array>
 #include <spdlog/formatter.h>
 #include <string>

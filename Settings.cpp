@@ -1,6 +1,7 @@
 #include "Settings.h"
 #include "WindowManager.h"
 #include "util.h"
+
 #include <filesystem>
 #include <fstream>
 #include <spdlog/spdlog.h>

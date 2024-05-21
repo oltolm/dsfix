@@ -1,9 +1,9 @@
 #pragma once
-#include <Windows.h>
 #include <filesystem>
-#include <spdlog/fmt/ostr.h>
+#include <istream>
 #include <string>
 #include <system_error>
+#include <Windows.h>
 
 namespace fs = std::filesystem;
 

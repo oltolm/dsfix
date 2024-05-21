@@ -1,18 +1,20 @@
+#include "version.h"
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 #include "main.h"
 #include "Detouring.h"
 #include "FPS.h"
 #include "Settings.h"
 #include "util.h"
-#include <filesystem>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/spdlog.h>
-#include <windows.h>
 #include "dinput.h"
 #include "ui.h"
 #include "RenderstateManager.h"
 #include "d3d9int.h"
 #include "d3d9dev.h"
+
+#include <filesystem>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
+#include <windows.h>
 
 namespace fs = std::filesystem;
 

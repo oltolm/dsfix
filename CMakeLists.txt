@@ -7,6 +7,7 @@ project(
 
 if(NOT MSVC)
   find_program(CCACHE ccache)
+
   if(CCACHE)
     message(STATUS "found ccache: ${CCACHE}")
     set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
@@ -53,6 +54,7 @@ add_library(
   util.cpp
   WindowManager.cpp
   imgui/imgui.cpp
+
   # imgui/imgui_demo.cpp
   imgui/imgui_widgets.cpp
   imgui/imgui_draw.cpp
@@ -60,6 +62,10 @@ add_library(
   imgui/backends/imgui_impl_dx9.cpp
   imgui/backends/imgui_impl_win32.cpp
 )
+
+if(NOT MSVC)
+  set_source_files_properties(SMAA/SMAA.cpp PROPERTIES COMPILE_OPTIONS -Wno-unused-but-set-variable)
+endif()
 
 target_link_libraries(dsfix PRIVATE minhook d3d9 dxguid spdlog::spdlog dwmapi)
 
@@ -70,40 +76,41 @@ endif()
 if(NOT MSVC)
   target_link_options(dsfix PRIVATE -static-libgcc -static-libstdc++ -static)
 endif()
+
 target_compile_features(dsfix PRIVATE cxx_std_17)
 
 target_include_directories(
   dsfix PRIVATE "${PROJECT_SOURCE_DIR}/include" "${PROJECT_SOURCE_DIR}/imgui"
-                "${PROJECT_BINARY_DIR}"
+  "${PROJECT_BINARY_DIR}"
 )
+
 if(NOT MSVC)
   target_compile_options(
     dsfix
     PRIVATE -msse2
-            -msse
-            -Wall
-            # -Werror
-            -Wno-array-bounds
-            # -Wextra
-            -Wno-cast-function-type
-            -Wno-unused-parameter
-            -Wno-unused-but-set-variable
-            -Wno-unknown-pragmas
+    -msse
+    -Wall
+    # -Werror
+    # -Wno-array-bounds
+    # -Wextra
+    # -Wno-cast-function-type
+    # -Wno-unused-parameter
+    # -Wno-unused-but-set-variable
+    # -Wno-unknown-pragmas
+    -Wno-dangling-reference
   )
 endif()
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   message(STATUS "CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
   target_compile_options(dsfix PRIVATE -Wno-microsoft-exception-spec -Wno-missing-exception-spec)
 endif()
+
 target_compile_definitions(dsfix PRIVATE -DUNICODE -D_UNICODE)
 
 set_target_properties(dsfix PROPERTIES PREFIX "" OUTPUT_NAME "dinput8")
 
 if(MSVC)
-  # find_path(d3dx9_include_dir "d3dx9.h" REQUIRED PATH_SUFFIXES "dxsdk-d3dx")
-  # target_include_directories(dsfix PRIVATE ${d3dx9_include_dir})
-  # find_library(d3dx9_library "d3dx9.lib" REQUIRED)
-  # target_link_libraries(dsfix PRIVATE ${d3dx9_library})
   target_include_directories(dsfix PRIVATE "$ENV{d3dx_path}\\include")
   target_link_libraries(dsfix PRIVATE "$ENV{d3dx_path}\\release\\lib\\x86\\d3dx9.lib")
 endif()
@@ -124,7 +131,7 @@ cpmaddpackage(
   GITHUB_REPOSITORY
   gabime/spdlog
   VERSION
-  1.12.0
+  1.14.1
   OPTIONS
   "SPDLOG_WCHAR_SUPPORT ON"
   "SPDLOG_WCHAR_FILENAMES ON"

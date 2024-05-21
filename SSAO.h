@@ -1,7 +1,8 @@
 #pragma once
 #include "Effect.h"
+
 #include <d3dx9.h>
-#include <wrl.h>
+#include <wrl/client.h>
 
 using namespace Microsoft;
 
