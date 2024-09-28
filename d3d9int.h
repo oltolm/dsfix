@@ -1,6 +1,6 @@
 #pragma once
 #include <d3d9.h>
-#include <wrl.h>
+#include <wrl/client.h>
 
 struct hkIDirect3DDevice9;
 

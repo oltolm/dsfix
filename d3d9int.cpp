@@ -4,7 +4,7 @@
 #include "d3d9dev.h"
 #include "main.h"
 #include <spdlog/spdlog.h>
-#include <wrl.h>
+#include <wrl/client.h>
 
 using namespace Microsoft;
 

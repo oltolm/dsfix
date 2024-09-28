@@ -1,6 +1,6 @@
 #pragma once
 #include "../Effect.h"
-#include <wrl.h>
+#include <wrl/client.h>
 
 class FXAA : public Effect {
 public:

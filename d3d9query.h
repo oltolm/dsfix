@@ -1,7 +1,7 @@
 #pragma once
 #include "d3d9dev.h"
 #include <d3d9.h>
-#include <wrl.h>
+#include <wrl/client.h>
 
 interface hkIDirect3DQuery9 : public IDirect3DQuery9 {
   STDMETHOD(QueryInterface)(THIS_ REFIID riid, void** ppvObj);

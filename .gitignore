@@ -14,3 +14,4 @@ out/
 /imgui.ini
 .cache/
 compile_commands.json
+CMakeUserPresets.json

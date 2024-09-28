@@ -1,6 +1,6 @@
 #pragma once
 #include "Effect.h"
-#include <wrl.h>
+#include <wrl/client.h>
 
 class GAUSS : public Effect {
 public:

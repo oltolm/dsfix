@@ -34,7 +34,7 @@
 #include <d3dx9.h>
 // #include <dxerr.h>
 #include <dxgi.h>
-#include <wrl.h>
+#include <wrl/client.h>
 #include "../Effect.h"
 
 

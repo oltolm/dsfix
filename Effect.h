@@ -5,7 +5,7 @@
 #ifndef _MSC_VER
 #include <dxerr9.h>
 #endif
-#include <wrl.h>
+#include <wrl/client.h>
 
 // Base class for effects
 class Effect {

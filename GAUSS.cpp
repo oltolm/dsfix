@@ -2,7 +2,7 @@
 #include "util.h"
 #include <array>
 #include <string>
-#include <wrl.h>
+#include <wrl/client.h>
 
 using namespace Microsoft;
 
