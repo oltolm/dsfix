@@ -17,7 +17,7 @@ FILESUBTYPE VFT2_UNKNOWN
 			VALUE "FileDescription", "DSfix - Interceptor DLL for the improvement of Dark Souls PC"
 			VALUE "FileVersion", "2.6.0.0"
 			VALUE "InternalName", "dinput8"
-			VALUE "LegalCopyright", "\xA9 Copyright 2019. Peter ""Durante"" Thoman."
+			VALUE "LegalCopyright", "© Copyright 2019. Peter ""Durante"" Thoman."
 			VALUE "OriginalFilename", "dinput8.dll"
 			VALUE "ProductName", "DSfix"
 			VALUE "ProductVersion", "2.6.0.0"
